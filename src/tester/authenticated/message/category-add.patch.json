@@ -1,0 +1,10 @@
+{
+    "entries": [
+        {
+            "id":4, 
+            "messageCategories":[
+                {"id":1, "mode": 2}
+            ]
+        }
+    ]
+}

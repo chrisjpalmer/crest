@@ -1,0 +1,17 @@
+{
+    "database": {
+        "username":"access",
+        "password":"",
+        "host":"192.168.37.3",
+        "port":3307,
+        "schema":"nestco2"
+    },
+    "auth": {
+        "keyPath":"E:\\Documents\\Software Local\\Nest\\nest-co2-sample\\key.pem",
+        "expiry":3600,
+        "saltRounds":10
+    },
+    "app": {
+        "debug": true
+    }
+}
