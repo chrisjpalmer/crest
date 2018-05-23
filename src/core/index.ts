@@ -4,4 +4,4 @@ export * from './entity.service';
 export * from './service';
 export * from './core';
 export * from './core.web.module';
-export * from './request';
+export * from './controller';

@@ -1,2 +1,2 @@
-.leftJoin('${entity.lower}.${childEntity.fieldName}', '${childEntity.lower}')
+.leftJoin(this.entity + '.${childEntity.fieldName}', '${childEntity.lower}')
 .addSelect('${childEntity.lower}.id')

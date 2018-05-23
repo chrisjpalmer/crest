@@ -26,9 +26,12 @@ export class RoleService extends GenericEntityService<Role> {
     );
   }
 
-  protected selectQueryBuilder() {
-    return this.roleRepository
-      .createQueryBuilder('role')
+  protected createQuery() {
+    return this.roleRepository.createQueryBuilder(this.entity);
+  }
+
+  protected applyStems(query: SelectQueryBuilder<Role>) {
+    return query
       .leftJoin('role.privileges', 'privilege')
       .addSelect('privilege.id');
   }

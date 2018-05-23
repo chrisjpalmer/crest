@@ -129,9 +129,12 @@ export class UserService extends GenericEntityService<User> {
     return user.id;
   }
 
-  protected selectQueryBuilder() {
-    return this.userRepository
-      .createQueryBuilder('user') //begins a select query on the user table - adds all user fields to the select query.
+  protected createQuery() {
+    return this.userRepository.createQueryBuilder(this.entity);
+  }
+
+  protected applyStems(query: SelectQueryBuilder<Role>) {
+    return query
       .leftJoin('user.role', 'role')
       .addSelect('role.id')
       .leftJoin('user.messages', 'message')

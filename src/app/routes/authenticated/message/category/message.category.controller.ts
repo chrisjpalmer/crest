@@ -5,18 +5,22 @@
  */
 import {
   AuthController,
-  GenericGetController,
+  GenericController,
   InjectRepo,
   PrivilegeHas,
-  GenericGetInput,
-  GenericGetOutput,
   CoreRequest,
   promiseArray,
   PatchRelationApply,
+  SyncListOutput,
+  SyncDataOutput,
+  GenericGetMode,
+  SyncHash,
+  ConfigService,
 } from 'core';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
 import {
+  GetInput,
   PatchInput,
   PostInput,
   PostOutput,
@@ -34,15 +38,16 @@ import { Message } from 'database';
 @AuthController(
   'message/category',
 ) /* http://localhost:3000/authenticated/message/category */
-export class MessageCategoryController extends GenericGetController<
+export class MessageCategoryController extends GenericController<
   MessageCategory
 > {
   constructor(
+    configService: ConfigService,
     @InjectRepo(MessageCategoryToken)
     private readonly messageCategoryRepository: Repository<MessageCategory>,
     private readonly messageCategoryService: MessageCategoryService,
   ) {
-    super(messageCategoryService);
+    super(configService);
   }
 
   /**
@@ -51,12 +56,67 @@ export class MessageCategoryController extends GenericGetController<
    */
   @Get()
   @PrivilegeHas(`messageCategory.get`)
-  async Get(
-    @Body() input: GenericGetInput,
-  ): Promise<GenericGetOutput<MessageCategory>> {
+  async Get(@Body() input: GetInput): Promise<SyncListOutput | SyncDataOutput> {
     //This class inherits GenericGetController. We call handleGet() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
     return await this.handleGet(input);
+  }
+
+  /**
+   * handleList - MessageCategory -> return array of hashes for the result set.
+   * @param input
+   */
+  async handleList(input: GetInput) {
+    let query = this.messageCategoryService
+      .createQueryBuilder()
+      .select('id', 'updateAt');
+
+    /**
+     * Apply Conditions to the query
+     */
+    switch (input.mode) {
+      case GenericGetMode.All:
+        //GenericGetMode.All -> get all rows, apply no condition
+        break;
+      case GenericGetMode.Discrete:
+        //GenericGetMode.Discrete -> get only specific ids
+        query = this.messageCategoryService.applyCondition(query, input.ids);
+        break;
+      case GenericGetMode.ParameterSearch:
+        //GenericGetMode.ParameterSearch -> get rows which match the search parameters
+        query = this.messageCategoryService.applyCondition(query, s => {
+          return s.where(input.parameterSearch);
+        });
+        break;
+    }
+
+    /**
+     * Apply Pagination to the query
+     * in some cases where the dataset is so large, you may want to deny access to the service
+     * unless pagination parameters are provided.
+     */
+    if (!!input.page) {
+      query = this.messageCategoryService.applyPagination(
+        query,
+        input.page,
+        input.pageSize,
+      );
+    }
+
+    //Perform the query, get the result set.
+    let rows = await query.getMany();
+
+    //Convert the result set to hashes and return the hashes
+    let result = rows.map(v => new SyncHash(v.id, v.updatedAt));
+    return result;
+  }
+
+  async handleData(ids: number[]): Promise<MessageCategory[]> {
+    let query: SelectQueryBuilder<MessageCategory>;
+    query = this.messageCategoryService.createQueryBuilder();
+    //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
+    query = this.messageCategoryService.applyStems(query);
+    return await query.getMany();
   }
 
   /**

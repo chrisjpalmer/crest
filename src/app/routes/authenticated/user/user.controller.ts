@@ -5,7 +5,7 @@
  */
 import {
   AuthController,
-  GenericGetController,
+  GenericController,
   InjectRepo,
   PrivilegeHas,
   GenericGetInput,
@@ -30,7 +30,7 @@ import { User, UserToken } from 'database';
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 @AuthController('user') /* http://localhost:3000/authenticated/user */
-export class UserController extends GenericGetController<User> {
+export class UserController extends GenericController<User> {
   constructor(
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
     private readonly userService: UserService,

@@ -4,7 +4,7 @@
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
 import { Component, BadRequestException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ${entity.upper}, ${entity.upper}Token } from 'database';
 import {
   IndexSet,
@@ -26,9 +26,13 @@ export class ${entity.upper}Service extends GenericEntityService<${entity.upper}
 
   /// < entity.service.fillWith.template >
 
-  protected selectQueryBuilder() {
+  createQueryBuilder() {
     return this.${entity.lower}Repository
-      .createQueryBuilder('${entity.lower}')
-      /// < entity.service.selectQueryBuilder.template >
+      .createQueryBuilder(this.entity);
+  }
+
+  applyStems(query:SelectQueryBuilder<${entity.upper}>): SelectQueryBuilder<MessageCategory> {
+    return query
+    /// < entity.service.selectQueryBuilder.template >
   }
 }

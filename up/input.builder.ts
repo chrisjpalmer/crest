@@ -23,6 +23,12 @@ export async function buildInput(controllerPath: string, entity: Entity) {
     '${entity.upper}': entity.upper,
   });
 
+  /// < entity.input.get.field.template >
+  let getField = await buildInputGetField(entity);
+  input = input.replaceAll(
+    `/// < entity.input.get.field.template >`,
+    getField,
+  );
   /// < entity.input.post.field.template >
   let postField = await buildInputPostField(entity);
   input = input.replaceAll(
@@ -50,6 +56,37 @@ export async function buildInput(controllerPath: string, entity: Entity) {
 
   return input;
 }
+
+/** GET */
+async function buildInputGetField(entity: Entity) {
+  let getFieldTemplate = await readFilePromise(
+    `${templatePath}/entity.input.get.field.template.ts`,
+  );
+  let getField = '';
+
+  entity.childFields
+    .map(c => {
+      return buildInputGetFieldForChild(entity, c, getFieldTemplate);
+    })
+    .forEach(fw => {
+      getField += fw + '\n\n';
+    });
+
+  return getField;
+}
+
+function buildInputGetFieldForChild(
+  entity: Entity,
+  childField: ChildField,
+  getFieldTemplate: string,
+) {
+  let getField = replaceByObject(getFieldTemplate, {
+    '${childField.fieldType}': fieldTypeToString(childField.fieldType),
+    '${childField.fieldName}': childField.fieldName,
+  });
+  return getField;
+}
+
 
 /** POST */
 async function buildInputPostField(entity: Entity) {

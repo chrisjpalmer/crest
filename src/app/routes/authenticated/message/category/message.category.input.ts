@@ -11,14 +11,30 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostRelation, PatchRelation } from 'core';
+import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
 
 //------------------------------------------------
 //--------------------- INPUT --------------------
 //------------------------------------------------
 
 //-----------Get-----------\\
-//Uses GenericGetController
+export class GetInput extends SyncInput {
+  //Query Mode
+  mode: GenericGetMode;
+  //Discrete Mode
+  ids: number[];
+  //ParameterSearch Mode
+  parameterSearch: GetParameterSearch;
+
+  //Pagination
+  page: number;
+  pageSize: number;
+}
+
+export class GetParameterSearch {
+  id: number;
+  name: string;
+}
 
 //-----------Post----------\\
 

@@ -3,13 +3,13 @@
 A rich starter for Nest and MySQL which makes building a web server fun again.
 
 ## Oh CRUD!
-The CRUD design pattern typically involves the definition of related database tables for which there should exist an API. The API should include operations to **C**reate, **R**ead, **U**pdate and **D**elete records of these entities. To implement CRUD properly, the developer should rewrite similar code for each table. Its a fairly repetitive process that will leave you saying 'Oh CRUD' for a while.
+In web applications, CRUD is the implementation of **C**reate, **R**ead, **U**pdate and **D**elete operations to manipulate database tables / entities. Applications these days scale fast and CRUD will require you to repeat a lot of code... CRUD!
 
-One school of thought says to have a generic CRUD API. In this model, your application looks like a dumb proxy to the database. Whilst this reduces the amount of repetitive coding, the result is abstraction from the base framework. A new developer has to learn 2 things now AND any custom logic has to be implemented as part of your generic API _( = code spaghetti)_.
+A solution may be to create a *general CRUD API* for all tables in your application BUT doing so creates unhealthy abstraction from the base framework. For anything requiring custom logic, extra features have to built into your generic layer.
 
-A hybrid approach is required where some operations are generalized BUT some code is repeated. This is where Crest comes into play. Crest has you define your database tables as TypeORM entity classes. It then provides a code generation tool (_up_) to turn these into your CRUD API layer. We don't abstract you from the frameworks you know and love.
+A hybrid approach is required to balance code generalization and duplication. Crest is a starter project which will help you do this. Crest provides ***"up"*** a dev tool which transforms your database definitions into standard CRUD classes which you can then hack. That way you can always work with the frameworks you love.
 
-What's more? Crest packages a bunch of handy features which every CRUD application needs:
+Crest creates standard CRUD APIs with the following features:
 * Syncing & Pagination _(for the 'R' in CRUD)_
 * Roles & Privileges Auth
 * JWT Auth
@@ -23,22 +23,23 @@ What's more? Crest packages a bunch of handy features which every CRUD applicati
 
 ## Getting Started
 ### Prepare
-Before doing anything you need to get the npm packages.
+Get the npm packages
 ```bash
 cd projdir #Or open the command console in VS Code
 npm install
 ```
 
-### Config
-`/config.json` is the configuration file for the web server. Boot up your own MySQL server and set the credentials for the database inside this file to allow Crest to connect to your database.
+### MySQL
+1. Boot up a MySQL Server
+2. update `config.json` with your database settings
 
 ### Up
+Create the demo APIs
 ```bash
 cd projdir #Or open the command console in VS Code
 npm run up Message
 npm run up MessageCategory
 ```
-Crest includes _up_, a Nest controller generator. Give _up_ the PascalCase name of your database entity, let Crest do the REST!
 
 ### Run
 ```bash
@@ -52,8 +53,8 @@ The payloads are located under the `src/tester` folder and are organized accordi
 Try these commands to get going as a root user:
 ```bash
 curl -X POST http://localhost:3000/init
-npm run login root.post myuser #Executes the login service and saves the JWT token in a bash key store against the key "myuser"
-npm run use messages/create.post myuser #Executes the /authenticated/message POST method with the JWT token for myuser
+npm run login root.post myuser #Login as "root" user, save auth as "myuser"
+npm run use message/create.post myuser #POST message/create.post as "myuser"
 ``` 
 
 ### Debugging
@@ -70,36 +71,13 @@ src/database => Database entities (tables)
 ```
 You will mostly interact with `src/app` and `src/database`.
 
-## Up
-If you haven't already run the following commands on your project:
-```bash
-cd projdir #Or open the command console in VS Code
-npm run up Message
-npm run up MessageCategory
-```
-
-This should generate two new folders under the `src/routes/authenticated` folders:
-```
-message/
-        message.controller.ts
-        message.service.ts
-        message.input.ts
-        category/
-                  message.category.controller.ts
-                  message.category.service.ts
-                  message.category.input.ts
-```
-
-## How does it work?
+## Using Up
 ### Create Tables
-As a developer you will need to create new database tables.
-Up provides a way to do this:
+To create the *MessageCategory* table for the first time (this step was done for you):
 ```
-npm run up -e MessageCategory
+npm run up --create MessageCategory
 ```
-This creates a new file called `message.category.entity.ts` inside the `src/database/app/` directory. The file will contain a single class which is the TypeORM entity for the table:
-
-*If you are unfamiliar with TypeORM then check out the documentation here.* You can now hack this class, adding columns, indexes to your heart's content.
+This creates a new file called `message.category.entity.ts` inside the `src/database/app/` directory. The file will contain a single class which is the [TypeORM](https://github.com/typeorm/typeorm) entity for the table. You can now hack this class, adding columns, indexes to your heart's content:
 ```ts
 @Entity()
 export class MessageCategory extends GenericEntity {
@@ -118,19 +96,27 @@ export class MessageCategory extends GenericEntity {
 ### Create APIs
 You have customized the entity and now want to generate an API:
 ```bash
+cd projdir #Or open the command console in VS Code
+npm run up Message
 npm run up MessageCategory
 ```
 
-*up* creates:
-* message.category.controller.ts
-* message.category.service.ts
-* message.category.input.ts
-in the `/src/routes/authenticated/message/category` folder of your project.
+This should generate two new folders under the `src/routes/authenticated` folders:
+```
+message/
+        message.controller.ts
+        message.service.ts
+        message.input.ts
+        category/
+                  message.category.controller.ts
+                  message.category.service.ts
+                  message.category.input.ts
+```
 
-## Controller.ts
-# Controller Definition
-Lets take look at the code which is generated...
 
+# controller.ts
+## Controller Definition
+`src/app/routes/authenticated/message/category/message.controller.ts`:
 ```ts
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
@@ -149,20 +135,23 @@ export class MessageCategoryController extends GenericGetController<
     super(messageCategoryService);
   }
 ```
-*up* creates the controller class for us. The controller class is called `MessageCategoryController` and it extends a base class `GenericGetController` which we'll talk about later.
-The class definition has a decorator `@AuthController()`. Lets have a look at the definition inside `/src/core/auth/auth.class.ts`
+*up* creates the controller class called `MessageCategoryController`. It extends super class `GenericGetController` (which we'll talk about later).
+
+The decorator `@AuthController('message/controller')` sets the controller route to `http://localhost:3000/authenticated/message/category`.
+
+### @AuthController()
+
+`src/core/auth/auth.class.ts`:
 ```ts
 export const AuthPrefix = 'authenticated';
 export const AuthController = (prefix?: string) =>
   Controller(`${AuthPrefix}/${prefix}`);
 ```
-`AuthController` calls Nest's `@Controller` decorator factory but just prepends whatever route you supply with `authenticated/`
+`@AuthController()` is just an abstraction of Nest's `@Controller()` decorator
 
-This means that to invoke a method on the controller you must use:
-`http://localhost:3000/authenticated/message/category`
 
-# POST
-*up* generates a handler for Post requests.
+## POST
+`src/app/routes/authenticated/message/category/message.controller.ts`:
 ```ts
   /**
    * Post() - MessageCategory -> creates new messageCategory(s)
@@ -196,6 +185,8 @@ This means that to invoke a method on the controller you must use:
     return { result: entities.map(v => v.id) };
   }
 ```
+When a *POST* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Post()` function reads the `input.entries` array and converts them to an array of TypeORM entities of type `MessageCategory`. It then saves these using the `messageCategoryRepository` service class so that the new data is created in the database.
+
 A few features to point out:
 * The fact that the method is called "Post" means nothing. The `@Post()` decorator tells Nest that this is the Post handler.
 * `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.post` or `root`
@@ -204,9 +195,9 @@ A few features to point out:
 * Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
 * The return value of the handler is `Promise<PostOutput>` which is defined in `./message.category.input.ts`
 
-The job of the *Post* handler is to create new data. It takes an input of type `PostInput` which has a very similar signature the the `MessageCategory` entity.
+The job of the *Post* handler is to create new data. It takes an input of `PostInput` which contains an array of `PostInputMessageCategory`. This class resembles `MessageCategory`:
 
-### message.category.entity.ts
+`src/database/app/message.category.entity.ts`
 ```ts
 @Entity()
 export class MessageCategory extends GenericEntity {
@@ -224,18 +215,9 @@ export class MessageCategory extends GenericEntity {
   messages: Message[];
 }
 ```
-### message.category.input.ts
+
+`src/app/routes/message/category/message.category.input.ts`
 ```ts
-//-----------Post----------\\
-
-//Input
-export class PostInput {
-  @ValidateNested()
-  @Type(() => PostInputMessageCategory)
-  @IsArray()
-  entries: PostInputMessageCategory[];
-}
-
 export class PostInputMessageCategory {
   @IsString() name: string;
 
@@ -247,8 +229,8 @@ export class PostInputMessageCategory {
   messages: PostRelation[];
 }
 ```
-`PostInput` accepts an array of `entries`, which are of the type `PostInputMessageCategory`.
-
+## Patch
+`src/app/routes/authenticated/message/category/message.controller.ts`:
 ```ts
 
   /**
@@ -301,7 +283,56 @@ export class PostInputMessageCategory {
     //Return result
     return { result: toSave.map(v => v.id) };
   }
+```
+When a *PATCH* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Patch()` function reads the `input.entries` array and fetches the target rows from the database. It reads each entry and if a field is not undefined, it applies an update to the entity. It then saves all the entities using the `messageCategoryRepository` service class.
 
+A few features to point out:
+* The fact that the method is called "Patch" means nothing. The `@Patch()` decorator tells Nest that this is the Patch handler.
+* `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.patch` or `root`
+* `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `PatchInput` typescript class.
+* `PatchInput` is defined in `./message.category.input.ts`
+* Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
+* The return value of the handler is `Promise<PatchOutput>` which is defined in `./message.category.input.ts`
+
+The job of the *Patch* handler is to update existing data. It takes an input of `PatchInput` which contains an array of `PatchInputMessageCategory`. This class resembles `MessageCategory`:
+
+`src/database/app/message.category.entity.ts`
+```ts
+@Entity()
+export class MessageCategory extends GenericEntity {
+  @Index({ unique: true })
+  @Column({ length: 200 })
+  name: string;
+
+  //-------------------------------------
+  //-------------Relationships-----------
+  //-------------------------------------
+
+  //Message
+  @ManyToMany(type => Message, message => message.categories)
+  @JoinTable()
+  messages: Message[];
+}
+```
+
+`src/app/routes/message/category/message.category.input.ts`
+```ts
+export class PostInputMessageCategory {
+  @IsString() name: string;
+
+  //---------Relationships--------\\
+  @ValidateNested()
+  @Type(() => PostRelation)
+  @IsArray()
+  @IsOptional()
+  messages: PostRelation[];
+}
+```
+
+
+## Delete
+`src/app/routes/authenticated/message/category/message.controller.ts`:
+```ts
   /**
    * Delete() - MessageCategory -> deletes messageCategory(s)
    * @param input
@@ -332,32 +363,45 @@ export class PostInputMessageCategory {
 }
 
 ```
+When a *DELETE* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Delete()` function reads the `input.entries` array and fetches the target rows from the database. It reads each entry and if a field is not undefined, it applies an update to the entity. It then saves all the entities using the `messageCategoryRepository` service class.
+
+A few features to point out:
+* The fact that the method is called "Delete" means nothing. The `@Delete()` decorator tells Nest that this is the Delete handler.
+* `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.delete` or `root`
+* `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `DeleteInput` typescript class.
+* `DeleteInput` is defined in `./message.category.input.ts`
+* Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
+* The return value of the handler is `Promise<DeleteOutput>` which is defined in `./message.category.input.ts`
+
+The job of the *Delete* handler is to update existing data. It takes an input of `DeleteInput` which contains an `number[]` of ids to delete.
 
 
-### Get/Read
-Although Crest aims to avoid code generalization, the only exception is `Get` to faciliate syncing and pagination of the data set. (*If the community wants to move this out of generic land, I am not opposed to this*)
 
-Crest implements an opinionated syncing pattern with two phases:
+## Get
+When a *GET* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Get()` function passes control to its super class `GenericGetController` which handles 2 phase syncing protocol. The data returned from this function is sent to the output.
 
-#### Phase 1
+Crest implements an opinionated syncing protocol with two phases:
+
+### Phase 1
 1. Client wants the list of message categories.
 2. Client calls `http://localhost:3000/authenticated/message/category` with `input.sync.mode == List`
-3. **Server** returns data in the format:
+3. **Server** returns the result set BUT all items are hashed by their `updatedAt` timestamp:
 ```json
 {
   "1": {"hash": 2349034334, "id":1},
   "3": {"hash": 5645645445, "id":3},
 }
 ```
-the data contains object signatures in the result set.
-4. Client iterates through the returned object signatures:
+4. Client iterates through the returned hashes:
   1. Do I have a MessageCategory of id 1?
-  2. Does it have the same hash.
-If the answer to any of these is 'no', then this object in the result set should be downloaded.
+  2. Does it have the same hash?
+If the answer to any of these is 'no', then mark this item for full download.
 
-#### Phase 2
-1. Client wants to download the MessageCategories it does not have / need updating
-2. Client calls `http://localhost:3000/authenticated/message/category` with `input.sync.mode == Data`
+### Phase 2
+1. Client wants to download any `MessageCategory`s that were marked in *Phase 1*
+2. Client calls `http://localhost:3000/authenticated/message/category` with 
+  1. `input.sync.mode == Data`
+  2. `input.sync.ids = [...1,3] //marked ids`
 3. **Server** returns data in the format:
 ```json
 {
@@ -366,10 +410,10 @@ If the answer to any of these is 'no', then this object in the result set should
 }
 ```
 4. Client downloads data
-5. Client updates its internal cache
-6. Client uses the phase 1 server response to build the results set and pass it to whatever layer requires it.
+5. Client updates its *Object Cache*
+6. Client assembles the ordered result set from the information in *Phase 1* AND its *Object Cache*
 
-#### How is this implemented in code?
+### How is this implemented?
 The `Get()` method immediately passes control to its super class (`GenericGetController`) via the method `handleGet()`.
 ```ts
   async Get(
@@ -429,27 +473,3 @@ protected async handleList(input: GenericGetInput): Promise<SyncHash> {
   }
 
 ```
-
-
-### message.service
-The route controller's job is to be a bridge between the API layer and the application services. Application services are exposed to the route handler in two ways:
-
-1. TypeORM Repositiory Object: `messageRepository:Repository<Message>`
-2. Service Class: `messageService:MessageService //extends GenericEntityService`
-
-The TypeORM definitions are located in the `database` module of the Crest application and we will cover them later. However the service class should be defined in the route folder. This corresponds to the file `message.input`.
-
-### message.controller.spec
-Finally the file `message.controller.spec.ts` contains unit tests for the route controller.
-
-## Route Operations
-TODO: FINISH THIS
-Authentication, Privileges
-Get, Post, Patch, Delete
-
-# Common Development Tasks
-## Add New Table
-New Entity,
-New Route
-
-## CQRS vs CRUD

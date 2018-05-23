@@ -11,6 +11,7 @@ import {
   toUpperTitleCase,
   replaceByObject,
   toPlural,
+  dotCase,
 } from './util';
 import { buildImport } from './import.builder';
 
@@ -21,6 +22,7 @@ export async function buildController(controllerPath: string, entity: Entity) {
   );
   let controller = replaceByObject(controllerTemplate, {
     '${entity.upper}': entity.upper,
+    '${entity.dot}': dotCase(entity.upper),
     '${entity.lower}': entity.lower,
     '${entity.lowerPlural}': toPlural(entity.lower),
     '${controllerPath}': controllerPath,

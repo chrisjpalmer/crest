@@ -2,6 +2,7 @@
 import { Get, BadRequestException } from '@nestjs/common';
 import { IsEnum, IsArray } from 'class-validator';
 import { transformAndValidate } from 'class-transformer-validator';
+import { IndexedData } from '..';
 
 export const SyncDataValidate = 'SyncDataValidate';
 
@@ -12,7 +13,7 @@ const farmhash = require('farmhash');
  * These are all response level objects
  */
 
-export class SyncRaw {
+export class SyncHash {
   id: number;
   hash: string;
 
@@ -35,9 +36,14 @@ export class SyncRaw {
   }
 }
 
-export type SyncHash = Map<number, SyncRaw>;
-export type SyncData<T> = Map<number, T>;
-export type SyncResponse<T> = SyncHash | SyncData<T>;
+export class SyncListOutput {
+  hashes: SyncHash[];
+  validation: string;
+}
+
+export class SyncDataOutput {
+  data: IndexedData;
+}
 
 /**
  * SyncMode, Sync
@@ -50,10 +56,9 @@ export enum SyncMode {
 }
 
 export class Sync {
-  @IsEnum(SyncMode) mode: SyncMode;
-
-  @IsArray({ groups: [SyncDataValidate] })
   ids: number[];
+  mode: SyncMode;
+  validation: string;
 }
 
 export class SyncInput {

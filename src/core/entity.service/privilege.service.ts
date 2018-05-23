@@ -15,7 +15,11 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
     super('privilege', 'name');
   }
 
-  protected selectQueryBuilder() {
+  protected createQuery() {
     return this.privilegeRepository.createQueryBuilder(this.entity);
+  }
+
+  protected applyStems(query: SelectQueryBuilder<Privilege>) {
+    return query;
   }
 }

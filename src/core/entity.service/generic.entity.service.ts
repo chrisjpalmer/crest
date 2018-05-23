@@ -2,7 +2,6 @@
 
 import { RepoAllType, IndexSet } from '../core/core.database.util';
 import { SelectQueryBuilder } from 'typeorm';
-import { SyncHash, SyncData, SyncRaw } from '../request/sync';
 import { GenericEntity } from 'database';
 
 /** A function which should contain conditional SELECT logic.
@@ -22,8 +21,8 @@ export class GenericEntityService<T extends GenericEntity> {
   /**
    * Setup entity service and it will create common select functionality for you
    * Remember you must override the selectQueryBuilder function
-   * @param entity the lowercase name of the entity e.g. 'privilege'
-   * @param nameColumn the unique string column that is associated with each row of the entity e.g. 'name' OR 'username'
+   * @param entity the lowercase name of the entity e.g. 'privilege', this is initialized through a call to super()
+   * @param nameColumn the unique string column that is associated with each row of the entity e.g. 'name' OR 'username', this is initiailzed through a call to super()
    */
   constructor(protected entity: string, protected nameColumn?: string) {}
   async existsById(id: number): Promise<boolean> {
@@ -35,7 +34,7 @@ export class GenericEntityService<T extends GenericEntity> {
   }
 
   async findById(id: number): Promise<T> {
-    return this.selectQueryBuilder()
+    return this.applyStems(this.createQueryBuilder())
       .whereInIds([id])
       .getOne();
   }
@@ -44,7 +43,7 @@ export class GenericEntityService<T extends GenericEntity> {
     if (!this.nameColumn) {
       throw 'finding by name does not work if a unique index does not exist on the table';
     }
-    return this.selectQueryBuilder()
+    return this.applyStems(this.createQueryBuilder())
       .where(`${this.entity}.${this.nameColumn} = :name`, { name })
       .getOne();
   }
@@ -60,59 +59,81 @@ export class GenericEntityService<T extends GenericEntity> {
     page?: number,
     pageSize?: number,
   ): Promise<Map<number, T>> {
-    let finalQuery = this.queryBuild();
+    let query = this.applyStems(this.createQueryBuilder());
+    query = this.applyCondition(query, condition);
 
-    return IndexSet(await finalQuery.getMany(), v => v.id);
-  }
-
-  async findSyncHash(
-    condition?: number[] | number | SelectModifier<T>,
-    page?: number,
-    pageSize?: number,
-  ): Promise<SyncHash> {
-    let finalQuery = this.queryBuild();
-
-    let syncRaws = (await finalQuery.getMany()).map(
-      v => new SyncRaw(v.id, v.updatedAt),
-    );
-    return <SyncHash>IndexSet(syncRaws, v => v.id);
-  }
-
-  /** TODO: implement a thin AND fat query type where we can just get, user.id AND user.updatedAt */
-  private queryBuild(
-    condition?: number[] | number | SelectModifier<T>,
-    page?: number,
-    pageSize?: number,
-  ) {
-    let query = this.selectQueryBuilder();
-
-    //Apply CONDITIONS - through Where
-    let finalQuery: SelectQueryBuilder<T> = null;
-    if (typeof condition === 'number') {
-      finalQuery = query.whereInIds([condition]);
-    } else if (typeof condition === 'object') {
-      finalQuery = query.whereInIds(condition);
-    } else if (typeof condition === 'function') {
-      finalQuery = condition(finalQuery);
-    } else {
-      //undefined or null - get all data
-      finalQuery = query;
+    if (!!page) {
+      query = this.applyPagination(query, page, pageSize);
     }
 
-    //Apply PAGINIATION - through skip and take
-    if (!!page && !!pageSize) {
-      finalQuery = finalQuery.skip(page * pageSize).take(pageSize);
-    }
-    return finalQuery;
+    return IndexSet(await query.getMany(), v => v.id);
   }
-
-  //fill is not defined BUT will be defined by the superclass
 
   /**
-   * selectQueryBuilder - override this and return the generic select statement that will be used
-   * for all select operations within EntityService
+   * createQueryBuilder - abstracts the reposistory.createQueryBuilder method and
+   * should use the this.entity property to standardize the table alias for future queries.
+   * SHOULD BE OVERIDDEN BY SUB CLASS.
    */
-  protected selectQueryBuilder(): SelectQueryBuilder<T> {
+  createQueryBuilder(): SelectQueryBuilder<T> {
+    return null;
+  }
+
+  /**
+   * applyCondition - a convenience method for applying conditions to the query
+   * @param query the query to manipulate
+   * @param condition an array of ids, a single id OR a SelectModifier - a function which manipulates the query and returns the resulting query
+   */
+  applyCondition(
+    query: SelectQueryBuilder<T>,
+    condition: number[] | number | SelectModifier<T>,
+  ) {
+    if (typeof condition === 'number') {
+      query = query.whereInIds([condition]);
+    } else if (typeof condition === 'object') {
+      query = query.whereInIds(condition);
+    } else if (typeof condition === 'function') {
+      query = condition(query);
+    } else {
+      throw 'condition argument was null or undefined to applyCondition()';
+    }
+
+    return query;
+  }
+
+  /**
+   *
+   * @param query
+   * @param page
+   * @param pageSize
+   */
+  applyPagination(
+    query: SelectQueryBuilder<T>,
+    page: number,
+    pageSize: number,
+  ) {
+    if (!page || !pageSize) {
+      throw 'pagination parameters were not defined properly';
+    }
+    query = query.skip(page * pageSize).take(pageSize);
+    return query;
+  }
+
+  /**
+   * applyStems - inner joins related tables BUT only selects stem columns.
+   * SHOULD BE OVERIDDEN BY SUB CLASS.
+   *
+   * TypeORM can inner join multiple tables and place the related tables as subobjects of the main entity in the query.
+   *
+   * Typically you would select all the columns of all the tables. However this results in a very large result set.
+   * If 10 rows in A are each related to 10 rows in B, 100 rows of data are sent back. If A has 10 columns and B has 10 columns, the payload is 100 x (10 + 10) = 2000.
+   * However if we only select the id column of B (refered to as a Stem row), then the payload is < 100 x 11 = 1100.
+   *
+   * How can we then retrieve the full row of B? By making a seperate query to B and then 'Stitching' result sets together.
+   *
+   * Its preferable to leave 'Stitching' to the client application of this web server, to even reduce the HTTP results going back to the client.
+   * @param query
+   */
+  applyStems(query: SelectQueryBuilder<T>): SelectQueryBuilder<T> {
     return null;
   }
 }
