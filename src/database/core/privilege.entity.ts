@@ -29,8 +29,6 @@ import { GenericEntity } from './generic.entity';
  */
 @Entity()
 export class Privilege extends GenericEntity {
-  @PrimaryGeneratedColumn() id: number;
-
   @Index({ unique: true })
   @Column({ length: 200 })
   name: string;

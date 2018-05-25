@@ -53,7 +53,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
    */
   @Get()
   @PrivilegeHas(`${entity.dot}.get`)
-  async Get(@Body() input: GetInput): Promise<SyncListOutput | SyncDataOutput> {
+  async Get(@Body() input: GetInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
     //This class inherits GenericController. We call handleGet() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
     return await this.handleGet(input);

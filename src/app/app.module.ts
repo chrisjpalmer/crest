@@ -32,7 +32,7 @@ import { UserController } from './routes/authenticated/user/user.controller';
 
     // /autheticated/user
     UserController,
-],
+  ],
   components: [],
 })
 export class AppModule implements NestModule {

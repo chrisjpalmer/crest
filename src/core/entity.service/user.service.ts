@@ -1,21 +1,27 @@
+/** BOILERPLATE - don't touch unless you are brave */
 /**
  * NEVER import like this - import { MyAwesomeFunction, MyAwesomeClass } from ".."; OR import { MyAwesomeFunction, MyAwesomeClass } from ".";
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
 import { Component, BadRequestException } from '@nestjs/common';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import { User, UserToken } from 'database';
 import {
-  User,
-  UserToken,
+  IndexSet,
+  RepoAllType,
+  StitchSet,
+  InjectRepo,
+  GenericEntityService,
+} from 'core';
+import {
+  Role,
+  Session,
   UserPassword,
   UserPasswordToken,
-  Role,
   Message,
+  RequestLog,
 } from 'database';
-import { IndexSet, RepoAllType, StitchSet } from '../core/core.database.util';
-import { InjectRepo } from '../core/core.database.provider';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { GenericEntityService } from './generic.entity.service';
 import { CryptoService } from '../auth/crypto.service';
 
 @Component()
@@ -28,23 +34,12 @@ export class UserService extends GenericEntityService<User> {
   ) {
     super('user', 'username');
   }
-  fillWithRoles(
-    users: User | User[] | Map<number, User>,
-    indexedRoles: Map<number, Role>,
-  ) {
-    StitchSet(users, indexedRoles, u => [u.role.id], (u, r) => (u.role = r[0]));
-  }
 
-  fillWithMessages(
-    users: User | User[] | Map<number, User>,
-    indexedMessages: Map<number, Message>,
+  fillWithRole(
+    user: User | User[] | Map<number, User>,
+    indexedRole: Map<number, Role>,
   ) {
-    StitchSet(
-      users,
-      indexedMessages,
-      u => u.messages.map(v => v.id),
-      (u, m) => (u.messages = m),
-    );
+    StitchSet(user, indexedRole, p => [p.role.id], (p, c) => (p.role = c[0]));
   }
 
   /**
@@ -129,15 +124,11 @@ export class UserService extends GenericEntityService<User> {
     return user.id;
   }
 
-  protected createQuery() {
+  createQueryBuilder() {
     return this.userRepository.createQueryBuilder(this.entity);
   }
 
-  protected applyStems(query: SelectQueryBuilder<Role>) {
-    return query
-      .leftJoin('user.role', 'role')
-      .addSelect('role.id')
-      .leftJoin('user.messages', 'message')
-      .addSelect('message.id');
+  applyStems(query: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
+    return query.leftJoin(this.entity + '.role', 'role').addSelect('role.id');
   }
 }

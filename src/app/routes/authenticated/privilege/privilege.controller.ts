@@ -27,36 +27,32 @@ import {
   PatchOutput,
   DeleteInput,
   DeleteOutput,
-} from './user.input';
-import { User, UserToken } from 'database';
-import { UserService } from 'core';
-import { Role, Session, UserPassword, Message, RequestLog } from 'database';
-
-class UserPwdWrapper {
-  user: User;
-  password: string;
-}
+} from './privilege.input';
+import { Privilege, PrivilegeToken } from 'database';
+import { PrivilegeService } from 'core';
+import { Role } from 'database';
 
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('user') /* http://localhost:3000/authenticated/user */
-export class UserController extends GenericController<User> {
+@AuthController('privilege') /* http://localhost:3000/authenticated/privilege */
+export class PrivilegeController extends GenericController<Privilege> {
   constructor(
     configService: ConfigService,
-    @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
-    private readonly userService: UserService,
+    @InjectRepo(PrivilegeToken)
+    private readonly privilegeRepository: Repository<Privilege>,
+    private readonly privilegeService: PrivilegeService,
   ) {
     super(configService);
   }
 
   /**
-   * Get() - User -> queries the user table
+   * Get() - Privilege -> queries the privilege table
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Get()
-  @PrivilegeHas(`user.get`)
+  @PrivilegeHas(`privilege.get`)
   async Get(
     @Body() input: GetInput,
     @Request() req: CoreRequest,
@@ -67,11 +63,13 @@ export class UserController extends GenericController<User> {
   }
 
   /**
-   * handleList - User -> return array of hashes for the result set.
+   * handleList - Privilege -> return array of hashes for the result set.
    * @param input parameters for the request
    */
   async handleList(input: GetInput) {
-    let query = this.userService.createQueryBuilder().select('id', 'updateAt');
+    let query = this.privilegeService
+      .createQueryBuilder()
+      .select('id', 'updateAt');
 
     /**
      * Apply Conditions to the query
@@ -82,11 +80,11 @@ export class UserController extends GenericController<User> {
         break;
       case GenericGetMode.Discrete:
         //GenericGetMode.Discrete -> get only specific ids
-        query = this.userService.applyCondition(query, input.ids);
+        query = this.privilegeService.applyCondition(query, input.ids);
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
-        query = this.userService.applyCondition(query, s => {
+        query = this.privilegeService.applyCondition(query, s => {
           return s.where(input.parameterSearch);
         });
         break;
@@ -98,7 +96,7 @@ export class UserController extends GenericController<User> {
      * unless pagination parameters are provided.
      */
     if (!!input.page) {
-      query = this.userService.applyPagination(
+      query = this.privilegeService.applyPagination(
         query,
         input.page,
         input.pageSize,
@@ -117,162 +115,119 @@ export class UserController extends GenericController<User> {
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids: number[]): Promise<User[]> {
-    let query: SelectQueryBuilder<User>;
-    query = this.userService.createQueryBuilder();
+  async handleData(ids: number[]): Promise<Privilege[]> {
+    let query: SelectQueryBuilder<Privilege>;
+    query = this.privilegeService.createQueryBuilder();
     //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
-    query = this.userService.applyStems(query);
+    query = this.privilegeService.applyStems(query);
     return await query.getMany();
   }
 
   /**
-   * Post() - User -> creates new user(s)
+   * Post() - Privilege -> creates new privilege(s)
    * 1) convert - convert entries to entities that contain all the data they require
-   * 2) convert to an object which contains the user and the user password, in prep to call the service create method
-   * 3) create - create all users
+   * 2) save - save the entities in the database.
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Post()
-  @PrivilegeHas(`user.post`)
+  @PrivilegeHas(`privilege.post`)
   async Post(
     @Body() input: PostInput,
     @Request() req: CoreRequest,
   ): Promise<PostOutput> {
-    //Unlike traditional table logic, we use the userService object to manipulate
-    //user data. This is because there is more under the hood which is required
-
-    //1) Prepare to create new users by converting entries => entities
+    //1) Prepare to create new rows in specified table by converting entries => entities
     let entities = input.entries.map(v => {
-      let o: User = this.userRepository.create();
+      let o: Privilege = this.privilegeRepository.create();
 
-      o.username = v.username;
+      o.name = v.name;
 
-      o.firstName = v.firstName;
-
-      o.lastName = v.lastName;
-
-      o.emailAddress = v.emailAddress;
-
-      if (!!v.role) {
-        let c = new Role();
-        c.id = v.role.id;
-        o.role = c;
+      if (!!v.roles) {
+        o.roles = v.roles.map(dc => <Role>{ id: dc.id });
       }
+
       return o;
     });
 
-    //2) Convert to an object which contains the user and the user password, in prep to call the service create method
-    let wrapperEntities = entities.map((v, i) => {
-      let uc: UserPwdWrapper = {
-        user: v,
-        password: input.entries[i].password,
-      };
-      return uc;
-    });
-
-    //3) Create all users
-    let result = await promiseArray(
-      wrapperEntities.map(u => this.userService.create(u.user, u.password)),
-    );
+    //2) Save all rows
+    await this.privilegeRepository.save(entities);
 
     //Return result
-    return { result: result };
+    return { result: entities.map(v => v.id) };
   }
 
   /**
-   * Patch() - User -> updates user(s)
-   * 1) convert - convert entries to entities that contain all the data they require
-   * 2) convert to an object which contains the user and the user password, in prep to call the service update method
-   * 3) update - update all users
+   * Patch() - Privilege -> updates privilege(s)
+   * 1) convert - convert entries to entities with only their id, for phase 2
+   * 2) find - find the entites
+   * 3) apply - apply the changes from the entries to the entites
+   * 4) save - save the entities
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Patch()
-  @PrivilegeHas(`user.patch`)
+  @PrivilegeHas(`privilege.patch`)
   async Patch(
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
   ): Promise<PatchOutput> {
-    //Unlike traditional table logic, we use the userService object to manipulate
-    //user data. This is because there is more under the hood which is required
+    //1) Prepare to find all rows in specified table by converting entries => entities
+    let toFind = input.entries.map(v => <Privilege>{ id: v.id });
 
-    //1) convert entries to entities
-    let toUpdate = input.entries.map((v, i) => {
+    //2) For each entry, find the row it pertains to.
+    let toApply: Privilege[] = await promiseArray(
+      toFind.map(v => this.privilegeService.findById(v.id)), //We use privilege service so that we can retrieve the subobject structure...
+    );
+
+    //3) For each entry, apply the update from the input parameters
+    let toSave = toApply.map((v, i) => {
       //duplicate the input value v to o. o stands for output
-      let o: User = {};
+      let o = this.privilegeRepository.create(v);
 
       //Apply update to the property
-      if (!!v.username) {
-        o.username = v.username;
-      }
-
-      //Apply update to the property
-      if (!!v.firstName) {
-        o.firstName = v.firstName;
-      }
-
-      //Apply update to the property
-      if (!!v.lastName) {
-        o.lastName = v.lastName;
-      }
-
-      //Apply update to the property
-      if (!!v.emailAddress) {
-        o.emailAddress = v.emailAddress;
+      if (!!input.entries[i].name) {
+        o.name = input.entries[i].name;
       }
 
       //Apply update to relationship
-      if (!!v.role) {
-        let c = new Role();
-        c.id = v.role.id;
-        o.role = c;
+      if (!!input.entries[i].roles) {
+        o.roles = PatchRelationApply(v.id, v.roles, input.entries[i].roles);
       }
 
       return o;
     });
 
-    //2) convert to an object which contains the user and the user password
-    let wrapperEntities: UserPwdWrapper[] = toUpdate.map((v, i) => {
-      return {
-        user: v,
-        password: input.entries[i].password,
-      };
-    });
-
-    //3) Update all users
-    let result = await promiseArray(
-      wrapperEntities.map(u => this.userService.update(u.user, u.password)),
-    );
+    //4) Save all entries at once - all effects from above routine are saved in this line
+    await this.privilegeRepository.save(toSave);
 
     //Return result
-    return { result: result };
+    return { result: toSave.map(v => v.id) };
   }
 
   /**
-   * Delete() - User -> deletes user(s)
+   * Delete() - Privilege -> deletes privilege(s)
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Delete()
-  @PrivilegeHas(`user.delete`)
+  @PrivilegeHas(`privilege.delete`)
   async Delete(
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
     //Prepare to find all rows in specified table by converting entries => entities
-    let toFind = input.entries.map(v => <User>{ id: v.id });
+    let toFind = input.entries.map(v => <Privilege>{ id: v.id });
 
     //For each entry, find the row it pertains to.
-    let toDelete: User[] = await promiseArray(
-      toFind.map(v => this.userRepository.findOne(v)),
+    let toDelete: Privilege[] = await promiseArray(
+      toFind.map(v => this.privilegeRepository.findOne(v)),
     );
 
     //All entries found... convert to an easier format for deletion
     let deleteIDs = toDelete.map(v => v.id);
 
     //Delete all entries at once
-    await this.userRepository.delete(deleteIDs);
+    await this.privilegeRepository.delete(deleteIDs);
 
     //Return result
     return { result: deleteIDs };

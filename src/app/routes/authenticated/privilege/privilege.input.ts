@@ -35,13 +35,7 @@ export class GetParameterSearch {
   id: number;
   updatedAt: Date;
   createdAt: Date;
-  username: string;
-
-  firstName: string;
-
-  lastName: string;
-
-  emailAddress: string;
+  name: string;
 }
 
 //-----------Post----------\\
@@ -49,28 +43,20 @@ export class GetParameterSearch {
 //Input
 export class PostInput {
   @ValidateNested()
-  @Type(() => PostInputUser)
+  @Type(() => PostInputPrivilege)
   @IsArray()
-  entries: PostInputUser[];
+  entries: PostInputPrivilege[];
 }
 
-export class PostInputUser {
-  @IsString() username: string;
-
-  @IsString() password: string;
-
-  @IsString() firstName: string;
-
-  @IsString() lastName: string;
-
-  @IsString() emailAddress: string;
+export class PostInputPrivilege {
+  @IsString() name: string;
 
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
   @IsArray()
   @IsOptional()
-  role: PostRelation;
+  roles: PostRelation[];
 }
 
 //Output
@@ -83,40 +69,24 @@ export class PostOutput {
 //Input
 export class PatchInput {
   @ValidateNested()
-  @Type(() => PatchInputUser)
+  @Type(() => PatchInputPrivilege)
   @IsArray()
-  entries: PatchInputUser[];
+  entries: PatchInputPrivilege[];
 }
 
-export class PatchInputUser {
+export class PatchInputPrivilege {
   @IsNumber() id: number;
 
   @IsString()
   @IsOptional()
-  username: string;
-
-  @IsString()
-  @IsOptional()
-  password: string;
-
-  @IsString()
-  @IsOptional()
-  firstName: string;
-
-  @IsString()
-  @IsOptional()
-  lastName: string;
-
-  @IsString()
-  @IsOptional()
-  emailAddress: string;
+  name: string;
 
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
   @IsArray()
   @IsOptional()
-  role: PatchRelation;
+  roles: PatchRelation[];
 }
 
 //Output
@@ -129,12 +99,12 @@ export class PatchOutput {
 //Input
 export class DeleteInput {
   @ValidateNested()
-  @Type(() => DeleteInputUser)
+  @Type(() => DeleteInputPrivilege)
   @IsArray()
-  entries: DeleteInputUser[];
+  entries: DeleteInputPrivilege[];
 }
 
-export class DeleteInputUser {
+export class DeleteInputPrivilege {
   @IsNumber() id: number;
 }
 

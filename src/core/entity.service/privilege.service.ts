@@ -1,10 +1,20 @@
 /** BOILERPLATE - don't touch unless you are brave */
-import { Component } from '@nestjs/common';
-import { Privilege, PrivilegeToken } from 'database';
-import { IndexSet, RepoAllType } from '../core/core.database.util';
-import { InjectRepo } from '../core/core.database.provider';
+/**
+ * NEVER import like this - import { MyAwesomeFunction, MyAwesomeClass } from ".."; OR import { MyAwesomeFunction, MyAwesomeClass } from ".";
+ * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
+ * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
+ */
+import { Component, BadRequestException } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { GenericEntityService } from './generic.entity.service';
+import { Privilege, PrivilegeToken } from 'database';
+import {
+  IndexSet,
+  RepoAllType,
+  StitchSet,
+  InjectRepo,
+  GenericEntityService,
+} from 'core';
+import { Role } from 'database';
 
 @Component()
 export class PrivilegeService extends GenericEntityService<Privilege> {
@@ -15,11 +25,25 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
     super('privilege', 'name');
   }
 
-  protected createQuery() {
+  fillWithRoles(
+    privilege: Privilege | Privilege[] | Map<number, Privilege>,
+    indexedRoles: Map<number, Role>,
+  ) {
+    StitchSet(
+      privilege,
+      indexedRoles,
+      p => p.roles.map(c => c.id),
+      (p, c) => (p.roles = c),
+    );
+  }
+
+  createQueryBuilder() {
     return this.privilegeRepository.createQueryBuilder(this.entity);
   }
 
-  protected applyStems(query: SelectQueryBuilder<Privilege>) {
-    return query;
+  applyStems(
+    query: SelectQueryBuilder<Privilege>,
+  ): SelectQueryBuilder<Privilege> {
+    return query.leftJoin(this.entity + '.roles', 'role').addSelect('role.id');
   }
 }
