@@ -32,6 +32,9 @@ export class GetInput extends SyncInput {
 }
 
 export class GetParameterSearch {
+  id:number;
+  updatedAt:Date;
+  createdAt:Date;
   /// < entity.input.get.field.template >
 }
 

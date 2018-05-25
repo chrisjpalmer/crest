@@ -59,7 +59,7 @@ export function addToComponentsArray(
   let originalStatement = controllersConfig.getText();
   let comma = "";
 
-  if(originalStatement !== '[]') {
+  if(originalStatement.indexOf('[]') === -1) {
     comma = ","
   }
 

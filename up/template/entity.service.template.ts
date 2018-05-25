@@ -31,7 +31,7 @@ export class ${entity.upper}Service extends GenericEntityService<${entity.upper}
       .createQueryBuilder(this.entity);
   }
 
-  applyStems(query:SelectQueryBuilder<${entity.upper}>): SelectQueryBuilder<MessageCategory> {
+  applyStems(query:SelectQueryBuilder<${entity.upper}>): SelectQueryBuilder<${entity.upper}> {
     return query
     /// < entity.service.selectQueryBuilder.template >
   }

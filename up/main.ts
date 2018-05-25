@@ -23,7 +23,7 @@ async function main() {
   }
 
   //For testing purposes
-  let prefix = 'v2/';
+  let prefix = '';
 
   //EntityName is supplied in upper or lower camelcase
   let entityName = args[0];

@@ -17,8 +17,6 @@ import * as passport from 'passport';
 import { InitController } from './routes/init/init.controller';
 import { LoginController } from './routes/login/login.controller';
 import { UserController } from './routes/authenticated/user/user.controller';
-import { MessageCategoryController } from './routes/authenticated/message/category/message.category.controller';
-import { MessageCategoryService } from './routes/authenticated/message/category/message.category.service';
 
 @Module({
   imports: [
@@ -34,11 +32,8 @@ import { MessageCategoryService } from './routes/authenticated/message/category/
 
     // /autheticated/user
     UserController,
-
-    // /authenticated/message/category
-    MessageCategoryController,
-  ],
-  components: [, MessageCategoryService],
+],
+  components: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewaresConsumer): MiddlewaresConsumer | void {
