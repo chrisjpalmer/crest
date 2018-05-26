@@ -2,6 +2,7 @@ import { UpMode, Params } from "./util/util.class";
 import { RunFormatter } from "./util/util";
 import { createAPI } from "./api.builder/api.builder";
 import { createEntity } from "./entity.builder/entity.builder";
+import "./util/string.util";
 
 async function main() {
   let entityName:string = "";
@@ -13,7 +14,7 @@ async function main() {
     throw 'you must supply one argument - the entity name';
   }
   
-  if (args[0] === '--create' || args[0] === '-c') {
+  if (args[0] === 'create' || args[0] === 'c') {
     upMode = UpMode.CreateEntity;
 
     //Process second argument

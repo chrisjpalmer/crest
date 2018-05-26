@@ -13,7 +13,7 @@ export async function createEntity(params: Params) {
     let entity = replaceByObject(entityTemplate, {
         '${entity.upper}': entityUpper,
     });
-    await writeFilePromise(`${entityPath}/${entityDot}.input.ts`, entity);
+    await writeFilePromise(`${entityPath}/${entityDot}.entity.ts`, entity);
 
     //Append the entity to the index.ts file
     let sourceFile = await readFilePromise(
@@ -21,10 +21,10 @@ export async function createEntity(params: Params) {
     );
     
     //Add code to export the entity
-    sourceFile.replace('/// < import entity >', `import { ${entityUpper} } from './app/${entityDot}.entity';\n/// < import entity >`);
-    sourceFile.replace('/// < export entity >', `export * from './app/${entityDot}.entity';\n/// < export entity >`);
-    sourceFile.replace('/// < export entity.token >', `export const ${entityUpper}Token = '${entityUpper}';\n/// < export entity.token >`);
-    sourceFile.replace('/// < export entity.object >', `{ token: ${entityUpper}Token, type: ${entityUpper} },\n/// < export entity.object >`);
+    sourceFile = sourceFile.replace('/// < import entity >', `import { ${entityUpper} } from './app/${entityDot}.entity';\n/// < import entity >`);
+    sourceFile = sourceFile.replace('/// < export entity >', `export * from './app/${entityDot}.entity';\n/// < export entity >`);
+    sourceFile = sourceFile.replace('/// < export entity.token >', `export const ${entityUpper}Token = '${entityUpper}';\n/// < export entity.token >`);
+    sourceFile = sourceFile.replace('/// < export entity.object >', `{ token: ${entityUpper}Token, type: ${entityUpper} },\n/// < export entity.object >`);
 
-    await writeFilePromise(sourceFile, `src/database/index.ts`);
+    await writeFilePromise(`src/database/index.ts`, sourceFile);
 }

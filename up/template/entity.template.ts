@@ -10,6 +10,7 @@ import {
     ManyToOne,
     OneToMany,
     ManyToMany,
+    Index,
   } from 'typeorm';
   import { GenericEntity } from '../core/generic.entity';
   
