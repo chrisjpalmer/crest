@@ -5,22 +5,22 @@ import {
   ChildField,
   toFieldType,
   Entity,
-} from './entity.class';
+} from '../util/entity.class';
 import Project from 'ts-simple-ast';
 import {
   toUpperTitleCase,
   toLowerTitleCase,
   hasUniqueIndex,
   dotCase,
-} from './util';
+} from '../util/util';
 
 /**
  * Open a file which corresponds to the entity we want to generate code for.
  * Read the file and return a class which represents the entity.
- * If the entityName was faultCategory, buildEntityClass searches for the file src/database/app/fault.category.entity.ts
+ * If the entityName was faultCategory, readEntityClass searches for the file src/database/app/fault.category.entity.ts
  * @param entityName upper or lower camelcase name of the entity e.g. FaultCategory or faultCategory
  */
-export function buildEntityClass(entityName: string, entityFilename: string) {
+export function readEntityClass(entityName: string, entityFilename: string) {
   //Initialize the entity class
   let entity = new Entity();
   entity.lower = toLowerTitleCase(entityName);

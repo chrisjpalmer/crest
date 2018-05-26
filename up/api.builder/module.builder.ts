@@ -1,5 +1,5 @@
 import Project, { ObjectLiteralExpression } from 'ts-simple-ast';
-import { Entity } from './entity.class';
+import { Entity } from '../util/entity.class';
 
 export async function AddToModule(
   controllerPath: string,

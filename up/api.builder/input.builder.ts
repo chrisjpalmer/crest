@@ -4,7 +4,7 @@ import {
   ChildMode,
   ChildEntityMode,
   ChildField,
-} from './entity.class';
+} from '../util/entity.class';
 import {
   readFilePromise,
   templatePath,
@@ -12,7 +12,7 @@ import {
   replaceByObject,
   fieldTypeToString,
   fieldTypeToValidator,
-} from './util';
+} from '../util/util';
 
 export async function buildInput(controllerPath: string, entity: Entity) {
   //Open the service template

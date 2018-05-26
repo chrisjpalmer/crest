@@ -1,57 +1,45 @@
-import { buildEntityClass } from './entity.builder';
-import { buildController } from './controller.builder';
-import { buildInput } from './input.builder';
-import { buildService } from './service.builder';
-import {
-  writeFilePromise,
-  appRoutesPath,
-  dotCase,
-  makeDirectoryPromise,
-  mkdirRecursive,
-  RunFormatter,
-} from './util';
-import './string.util';
-import { AddToModule } from './module.builder';
-
-//TODO add support for the -e flag
-//TODO fix the privileges -> use dot case!
+import { UpMode, Params } from "./util/util.class";
+import { RunFormatter } from "./util/util";
+import { createAPI } from "./api.builder/api.builder";
+import { createEntity } from "./entity.builder/entity.builder";
 
 async function main() {
+  let entityName:string = "";
+  let upMode:UpMode = null;
+  
+  //Process first argument
   let args = process.argv.slice(2);
   if (!args[0] || args[0].length === 0) {
     throw 'you must supply one argument - the entity name';
   }
+  
+  if (args[0] === '--create' || args[0] === '-c') {
+    upMode = UpMode.CreateEntity;
 
-  //For testing purposes
-  let prefix = '';
+    //Process second argument
+    if (!args[1] || args[1].length === 0) {
+      throw 'you must supply one argument - the entity name';
+    }
+    entityName = args[1];
+  } else {
+    upMode = UpMode.CreateAPI;
+    entityName = args[0];
+  }
 
-  //EntityName is supplied in upper or lower camelcase
-  let entityName = args[0];
+  await perform({entityName:entityName}, upMode);
+}
 
-  //Get the entity class
-  let entityFilename = dotCase(entityName);
-  let controllerPath = prefix + entityFilename.replaceAll('.', '/');
-  let entity = buildEntityClass(entityName, entityFilename);
-
-  //Create the code...
-  let controllerCode = await buildController(controllerPath, entity);
-  let inputCode = await buildInput(controllerPath, entity);
-  let serviceCode = await buildService(controllerPath, entity);
-
-  //Save the code
-  let path = `${appRoutesPath}/authenticated/${controllerPath}`;
-  mkdirRecursive(path);
-
-  await writeFilePromise(
-    `${path}/${entityFilename}.controller.ts`,
-    controllerCode,
-  );
-  await writeFilePromise(`${path}/${entityFilename}.input.ts`, inputCode);
-  await writeFilePromise(`${path}/${entityFilename}.service.ts`, serviceCode);
-
-  AddToModule(controllerPath, entityFilename, entity);
-
+async function perform(params:Params, mode:UpMode) {
+  switch(mode) {
+    case UpMode.CreateAPI:
+      await createAPI(params);
+      break;
+    case UpMode.CreateEntity:
+      await createEntity(params);
+      break;
+  }
   RunFormatter();
 }
+
 
 main();

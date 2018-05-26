@@ -4,7 +4,7 @@ import {
   ChildMode,
   ChildEntityMode,
   ChildField,
-} from './entity.class';
+} from '../util/entity.class';
 import {
   readFilePromise,
   templatePath,
@@ -12,7 +12,7 @@ import {
   replaceByObject,
   toPlural,
   dotCase,
-} from './util';
+} from '../util/util';
 import { buildImport } from './import.builder';
 
 export async function buildController(controllerPath: string, entity: Entity) {

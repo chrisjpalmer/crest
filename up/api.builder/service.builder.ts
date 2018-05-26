@@ -3,13 +3,13 @@ import {
   ChildEntity,
   ChildMode,
   ChildEntityMode,
-} from './entity.class';
+} from '../util/entity.class';
 import {
   readFilePromise,
   templatePath,
   toUpperTitleCase,
   replaceByObject,
-} from './util';
+} from '../util/util';
 import { buildImport } from './import.builder';
 
 export async function buildService(controllerPath: string, entity: Entity) {

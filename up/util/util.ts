@@ -7,6 +7,7 @@ const shell = require('shelljs');
 
 export var templatePath: string = 'up/template';
 export var appRoutesPath: string = 'src/app/routes';
+export var entityPath: string = 'src/database/app';
 
 export function snakeCase(input: string): string {
   return snake(input);
