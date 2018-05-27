@@ -27,7 +27,7 @@ import {
   PatchOutput,
   DeleteInput,
   DeleteOutput,
-} from './role.input';
+} from './role.class';
 import { Role, RoleToken } from 'database';
 import { RoleService } from 'core';
 import { Privilege, User } from 'database';

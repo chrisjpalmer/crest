@@ -14,7 +14,7 @@ import { Type } from 'class-transformer';
 import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
 
 //------------------------------------------------
-//--------------------- INPUT --------------------
+//--------------------- CLASS --------------------
 //------------------------------------------------
 
 //-----------Get-----------\\
@@ -35,7 +35,7 @@ export class GetParameterSearch {
   id:number;
   updatedAt:Date;
   createdAt:Date;
-  /// < entity.input.get.field.template >
+  /// < entity.class.get.field.template >
 }
 
 //-----------Post----------\\
@@ -49,10 +49,10 @@ export class PostInput {
 }
 
 export class PostInput${entity.upper} {
-  /// < entity.input.post.field.template >
+  /// < entity.class.post.field.template >
 
   //---------Relationships--------\\
-  /// < entity.input.post.relation.template >
+  /// < entity.class.post.relation.template >
 }
 
 //Output
@@ -73,10 +73,10 @@ export class PatchInput {
 export class PatchInput${entity.upper} {
   @IsNumber() id: number;
 
-  /// < entity.input.patch.field.template >
+  /// < entity.class.patch.field.template >
 
   //---------Relationships--------\\
-  /// < entity.input.patch.relation.template >
+  /// < entity.class.patch.relation.template >
 }
 
 //Output

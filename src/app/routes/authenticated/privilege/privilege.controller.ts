@@ -27,7 +27,7 @@ import {
   PatchOutput,
   DeleteInput,
   DeleteOutput,
-} from './privilege.input';
+} from './privilege.class';
 import { Privilege, PrivilegeToken } from 'database';
 import { PrivilegeService } from 'core';
 import { Role } from 'database';

@@ -24,7 +24,7 @@ export class SyncJWT {
  *
  * Most get methods to a large dataset require a syncing protocol,
  * pagination, various methods of query etc. GenericController's handleGet method
- * accepts an input of type GenericGetInput which supports a protocol for doing this
+ * accepts an input of type SyncInput which supports a protocol for doing this
  */
 export class GenericController<T> {
   constructor(private configService: ConfigService) {}

@@ -27,7 +27,7 @@ import {
   PatchOutput,
   DeleteInput,
   DeleteOutput,
-} from './${entity.filename}.input';
+} from './${entity.filename}.class';
 import { ${entity.upper}, ${entity.upper}Token } from 'database';
 import { ${entity.upper}Service } from './${entity.filename}.service';
 /// < entity.imports.template >

@@ -14,7 +14,7 @@ import { Type } from 'class-transformer';
 import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
 
 //------------------------------------------------
-//--------------------- INPUT --------------------
+//--------------------- CLASS --------------------
 //------------------------------------------------
 
 //-----------Get-----------\\
@@ -36,8 +36,6 @@ export class GetParameterSearch {
   updatedAt: Date;
   createdAt: Date;
   name: string;
-
-  description: string;
 }
 
 //-----------Post----------\\
@@ -45,22 +43,20 @@ export class GetParameterSearch {
 //Input
 export class PostInput {
   @ValidateNested()
-  @Type(() => PostInputRole)
+  @Type(() => PostInputPrivilege)
   @IsArray()
-  entries: PostInputRole[];
+  entries: PostInputPrivilege[];
 }
 
-export class PostInputRole {
+export class PostInputPrivilege {
   @IsString() name: string;
-
-  @IsString() description: string;
 
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
   @IsArray()
   @IsOptional()
-  privileges: PostRelation[];
+  roles: PostRelation[];
 }
 
 //Output
@@ -73,28 +69,24 @@ export class PostOutput {
 //Input
 export class PatchInput {
   @ValidateNested()
-  @Type(() => PatchInputRole)
+  @Type(() => PatchInputPrivilege)
   @IsArray()
-  entries: PatchInputRole[];
+  entries: PatchInputPrivilege[];
 }
 
-export class PatchInputRole {
+export class PatchInputPrivilege {
   @IsNumber() id: number;
 
   @IsString()
   @IsOptional()
   name: string;
 
-  @IsString()
-  @IsOptional()
-  description: string;
-
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
   @IsArray()
   @IsOptional()
-  privileges: PatchRelation[];
+  roles: PatchRelation[];
 }
 
 //Output
@@ -107,12 +99,12 @@ export class PatchOutput {
 //Input
 export class DeleteInput {
   @ValidateNested()
-  @Type(() => DeleteInputRole)
+  @Type(() => DeleteInputPrivilege)
   @IsArray()
-  entries: DeleteInputRole[];
+  entries: DeleteInputPrivilege[];
 }
 
-export class DeleteInputRole {
+export class DeleteInputPrivilege {
   @IsNumber() id: number;
 }
 

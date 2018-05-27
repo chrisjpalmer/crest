@@ -107,11 +107,11 @@ This should generate two new folders under the `src/routes/authenticated` folder
 message/
         message.controller.ts
         message.service.ts
-        message.input.ts
+        message.class.ts
         category/
                   message.category.controller.ts
                   message.category.service.ts
-                  message.category.input.ts
+                  message.category.class.ts
 ```
 
 # Generated Service
@@ -316,7 +316,7 @@ export class MessageCategory extends GenericEntity {
 }
 ```
 
-`src/app/routes/message/category/message.category.input.ts`
+`src/app/routes/message/category/message.category.class.ts`
 ```ts
 export class PostInputMessageCategory {
   @IsString() name: string;
@@ -390,9 +390,9 @@ A few features to point out:
 * The fact that the method is called "Patch" means nothing. The `@Patch()` decorator tells Nest that this is the Patch handler.
 * `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.patch` or `root`
 * `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `PatchInput` typescript class.
-* `PatchInput` is defined in `./message.category.input.ts`
+* `PatchInput` is defined in `./message.category.class.ts`
 * Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
-* The return value of the handler is `Promise<PatchOutput>` which is defined in `./message.category.input.ts`
+* The return value of the handler is `Promise<PatchOutput>` which is defined in `./message.category.class.ts`
 
 The job of the *Patch* handler is to update existing data. It takes an input of `PatchInput` which contains an array of `PatchInputMessageCategory`. This class resembles `MessageCategory`:
 
@@ -415,7 +415,7 @@ export class MessageCategory extends GenericEntity {
 }
 ```
 
-`src/app/routes/message/category/message.category.input.ts`
+`src/app/routes/message/category/message.category.class.ts`
 ```ts
 export class PostInputMessageCategory {
   @IsString() name: string;
@@ -469,9 +469,9 @@ A few features to point out:
 * The fact that the method is called "Delete" means nothing. The `@Delete()` decorator tells Nest that this is the Delete handler.
 * `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.delete` or `root`
 * `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `DeleteInput` typescript class.
-* `DeleteInput` is defined in `./message.category.input.ts`
+* `DeleteInput` is defined in `./message.category.class.ts`
 * Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
-* The return value of the handler is `Promise<DeleteOutput>` which is defined in `./message.category.input.ts`
+* The return value of the handler is `Promise<DeleteOutput>` which is defined in `./message.category.class.ts`
 
 The job of the *Delete* handler is to update existing data. It takes an input of `DeleteInput` which contains an `number[]` of ids to delete.
 

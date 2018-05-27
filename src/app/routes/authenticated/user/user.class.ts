@@ -14,7 +14,7 @@ import { Type } from 'class-transformer';
 import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
 
 //------------------------------------------------
-//--------------------- INPUT --------------------
+//--------------------- CLASS --------------------
 //------------------------------------------------
 
 //-----------Get-----------\\
@@ -35,7 +35,13 @@ export class GetParameterSearch {
   id: number;
   updatedAt: Date;
   createdAt: Date;
-  name: string;
+  username: string;
+
+  firstName: string;
+
+  lastName: string;
+
+  emailAddress: string;
 }
 
 //-----------Post----------\\
@@ -43,20 +49,28 @@ export class GetParameterSearch {
 //Input
 export class PostInput {
   @ValidateNested()
-  @Type(() => PostInputPrivilege)
+  @Type(() => PostInputUser)
   @IsArray()
-  entries: PostInputPrivilege[];
+  entries: PostInputUser[];
 }
 
-export class PostInputPrivilege {
-  @IsString() name: string;
+export class PostInputUser {
+  @IsString() username: string;
+
+  @IsString() password: string;
+
+  @IsString() firstName: string;
+
+  @IsString() lastName: string;
+
+  @IsString() emailAddress: string;
 
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
   @IsArray()
   @IsOptional()
-  roles: PostRelation[];
+  role: PostRelation;
 }
 
 //Output
@@ -69,24 +83,40 @@ export class PostOutput {
 //Input
 export class PatchInput {
   @ValidateNested()
-  @Type(() => PatchInputPrivilege)
+  @Type(() => PatchInputUser)
   @IsArray()
-  entries: PatchInputPrivilege[];
+  entries: PatchInputUser[];
 }
 
-export class PatchInputPrivilege {
+export class PatchInputUser {
   @IsNumber() id: number;
 
   @IsString()
   @IsOptional()
-  name: string;
+  username: string;
+
+  @IsString()
+  @IsOptional()
+  password: string;
+
+  @IsString()
+  @IsOptional()
+  firstName: string;
+
+  @IsString()
+  @IsOptional()
+  lastName: string;
+
+  @IsString()
+  @IsOptional()
+  emailAddress: string;
 
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
   @IsArray()
   @IsOptional()
-  roles: PatchRelation[];
+  role: PatchRelation;
 }
 
 //Output
@@ -99,12 +129,12 @@ export class PatchOutput {
 //Input
 export class DeleteInput {
   @ValidateNested()
-  @Type(() => DeleteInputPrivilege)
+  @Type(() => DeleteInputUser)
   @IsArray()
-  entries: DeleteInputPrivilege[];
+  entries: DeleteInputUser[];
 }
 
-export class DeleteInputPrivilege {
+export class DeleteInputUser {
   @IsNumber() id: number;
 }
 

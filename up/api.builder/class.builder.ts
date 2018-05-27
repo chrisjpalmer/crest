@@ -14,59 +14,59 @@ import {
   fieldTypeToValidator,
 } from '../util/util';
 
-export async function buildInput(controllerPath: string, entity: Entity) {
+export async function buildClass(controllerPath: string, entity: Entity) {
   //Open the service template
-  let inputTemplate = await readFilePromise(
-    `${templatePath}/entity.input.template.ts`,
+  let classTemplate = await readFilePromise(
+    `${templatePath}/entity.class.template.ts`,
   );
-  let input = replaceByObject(inputTemplate, {
+  let cls = replaceByObject(classTemplate, {
     '${entity.upper}': entity.upper,
   });
 
-  /// < entity.input.get.field.template >
-  let getField = await buildInputGetField(entity);
-  input = input.replaceAll(
-    `/// < entity.input.get.field.template >`,
+  /// < entity.class.get.field.template >
+  let getField = await buildClassGetField(entity);
+  cls = cls.replaceAll(
+    `/// < entity.class.get.field.template >`,
     getField,
   );
-  /// < entity.input.post.field.template >
-  let postField = await buildInputPostField(entity);
-  input = input.replaceAll(
-    `/// < entity.input.post.field.template >`,
+  /// < entity.class.post.field.template >
+  let postField = await buildClassPostField(entity);
+  cls = cls.replaceAll(
+    `/// < entity.class.post.field.template >`,
     postField,
   );
-  /// < entity.input.post.relation.template >
-  let postRelation = await buildInputPostRelation(entity);
-  input = input.replaceAll(
-    `/// < entity.input.post.relation.template >`,
+  /// < entity.class.post.relation.template >
+  let postRelation = await buildClassPostRelation(entity);
+  cls = cls.replaceAll(
+    `/// < entity.class.post.relation.template >`,
     postRelation,
   );
-  /// < entity.input.patch.field.template >
-  let patchField = await buildInputPatchField(entity);
-  input = input.replaceAll(
-    `/// < entity.input.patch.field.template >`,
+  /// < entity.class.patch.field.template >
+  let patchField = await buildClassPatchField(entity);
+  cls = cls.replaceAll(
+    `/// < entity.class.patch.field.template >`,
     patchField,
   );
-  /// < entity.input.patch.relation.template >
-  let patchRelation = await buildInputPatchRelation(entity);
-  input = input.replaceAll(
-    `/// < entity.input.patch.relation.template >`,
+  /// < entity.class.patch.relation.template >
+  let patchRelation = await buildClassPatchRelation(entity);
+  cls = cls.replaceAll(
+    `/// < entity.class.patch.relation.template >`,
     patchRelation,
   );
 
-  return input;
+  return cls;
 }
 
 /** GET */
-async function buildInputGetField(entity: Entity) {
+async function buildClassGetField(entity: Entity) {
   let getFieldTemplate = await readFilePromise(
-    `${templatePath}/entity.input.get.field.template.ts`,
+    `${templatePath}/entity.class.get.field.template.ts`,
   );
   let getField = '';
 
   entity.childFields
     .map(c => {
-      return buildInputGetFieldForChild(entity, c, getFieldTemplate);
+      return buildClassGetFieldForChild(entity, c, getFieldTemplate);
     })
     .forEach(fw => {
       getField += fw + '\n\n';
@@ -75,7 +75,7 @@ async function buildInputGetField(entity: Entity) {
   return getField;
 }
 
-function buildInputGetFieldForChild(
+function buildClassGetFieldForChild(
   entity: Entity,
   childField: ChildField,
   getFieldTemplate: string,
@@ -89,15 +89,15 @@ function buildInputGetFieldForChild(
 
 
 /** POST */
-async function buildInputPostField(entity: Entity) {
+async function buildClassPostField(entity: Entity) {
   let postFieldTemplate = await readFilePromise(
-    `${templatePath}/entity.input.post.field.template.ts`,
+    `${templatePath}/entity.class.post.field.template.ts`,
   );
   let postField = '';
 
   entity.childFields
     .map(c => {
-      return buildInputPostFieldForChild(entity, c, postFieldTemplate);
+      return buildClassPostFieldForChild(entity, c, postFieldTemplate);
     })
     .forEach(fw => {
       postField += fw + '\n\n';
@@ -106,7 +106,7 @@ async function buildInputPostField(entity: Entity) {
   return postField;
 }
 
-function buildInputPostFieldForChild(
+function buildClassPostFieldForChild(
   entity: Entity,
   childField: ChildField,
   postFieldTemplate: string,
@@ -121,21 +121,21 @@ function buildInputPostFieldForChild(
   return postField;
 }
 
-async function buildInputPostRelation(entity: Entity) {
+async function buildClassPostRelation(entity: Entity) {
   let postRelationMultiple = await readFilePromise(
-    `${templatePath}/entity.input.post.relation.multiple.template.ts`,
+    `${templatePath}/entity.class.post.relation.multiple.template.ts`,
   );
   let postRelationSingle = await readFilePromise(
-    `${templatePath}/entity.input.post.relation.single.template.ts`,
+    `${templatePath}/entity.class.post.relation.single.template.ts`,
   );
   let postRelation = '';
 
   entity.childEntities
     .map(c => {
       if (c.mode == ChildEntityMode.multiple) {
-        return buildInputPostRelationForChild(entity, c, postRelationMultiple);
+        return buildClassPostRelationForChild(entity, c, postRelationMultiple);
       } else {
-        return buildInputPostRelationForChild(entity, c, postRelationSingle);
+        return buildClassPostRelationForChild(entity, c, postRelationSingle);
       }
     })
     .forEach(pr => {
@@ -145,7 +145,7 @@ async function buildInputPostRelation(entity: Entity) {
   return postRelation;
 }
 
-function buildInputPostRelationForChild(
+function buildClassPostRelationForChild(
   entity: Entity,
   childEntity: ChildEntity,
   postRelationTemplate: string,
@@ -157,15 +157,15 @@ function buildInputPostRelationForChild(
 }
 
 /** PATCH */
-async function buildInputPatchField(entity: Entity) {
+async function buildClassPatchField(entity: Entity) {
   let patchFieldTemplate = await readFilePromise(
-    `${templatePath}/entity.input.patch.field.template.ts`,
+    `${templatePath}/entity.class.patch.field.template.ts`,
   );
   let patchField = '';
 
   entity.childFields
     .map(c => {
-      return buildInputPatchFieldForChild(entity, c, patchFieldTemplate);
+      return buildClassPatchFieldForChild(entity, c, patchFieldTemplate);
     })
     .forEach(fw => {
       patchField += fw + '\n\n';
@@ -174,7 +174,7 @@ async function buildInputPatchField(entity: Entity) {
   return patchField;
 }
 
-function buildInputPatchFieldForChild(
+function buildClassPatchFieldForChild(
   entity: Entity,
   childField: ChildField,
   patchFieldTemplate: string,
@@ -189,25 +189,25 @@ function buildInputPatchFieldForChild(
   return patchField;
 }
 
-async function buildInputPatchRelation(entity: Entity) {
+async function buildClassPatchRelation(entity: Entity) {
   let patchRelationMultiple = await readFilePromise(
-    `${templatePath}/entity.input.patch.relation.multiple.template.ts`,
+    `${templatePath}/entity.class.patch.relation.multiple.template.ts`,
   );
   let patchRelationSingle = await readFilePromise(
-    `${templatePath}/entity.input.patch.relation.single.template.ts`,
+    `${templatePath}/entity.class.patch.relation.single.template.ts`,
   );
   let patchRelation = '';
 
   entity.childEntities
     .map(c => {
       if (c.mode == ChildEntityMode.multiple) {
-        return buildInputPatchRelationForChild(
+        return buildClassPatchRelationForChild(
           entity,
           c,
           patchRelationMultiple,
         );
       } else {
-        return buildInputPatchRelationForChild(entity, c, patchRelationSingle);
+        return buildClassPatchRelationForChild(entity, c, patchRelationSingle);
       }
     })
     .forEach(pr => {
@@ -217,7 +217,7 @@ async function buildInputPatchRelation(entity: Entity) {
   return patchRelation;
 }
 
-function buildInputPatchRelationForChild(
+function buildClassPatchRelationForChild(
   entity: Entity,
   childEntity: ChildEntity,
   patchRelationTemplate: string,
