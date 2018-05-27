@@ -77,7 +77,7 @@ You will mostly interact with `src/app` and `src/database`.
 ### Create Tables
 To create the *MessageCategory* table for the first time (this step was done for you):
 ```
-npm run up --create MessageCategory
+npm run up create MessageCategory
 ```
 This creates a new file called `message.category.entity.ts` inside the `src/database/app/` directory. The file will contain a single class which is the [TypeORM](https://github.com/typeorm/typeorm) entity for the table. You can now hack this class, adding columns, indexes to your heart's content:
 ```ts
