@@ -1,5 +1,6 @@
 # Crest
 **Crest = CRUD + REST + Nest**
+
 A rich starter for Nest and MySQL which makes building a web server fun again.
 
 ## Oh CRUD!
@@ -251,8 +252,9 @@ export const AuthController = (prefix?: string) =>
 * Each **handler** accepts two arguments
   * `input`: deserilized JSON body from HTTP request
   * `req` express js request object. `req.user` refers the to the logged in user.
-* Crest by default allows a user to have one `role` and a `role` to have many `privileges`. The `@PrivilegeHas()` method checks if the authenticated user has the privilege specified.
-* The `root` privilege allows access to everything.
+* Crest by default allows a user to have one `role`. A `role` has many `privileges`. 
+  * The `@PrivilegeHas()` method checks if the authenticated user has the privilege specified.
+  * The `root` privilege allows access to everything.
 
 
 ## POST
@@ -290,12 +292,8 @@ export const AuthController = (prefix?: string) =>
     return { result: entities.map(v => v.id) };
   }
 ```
-An HTTP request of `POST authenticated/message/category` will trigger the `Post()` method. The `Post()` method should create new rows in the `MessageCategory` table.
-
-A few features to point out:
-
-
-The job of the *Post* handler is to create new data. It takes an input of `PostInput` which contains an array of `PostInputMessageCategory`. This class resembles `MessageCategory`:
+An HTTP request of `POST authenticated/message/category` will trigger the `Post()` method. The `Post()` method should create new rows in the `MessageCategory` table. 
+It takes an input of `PostInput` which contains a `PostInputMessageCategory[]` for creating multiple MessageCategories. This class resembles the entity class.
 
 `src/database/app/message.category.entity.ts`
 ```ts
@@ -384,17 +382,8 @@ export class PostInputMessageCategory {
     return { result: toSave.map(v => v.id) };
   }
 ```
-When a *PATCH* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Patch()` function reads the `input.entries` array and fetches the target rows from the database. It reads each entry and if a field is not undefined, it applies an update to the entity. It then saves all the entities using the `messageCategoryRepository` service class.
-
-A few features to point out:
-* The fact that the method is called "Patch" means nothing. The `@Patch()` decorator tells Nest that this is the Patch handler.
-* `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.patch` or `root`
-* `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `PatchInput` typescript class.
-* `PatchInput` is defined in `./message.category.class.ts`
-* Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
-* The return value of the handler is `Promise<PatchOutput>` which is defined in `./message.category.class.ts`
-
-The job of the *Patch* handler is to update existing data. It takes an input of `PatchInput` which contains an array of `PatchInputMessageCategory`. This class resembles `MessageCategory`:
+An HTTP request of `PATCH authenticated/message/category` will trigger the `Patch()` method. The `Patch()` method should update existing rows in the `MessageCategory` table. 
+It takes an input of `PatchInput` which contains a `PatchInputMessageCategory[]` for updating multiple MessageCategories. This class resembles the entity class.
 
 `src/database/app/message.category.entity.ts`
 ```ts
@@ -463,29 +452,23 @@ export class PostInputMessageCategory {
 }
 
 ```
-When a *DELETE* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Delete()` function reads the `input.entries` array and fetches the target rows from the database. It reads each entry and if a field is not undefined, it applies an update to the entity. It then saves all the entities using the `messageCategoryRepository` service class.
-
-A few features to point out:
-* The fact that the method is called "Delete" means nothing. The `@Delete()` decorator tells Nest that this is the Delete handler.
-* `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.delete` or `root`
-* `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `DeleteInput` typescript class.
-* `DeleteInput` is defined in `./message.category.class.ts`
-* Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
-* The return value of the handler is `Promise<DeleteOutput>` which is defined in `./message.category.class.ts`
-
-The job of the *Delete* handler is to update existing data. It takes an input of `DeleteInput` which contains an `number[]` of ids to delete.
-
+An HTTP request of `DELETE authenticated/message/category` will trigger the `Delete()` method. The `Delete()` method should delete existing rows in the `MessageCategory` table. 
+It takes an input of `DeleteInput` which contains a `number[]` for deleting multiple MessageCategories. 
 
 
 ## Get
-When a *GET* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Get()` function passes control to its super class `GenericController` which handles *two-phase syncing* protocol. The data returned from this function is sent to the output.
+An HTTP request of `GET authenticated/message/category` will trigger the `Get()` method. The `Get()` method should retrieve existing rows from the `MessageCategory` table. 
+It takes an input of `GetInput` which inherits from `SyncInput` and contains its own parameters for limiting the result set.
 
-Crest implements an opinionated syncing protocol with two phases:
+By default, `GET` uses crest's two-phase syncing protocol to return the result set. The purpose is to make data transfer as efficient as possible.
 
 ### Phase 1
 1. Client wants the list of message categories.
-2. Client calls `http://localhost:3000/authenticated/message/category` with `input.sync.mode == List`
-3. **Server** returns the ordered result set BUT all items are hashed by their `updatedAt` timestamp:
+2. Client calls `GET authenticated/message/category` with `input.sync.mode == List`
+3. **Server** returns the ordered result set
+  - where each item is not the actual item but a hash of the `id` + `updatedAt` column
+  - `hashes` property shows the plain hashed result set - for debug-ability
+  - `validation` contains the hashed result set as the payload of a signed JWT token - for authenticated use
 ```json
 {
   "hashes": [
@@ -502,10 +485,13 @@ If the answer to any of these is 'no', then mark this id for full download.
 
 ### Phase 2
 1. Client wants to download any `MessageCategory`s that were marked in *Phase 1*
-2. Client calls `http://localhost:3000/authenticated/message/category` with 
+2. Client calls `GET authenticated/message/category` with 
   1. `input.sync.mode == Data`
   2. `input.sync.ids = [...1,3] //marked ids`
-3. **Server** returns data in the format:
+  3. `input.sync.validation = "eyJhbGciOiJIUzI1NiIsIn..."`
+4. Server checks signature of the validation JWT token
+5. Server checks each id in `inpuy.sync.ids` is in the payload of the validation JWT token.
+6. **Server** returns data in the format:
 ```json
 {
   "data": {
@@ -514,9 +500,9 @@ If the answer to any of these is 'no', then mark this id for full download.
     }
 }
 ```
-4. Client downloads data
-5. Client updates its *Object Cache*
-6. Client assembles the ordered result set from the information in *Phase 1* AND its *Object Cache*
+7. Client downloads data
+8. Client updates its *Object Cache*
+9. Client assembles the ordered result set from the information in *Phase 1* AND its *Object Cache*
 
 ### How is this implemented?
 The `Get()` method immediately passes control to its super class (`GenericController`) via the method `handleGet()`.
@@ -547,6 +533,8 @@ The purpose pf `handleGet()` method is to check `input.sync.mode` and execute th
 ```
 
 In Phase 1 of a Sync, `MessageCategoryController.handleList()` returns an ordered `SyncHash[]`, representing the signature of the result set. The specific set of data returned can be altered depending on the input parameters. *Up* generates `input.mode` for some different ways to query the database. *Up* generates `input.page` and `input.pageSize` for applying pagination to the result set.
+
+Under the hood `GenericController` packages the `SyncHash[]` into a JWT token and signs it with the server's key. This means that the client can only download (Phase 2) the ids which you authorize here. This may help in situations where the logged in user should not be able to see the entire result set.
 
 ```ts
 async handleList(input: GetInput) {
