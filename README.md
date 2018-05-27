@@ -106,7 +106,7 @@ npm run up MessageCategory
 This should generate two new folders under the `src/routes/authenticated` folders:
 ```
 message/
-        message.controller.ts
+        message.category.controller.ts
         message.service.ts
         message.class.ts
         category/
@@ -171,50 +171,71 @@ class GenericEntityService {
 ```
 - `createQueryBuilder()` returns a new `SelectQueryBuilder` object from the `messageCategoryRepository` which can be used to create a select query on the table. The point of supplying `this.mainTableAlias` is to standardize the table alias for all queries on the table.
 - `applyStems` adds the stem columns to the table. Stems are part of the `tree-stem` model which Crest uses.
-- `fillWithX` methods are also part of the `tree-stem` model. The `fillWithMessages` method allows `MessageCategory` instances to be populated with `Message` instances by observing the `stems` of each `MessageCategory` instance.
+- `fillWithX` methods are also part of the `stem` model. The `fillWithMessages` method allows `MessageCategory` instances to be populated with `Message` instances by observing the `stems` of each `MessageCategory` instance.
 
-## Tree-stem
-`tree-stem` model imagines that a table is like a tree and a row is like a branch of that tree. Relationships between rows/branches of different trees are faciliated by a referential id column - which is called a `stem`.
+## Stem model
+A table will often have rows which are related to rows of another table. You may define this link through a *Join Table* or through a column which refers the id of the parent table. In TypeORM we are invited to forget about the underlying mechanics of database relationships. TypeORM treats all related entities to a row as sub-objects of that row.
 
-If I need to inspect branch `a` of table `A`, I would observe `a` and any of its related branches. I may do this by performing an inner join between table `A` and another table. TypeORM can do this for us and will assemble the result set as an array of `A` objects that contain sub-objects for the relations. If the application client requests rows of table `A`, the typical solution is to return this array in JSON form.
-
+In TypeORM you can make a query to the database like this...
 ```ts
-let result = await this.messageCategoryRepository
-  .createQueryBuilder('messageCategory')                      //selects `messageCategory.*` columns
-  .innerJoinAndSelect('messageCategory.message', 'message')   //selects `message.*` columns
-  .getMany();
-return JSON.stringify(result); //Nest would do this automatically...
+let messageCategories = await this.messageCategoryRepository
+.createQueryBuilder('messageCategory')
+.innerJoinAndSelect('messageCategory.messages', 'message')
+.getMany();
+```
+...which will perform an *inner join* between the `MessageCategory` table and the `Message` table. It will then deserialize the result into an array of `MessageCategory` objects. The related `Message` objects will be deserialized as subobjects of their corresponding `MessageCategory` objects.
+
+ORM libraries like TypeORM provide developers with a neat way to access the database. However they don't always enforce the best practices. To illustrate this point, imagine a database with two tables
+- `Book`
+- `Genre`
+
+There is a finite list of `Genre`s in the world but an ever growing list of `Book`s. Perhaps a `Genre` has many columns: `name`, `subCulture`, `firstAppearedDate`, `lastAppearedDate`, `otherName1`, `otherName2`. A `Book` may have a few columns: `name`, `author`, `createdDate`. A `Book` could be in multiple `Genre`s and therefore could contain an array of `Genre`s.
+
+To query the database for some `Book`s and find its related `Genre`s, we may use this:
+```ts
+let books = await this.bookRepository
+.createQueryBuilder('book')
+.innerJoinAndSelect('book.genre', 'genres')
+.getMany();
 ```
 
-This is an adequate approach BUT is inefficient when many relationships are the same. A lot repeated data will be sent back to the client making the payload very large. You also must consider the payload over the database's TCP connection to the application server.
-
-If table `A` is related to table `B` for example, the problem is elliminated by pulling data in two steps: 
-1. Pull `A` rows and its `stems` ie. referential id columns
-2. Pull `B` rows.
-
-```ts
-//Context 1
-let result1 = await this.messageCategoryRepository
-  .createQueryBuilder('messageCategory')                    //selects `messageCategory.*` columns
-  .innerJoin('messageCategory.message', 'message')          
-  .addSelect('message.id')                                  //selects `message.id` columns
-  .getMany();
-return JSON.stringify(result1); //Nest would do this automatically...
-
-//Context 2
-let result2 = await this.messageRepository
-  .createQueryBuilder('message')                            //selects `message.*` columns
-  .getMany();
-return JSON.stringify(result2); //Nest would do this automatically...
+In this query TypeORM will perform an *inner join* for us. The actual query may look like this:
+```sql
+SELECT book.*, genre.* FROM book
+INNER JOIN genre_book ON genre_book.book_id = book.id
+INNER JOIN genre ON genre_book.genre_id = genre.id;
 ```
 
-This approach is called `tree-stem` because the first step downloads the `tree` and its `stems`.
-It is the preferred approach for downloading data in Crest.
+The problem with this method is that a lot of `Genre`s are repeated between `Book`s. This could be a problem if the dataset of books is very large. This has a cost considering the TCP connection between application server and database. It also has a cost between the application server and the client.
 
+An approach is required to neutralize repetitive data in the query.
+
+Crest introduces the concept of a `stem` to solve this problem. A `stem` is simply the *id column* of the related table. In our example it would be the `Genre.id` field. We could rewrite our query to only capture the `stem` of the `Genre` table:
+
+```ts
+let books = await this.bookRepository
+.createQueryBuilder('book')
+.innerJoin('book.genre', 'genres')  //Does not add all genre's columns
+.addSelect('genres.id')             //Adds only genre's id column
+.getMany();
+```
+
+TypeORM would generate the query like this:
+```sql
+SELECT book.*, genre.id FROM book
+INNER JOIN genre_book ON genre_book.book_id = book.id
+INNER JOIN genre ON genre_book.genre_id = genre.id;
+```
+
+Though an *inner join* still has to be performed, we have minimized the `Genre` results to the smallest possible form. When TypeORM deserializes this into object format only the *id column* of the `Genre` sub-object will be populated. This significantly reduces the payload size coming FROM the database and going TO the client.
+
+Of course, the client still needs the `Genre` information and it may choose to make a seperate request to the application server for the complete list of `Genre`s. Alternatively if the `Genre` dataset is also very large, the request could be made for just a specific set of `Genre`s which are required for the `Book`s that the client is interested in.
+
+This concept is called `stem` model, because only the `stem` columns of related tables are fetched.
 
 # Generated Controller 
 ## Constructor
-`src/app/routes/authenticated/message/category/message.controller.ts`:
+`src/app/routes/authenticated/message/category/message.category.controller.ts`:
 ```ts
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
@@ -258,7 +279,7 @@ export const AuthController = (prefix?: string) =>
 
 
 ## POST
-`src/app/routes/authenticated/message/category/message.controller.ts`:
+`src/app/routes/authenticated/message/category/message.category.controller.ts`:
 ```ts
   /**
    * Post() - MessageCategory -> creates new messageCategory(s)
@@ -328,7 +349,7 @@ export class PostInputMessageCategory {
 }
 ```
 ## Patch
-`src/app/routes/authenticated/message/category/message.controller.ts`:
+`src/app/routes/authenticated/message/category/message.category.controller.ts`:
 ```ts
 
   /**
@@ -420,7 +441,7 @@ export class PostInputMessageCategory {
 
 
 ## Delete
-`src/app/routes/authenticated/message/category/message.controller.ts`:
+`src/app/routes/authenticated/message/category/message.category.controller.ts`:
 ```ts
   /**
    * Delete() - MessageCategory -> deletes messageCategory(s)
