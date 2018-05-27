@@ -21,10 +21,10 @@ export class GenericEntityService<T extends GenericEntity> {
   /**
    * Setup entity service and it will create common select functionality for you
    * Remember you must override the selectQueryBuilder function
-   * @param entity the lowercase name of the entity e.g. 'privilege', this is initialized through a call to super()
+   * @param mainTableAlias the lowercase name of the entity e.g. 'privilege', this is initialized through a call to super()
    * @param nameColumn the unique string column that is associated with each row of the entity e.g. 'name' OR 'username', this is initiailzed through a call to super()
    */
-  constructor(protected entity: string, protected nameColumn?: string) {}
+  constructor(protected mainTableAlias: string, protected nameColumn?: string) {}
   async existsById(id: number): Promise<boolean> {
     return !!await this.findById(id);
   }
@@ -44,7 +44,7 @@ export class GenericEntityService<T extends GenericEntity> {
       throw 'finding by name does not work if a unique index does not exist on the table';
     }
     return this.applyStems(this.createQueryBuilder())
-      .where(`${this.entity}.${this.nameColumn} = :name`, { name })
+      .where(`${this.mainTableAlias}.${this.nameColumn} = :name`, { name })
       .getOne();
   }
 

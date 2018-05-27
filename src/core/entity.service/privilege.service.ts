@@ -38,12 +38,12 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
   }
 
   createQueryBuilder() {
-    return this.privilegeRepository.createQueryBuilder(this.entity);
+    return this.privilegeRepository.createQueryBuilder(this.mainTableAlias);
   }
 
   applyStems(
     query: SelectQueryBuilder<Privilege>,
   ): SelectQueryBuilder<Privilege> {
-    return query.leftJoin(this.entity + '.roles', 'role').addSelect('role.id');
+    return query.leftJoin(this.mainTableAlias + '.roles', 'role').addSelect('role.id');
   }
 }

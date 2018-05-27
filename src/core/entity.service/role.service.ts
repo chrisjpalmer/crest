@@ -49,16 +49,16 @@ export class RoleService extends GenericEntityService<Role> {
   }
 
   createQueryBuilder() {
-    return this.roleRepository.createQueryBuilder(this.entity);
+    return this.roleRepository.createQueryBuilder(this.mainTableAlias);
   }
 
   applyStems(query: SelectQueryBuilder<Role>): SelectQueryBuilder<Role> {
     return query
-      .leftJoin(this.entity + '.privileges', 'privilege')
+      .leftJoin(this.mainTableAlias + '.privileges', 'privilege')
       .addSelect('privilege.id');
   }
 
   applyUserStems(query: SelectQueryBuilder<Role>): SelectQueryBuilder<Role> {
-    return query.leftJoin(this.entity + '.users', 'user').addSelect('user.id');
+    return query.leftJoin(this.mainTableAlias + '.users', 'user').addSelect('user.id');
   }
 }

@@ -125,10 +125,10 @@ export class UserService extends GenericEntityService<User> {
   }
 
   createQueryBuilder() {
-    return this.userRepository.createQueryBuilder(this.entity);
+    return this.userRepository.createQueryBuilder(this.mainTableAlias);
   }
 
   applyStems(query: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
-    return query.leftJoin(this.entity + '.role', 'role').addSelect('role.id');
+    return query.leftJoin(this.mainTableAlias + '.role', 'role').addSelect('role.id');
   }
 }

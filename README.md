@@ -19,6 +19,7 @@ Crest creates standard CRUD APIs with the following features:
 * API Tester
 * Debug Support (VSCode at the moment)
 * Dockerization (coming soon)
+* Tests (coming soon)
 
 
 ## Getting Started
@@ -113,9 +114,105 @@ message/
                   message.category.input.ts
 ```
 
+# Generated Service
+*Up* generates a service class with convenience methods for handling the entity.
 
-# controller.ts
-## Controller Definition
+`MessageCategoryService` inherits from `GenericEntityService` which accepts two arguments to its constructor: `mainTableAlias`, `nameColumn`. 
+`src/app/routes/authenticated/message/category/message.category.service.ts`:
+```ts
+@Component()
+export class MessageCategoryService extends GenericEntityService<
+  MessageCategory
+> {
+  constructor(
+    @InjectRepo(MessageCategoryToken)
+    private readonly messageCategoryRepository: Repository<MessageCategory>,
+  ) {
+    super('messageCategory', 'name');
+  }
+```
+`mainTableAlias` is the entity name in camelcase, `nameColumn` is the name of the first unique field in the entity.
+```ts
+class GenericEntityService {
+  constructor(protected mainTableAlias: string, protected nameColumn?: string) {}
+}
+```
+
+*up*'s generated `MessageCategoryService` offers three main convenience methods.
+
+```ts
+  createQueryBuilder() {
+    return this.messageCategoryRepository.createQueryBuilder(this.mainTableAlias);
+  }
+
+  applyStems(
+    query: SelectQueryBuilder<MessageCategory>,
+  ): SelectQueryBuilder<MessageCategory> {
+    return query
+      .leftJoin(this.mainTableAlias + '.messages', 'message')
+      .addSelect('message.id');
+  }
+
+  fillWithMessages(
+    messageCategory:
+      | MessageCategory
+      | MessageCategory[]
+      | Map<number, MessageCategory>,
+    indexedMessages: Map<number, Message>,
+  ) {
+    StitchSet(
+      messageCategory,
+      indexedMessages,
+      p => p.messages.map(c => c.id),
+      (p, c) => (p.messages = c),
+    );
+  }
+```
+- `createQueryBuilder()` returns a new `SelectQueryBuilder` object from the `messageCategoryRepository` which can be used to create a select query on the table. The point of supplying `this.mainTableAlias` is to standardize the table alias for all queries on the table.
+- `applyStems` adds the stem columns to the table. Stems are part of the `tree-stem` model which Crest uses.
+- `fillWithX` methods are also part of the `tree-stem` model. The `fillWithMessages` method allows `MessageCategory` instances to be populated with `Message` instances by observing the `stems` of each `MessageCategory` instance.
+
+## Tree-stem
+`tree-stem` model imagines that a table is like a tree and a row is like a branch of that tree. Relationships between rows/branches of different trees are faciliated by a referential id column - which is called a `stem`.
+
+If I need to inspect branch `a` of table `A`, I would observe `a` and any of its related branches. I may do this by performing an inner join between table `A` and another table. TypeORM can do this for us and will assemble the result set as an array of `A` objects that contain sub-objects for the relations. If the application client requests rows of table `A`, the typical solution is to return this array in JSON form.
+
+```ts
+let result = await this.messageCategoryRepository
+  .createQueryBuilder('messageCategory')                      //selects `messageCategory.*` columns
+  .innerJoinAndSelect('messageCategory.message', 'message')   //selects `message.*` columns
+  .getMany();
+return JSON.stringify(result); //Nest would do this automatically...
+```
+
+This is an adequate approach BUT is inefficient when many relationships are the same. A lot repeated data will be sent back to the client making the payload very large. You also must consider the payload over the database's TCP connection to the application server.
+
+If table `A` is related to table `B` for example, the problem is elliminated by pulling data in two steps: 
+1. Pull `A` rows and its `stems` ie. referential id columns
+2. Pull `B` rows.
+
+```ts
+//Context 1
+let result1 = await this.messageCategoryRepository
+  .createQueryBuilder('messageCategory')                    //selects `messageCategory.*` columns
+  .innerJoin('messageCategory.message', 'message')          
+  .addSelect('message.id')                                  //selects `message.id` columns
+  .getMany();
+return JSON.stringify(result1); //Nest would do this automatically...
+
+//Context 2
+let result2 = await this.messageRepository
+  .createQueryBuilder('message')                            //selects `message.*` columns
+  .getMany();
+return JSON.stringify(result2); //Nest would do this automatically...
+```
+
+This approach is called `tree-stem` because the first step downloads the `tree` and its `stems`.
+It is the preferred approach for downloading data in Crest.
+
+
+# Generated Controller 
+## Constructor
 `src/app/routes/authenticated/message/category/message.controller.ts`:
 ```ts
 //------------------------------------------------
@@ -124,7 +221,7 @@ message/
 @AuthController(
   'message/category',
 ) /* http://localhost:3000/authenticated/message/category */
-export class MessageCategoryController extends GenericGetController<
+export class MessageCategoryController extends GenericController<
   MessageCategory
 > {
   constructor(
@@ -135,7 +232,7 @@ export class MessageCategoryController extends GenericGetController<
     super(messageCategoryService);
   }
 ```
-*up* creates the controller class called `MessageCategoryController`. It extends super class `GenericGetController` (which we'll talk about later).
+*up* creates the controller class called `MessageCategoryController`. It extends super class `GenericController` (which we'll talk about later).
 
 The decorator `@AuthController('message/controller')` sets the controller route to `http://localhost:3000/authenticated/message/category`.
 
@@ -148,6 +245,14 @@ export const AuthController = (prefix?: string) =>
   Controller(`${AuthPrefix}/${prefix}`);
 ```
 `@AuthController()` is just an abstraction of Nest's `@Controller()` decorator
+
+## Request Handlers
+* The fact that the **handler** is called "Post" or "Get" means nothing. Nest decorators such as `@Post()` or `@Get()` correctly it with the request method.
+* Each **handler** accepts two arguments
+  * `input`: deserilized JSON body from HTTP request
+  * `req` express js request object. `req.user` refers the to the logged in user.
+* Crest by default allows a user to have one `role` and a `role` to have many `privileges`. The `@PrivilegeHas()` method checks if the authenticated user has the privilege specified.
+* The `root` privilege allows access to everything.
 
 
 ## POST
@@ -185,15 +290,10 @@ export const AuthController = (prefix?: string) =>
     return { result: entities.map(v => v.id) };
   }
 ```
-When a *POST* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Post()` function reads the `input.entries` array and converts them to an array of TypeORM entities of type `MessageCategory`. It then saves these using the `messageCategoryRepository` service class so that the new data is created in the database.
+An HTTP request of `POST authenticated/message/category` will trigger the `Post()` method. The `Post()` method should create new rows in the `MessageCategory` table.
 
 A few features to point out:
-* The fact that the method is called "Post" means nothing. The `@Post()` decorator tells Nest that this is the Post handler.
-* `@PrivilegeHas()` works with Crest's privileges and roles system. Any user accessing this method must have the privilege `message.category.post` or `root`
-* `@Body()` decorator makes Nest inject the request body into the parameter `input`. Validation also occurs so that an error is thrown if the input does not adhere to `PostInput` typescript class.
-* `PostInput` is defined in `./message.category.input.ts`
-* Although `req` object is not used, for ease it is injected here as well. You can access the normal express request object properties, as well as the `req.user` property for examining the user who initiated the request.
-* The return value of the handler is `Promise<PostOutput>` which is defined in `./message.category.input.ts`
+
 
 The job of the *Post* handler is to create new data. It takes an input of `PostInput` which contains an array of `PostInputMessageCategory`. This class resembles `MessageCategory`:
 
@@ -378,24 +478,27 @@ The job of the *Delete* handler is to update existing data. It takes an input of
 
 
 ## Get
-When a *GET* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Get()` function passes control to its super class `GenericGetController` which handles 2 phase syncing protocol. The data returned from this function is sent to the output.
+When a *GET* request with URI `authenticated/message/category/` comes to the server, the controller deserializes the JSON body into the `input` parameter. The `Get()` function passes control to its super class `GenericController` which handles *two-phase syncing* protocol. The data returned from this function is sent to the output.
 
 Crest implements an opinionated syncing protocol with two phases:
 
 ### Phase 1
 1. Client wants the list of message categories.
 2. Client calls `http://localhost:3000/authenticated/message/category` with `input.sync.mode == List`
-3. **Server** returns the result set BUT all items are hashed by their `updatedAt` timestamp:
+3. **Server** returns the ordered result set BUT all items are hashed by their `updatedAt` timestamp:
 ```json
 {
-  "1": {"hash": 2349034334, "id":1},
-  "3": {"hash": 5645645445, "id":3},
+  "hashes": [
+    {"hash": 2349034334, "id":1},
+    {"hash": 5645645445, "id":3}
+  ],
+  "validation": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 }
 ```
 4. Client iterates through the returned hashes:
   1. Do I have a MessageCategory of id 1?
   2. Does it have the same hash?
-If the answer to any of these is 'no', then mark this item for full download.
+If the answer to any of these is 'no', then mark this id for full download.
 
 ### Phase 2
 1. Client wants to download any `MessageCategory`s that were marked in *Phase 1*
@@ -405,8 +508,10 @@ If the answer to any of these is 'no', then mark this item for full download.
 3. **Server** returns data in the format:
 ```json
 {
-  "1": {"id": 1, "name":"General"},
-  "3": {"id": 3, "name":"Sprint Planning"},
+  "data": {
+    "1": {"id": 1, "name":"General"},
+    "3": {"id": 3, "name":"Sprint Planning"}
+    }
 }
 ```
 4. Client downloads data
@@ -414,62 +519,90 @@ If the answer to any of these is 'no', then mark this item for full download.
 6. Client assembles the ordered result set from the information in *Phase 1* AND its *Object Cache*
 
 ### How is this implemented?
-The `Get()` method immediately passes control to its super class (`GenericGetController`) via the method `handleGet()`.
+The `Get()` method immediately passes control to its super class (`GenericController`) via the method `handleGet()`.
 ```ts
+  @Get()
+  @PrivilegeHas(`message.category.get`)
   async Get(
-    @Body() input: GenericGetInput,
-  ): Promise<GenericGetOutput<MessageCategory>> {
-    //This class inherits GenericGetController. We call handleGet() on this controller
+    @Body() input: GetInput,
+    @Request() req: CoreRequest,
+  ): Promise<SyncListOutput | SyncDataOutput> {
+    //This class inherits GenericController. We call handleGet() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
     return await this.handleGet(input);
   }
 ```
 
-Let's take a look at how `handleGet()` is defined in `/src/core/request/get.ts`:
+The purpose pf `handleGet()` method is to check `input.sync.mode` and execute the right function.
+
+`/src/core/controller/generic.controller.ts`:
 ```ts
-  private async handleGet(input: GenericGetInput): Promise<SyncResponse<T>> {
-    //SyncMode == List
+  async handleGet(input: SyncInput): Promise<SyncListOutput | SyncDataOutput> {
     if (input.sync.mode == SyncMode.List) {
-      return await this.handleList(input);
+      return this._handleList(input);
     }
-    //SyncMode == Data
-    return await this.handleData(input.sync);
+
+    return this._handleData(input.sync);
   }
 ```
 
-The only mission of `handleGet()` method is to find the syncing mode. it checks `input.sync.mode` and passes control to the relevant function.
+In Phase 1 of a Sync, `MessageCategoryController.handleList()` returns an ordered `SyncHash[]`, representing the signature of the result set. The specific set of data returned can be altered depending on the input parameters. *Up* generates `input.mode` for some different ways to query the database. *Up* generates `input.page` and `input.pageSize` for applying pagination to the result set.
 
 ```ts
-protected async handleList(input: GenericGetInput): Promise<SyncHash> {
-    let result: Promise<SyncHash>;
-    switch (input.mode) {
-      case GenericGetMode.All:
-        result = this.dataService.findSyncHash(
-          null,
-          input.page,
-          input.pageSize,
-        );
-        break;
-      case GenericGetMode.Discrete:
-        await validateInput(Discrete);
-        result = this.dataService.findSyncHash(
-          input.ids,
-          input.page,
-          input.pageSize,
-        );
-        break;
-      case GenericGetMode.ParameterSearch:
-        await validateInput(ParameterSearch);
-        result = this.dataService.findSyncHash(
-          s => {
-            return s.where(input.parameterSearch);
-          },
-          input.page,
-          input.pageSize,
-        );
-        break;
-    }
-    return result;
+async handleList(input: GetInput) {
+  let query = this.messageCategoryService
+    .createQueryBuilder()
+    .select('id', 'updateAt');
+
+  /**
+   * Apply Conditions to the query
+   */
+  switch (input.mode) {
+    case GenericGetMode.All:
+      //GenericGetMode.All -> get all rows, apply no condition
+      break;
+    case GenericGetMode.Discrete:
+      //GenericGetMode.Discrete -> get only specific ids
+      query = this.messageCategoryService.applyCondition(query, input.ids);
+      break;
+    case GenericGetMode.ParameterSearch:
+      //GenericGetMode.ParameterSearch -> get rows which match the search parameters
+      query = this.messageCategoryService.applyCondition(query, s => {
+        return s.where(input.parameterSearch);
+      });
+      break;
   }
 
+  /**
+   * Apply Pagination to the query
+   * in some cases where the dataset is so large, you may want to deny access to the service
+   * unless pagination parameters are provided.
+   */
+  if (!!input.page) {
+    query = this.messageCategoryService.applyPagination(
+      query,
+      input.page,
+      input.pageSize,
+    );
+  }
+
+  //Perform the query, get the result set.
+  let rows = await query.getMany();
+
+  //Convert the result set to hashes and return the hashes
+  let result = rows.map(v => new SyncHash(v.id, v.updatedAt));
+  return result;
+}
+```
+
+In Phase 2 of a Sync, `MessageCategoryController.handleData()` returns rows which the client has requested for download. *Up* generates a `handleData()` method which applies the stems to the result set. If only a certain columns of data should be returned, you can override this behaviour here as well.
+
+```ts
+async handleData(ids: number[]): Promise<MessageCategory[]> {
+    let query: SelectQueryBuilder<MessageCategory>;
+    query = this.messageCategoryService.createQueryBuilder();
+    //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
+    query = this.messageCategoryService.applyStems(query);
+    return await query.getMany();
+  }
 ```

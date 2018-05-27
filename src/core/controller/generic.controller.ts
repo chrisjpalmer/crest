@@ -59,7 +59,7 @@ export class GenericController<T> {
    */
   private async _handleList(input: SyncInput): Promise<SyncListOutput> {
     let resultIds = await this.handleList(input);
-    return { hashes: resultIds, validation: this.authorize(resultIds) };
+    return { hashes: resultIds, validation: await this.authorize(resultIds) };
   }
 
   protected async handleList(input: SyncInput): Promise<SyncHash[]> {
@@ -109,8 +109,6 @@ export class GenericController<T> {
         },
       );
     });
-
-    return token;
   }
 
   validate(ids: number[], token: string): Promise<void> {
