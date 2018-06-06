@@ -11,7 +11,13 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
+import {
+  GetRelation,
+  PostRelation,
+  PatchRelation,
+  SyncInput,
+  GenericGetMode,
+} from 'core';
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
@@ -44,6 +50,22 @@ export class GetParameterSearch {
   emailAddress: string;
 }
 
+export interface GetOutput {
+  id: number;
+  updatedAt: Date;
+  createdAt: Date;
+  username: string;
+
+  firstName: string;
+
+  lastName: string;
+
+  emailAddress: string;
+
+  //---------Relationships--------\\
+  role: GetRelation;
+}
+
 //-----------Post----------\\
 
 //Input
@@ -58,7 +80,7 @@ export class PostInputUser {
   @IsString() username: string;
 
   @IsString() password: string;
-
+  
   @IsString() firstName: string;
 
   @IsString() lastName: string;
@@ -68,7 +90,6 @@ export class PostInputUser {
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
-  @IsArray()
   @IsOptional()
   role: PostRelation;
 }
@@ -114,7 +135,6 @@ export class PatchInputUser {
   //---------Relationships--------\\
   @ValidateNested()
   @Type(() => PostRelation)
-  @IsArray()
   @IsOptional()
   role: PatchRelation;
 }
