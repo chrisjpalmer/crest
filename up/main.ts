@@ -30,7 +30,7 @@ async function main() {
   let coreMode = false;
   if(entityName.indexOf('core/') !== -1) {
     coreMode = true;
-    entityName = entityName.substring(0, 'core/'.length);
+    entityName = entityName.substring('core/'.length, entityName.length);
   }
 
   await perform({entityName:entityName, coreMode:coreMode}, upMode);
