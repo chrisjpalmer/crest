@@ -11,7 +11,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
+import { GetRelation, PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
@@ -36,6 +36,16 @@ export class GetParameterSearch {
   updatedAt:Date;
   createdAt:Date;
   /// < entity.class.get.field.template >
+}
+
+export interface GetOutput {
+  id:number;
+  updatedAt:Date;
+  createdAt:Date;
+  /// < entity.class.get.field.template >
+
+  //---------Relationships--------\\
+  /// < entity.class.get.relation.template >
 }
 
 //-----------Post----------\\

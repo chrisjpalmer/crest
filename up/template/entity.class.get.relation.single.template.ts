@@ -1,0 +1,1 @@
+${childEntity.fieldName}: GetRelation;

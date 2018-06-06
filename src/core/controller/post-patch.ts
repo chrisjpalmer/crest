@@ -18,6 +18,10 @@ export class PostRelation {
   @IsNumber() id: number;
 }
 
+export interface GetRelation {
+  id: number;
+}
+
 export interface patchRelationChild {
   id?: number;
 }

@@ -29,6 +29,12 @@ export async function buildClass(controllerPath: string, entity: Entity) {
     `/// < entity.class.get.field.template >`,
     getField,
   );
+  /// < entity.class.get.relation.template >
+  let getRelation = await buildClassGetRelation(entity);
+  cls = cls.replaceAll(
+    `/// < entity.class.get.relation.template >`,
+    getRelation,
+  );
   /// < entity.class.post.field.template >
   let postField = await buildClassPostField(entity);
   cls = cls.replaceAll(
@@ -86,6 +92,42 @@ function buildClassGetFieldForChild(
   });
   return getField;
 }
+
+async function buildClassGetRelation(entity: Entity) {
+  let getRelationMultiple = await readFilePromise(
+    `${templatePath}/entity.class.get.relation.multiple.template.ts`,
+  );
+  let getRelationSingle = await readFilePromise(
+    `${templatePath}/entity.class.get.relation.single.template.ts`,
+  );
+  let getRelation = '';
+
+  entity.childEntities
+    .map(c => {
+      if (c.mode == ChildEntityMode.multiple) {
+        return buildClassGetRelationForChild(entity, c, getRelationMultiple);
+      } else {
+        return buildClassGetRelationForChild(entity, c, getRelationSingle);
+      }
+    })
+    .forEach(pr => {
+      getRelation += pr + '\n\n';
+    });
+
+  return getRelation;
+}
+
+function buildClassGetRelationForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  getRelationTemplate: string,
+) {
+  let getRelation = replaceByObject(getRelationTemplate, {
+    '${childEntity.fieldName}': childEntity.fieldName,
+  });
+  return getRelation;
+}
+
 
 
 /** POST */
