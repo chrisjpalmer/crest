@@ -1,25 +1,15 @@
 {
     "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended",
-        "tslint-eslint-rules"
-    ],
     "jsRules": {
         "no-unused-expression": true
     },
     "rules": {
         "eofline": false,
-        "quotemark": [
-            true,
-            "single"
-        ],
         "indent": false,
         "member-access": [
             false
         ],
-        "only-arrow-functions": true,
         "semicolon": true,
-        "trailing-comma": [true, {"multiline": "always", "singleline": "always"}],
         "ordered-imports": [
             false
         ],
