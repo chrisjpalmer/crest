@@ -129,6 +129,8 @@ export class UserService extends GenericEntityService<User> {
   }
 
   applyStems(query: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
-    return query.leftJoin(this.mainTableAlias + '.role', 'role').addSelect('role.id');
+    return query
+      .leftJoin(this.mainTableAlias + '.role', 'role')
+      .addSelect('role.id');
   }
 }

@@ -80,7 +80,7 @@ export class PostInputUser {
   @IsString() username: string;
 
   @IsString() password: string;
-  
+
   @IsString() firstName: string;
 
   @IsString() lastName: string;
@@ -115,7 +115,7 @@ export class PatchInputUser {
   @IsString()
   @IsOptional()
   username: string;
-  
+
   @IsString()
   @IsOptional()
   password: string;

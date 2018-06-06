@@ -44,6 +44,8 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
   applyStems(
     query: SelectQueryBuilder<Privilege>,
   ): SelectQueryBuilder<Privilege> {
-    return query.leftJoin(this.mainTableAlias + '.roles', 'role').addSelect('role.id');
+    return query
+      .leftJoin(this.mainTableAlias + '.roles', 'role')
+      .addSelect('role.id');
   }
 }

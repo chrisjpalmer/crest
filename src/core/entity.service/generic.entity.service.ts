@@ -24,7 +24,10 @@ export class GenericEntityService<T extends GenericEntity> {
    * @param mainTableAlias the lowercase name of the entity e.g. 'privilege', this is initialized through a call to super()
    * @param nameColumn the unique string column that is associated with each row of the entity e.g. 'name' OR 'username', this is initiailzed through a call to super()
    */
-  constructor(protected mainTableAlias: string, protected nameColumn?: string) {}
+  constructor(
+    protected mainTableAlias: string,
+    protected nameColumn?: string,
+  ) {}
   async existsById(id: number): Promise<boolean> {
     return !!await this.findById(id);
   }
