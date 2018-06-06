@@ -1,1 +1,1 @@
-${childEntity.fieldName}: GetRelation[];
+${childEntity.fieldName}: Partial<GetRelation>[];

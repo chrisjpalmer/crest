@@ -63,7 +63,7 @@ export interface GetOutput {
   emailAddress: string;
 
   //---------Relationships--------\\
-  role: GetRelation;
+  role: Partial<GetRelation>;
 }
 
 //-----------Post----------\\
@@ -115,7 +115,7 @@ export class PatchInputUser {
   @IsString()
   @IsOptional()
   username: string;
-
+  
   @IsString()
   @IsOptional()
   password: string;
@@ -137,6 +137,29 @@ export class PatchInputUser {
   @Type(() => PostRelation)
   @IsOptional()
   role: PatchRelation;
+
+  @ValidateNested()
+  @Type(() => PostRelation)
+  @IsArray()
+  @IsOptional()
+  sessions: PatchRelation[];
+
+  @ValidateNested()
+  @Type(() => PostRelation)
+  @IsOptional()
+  userPassword: PatchRelation;
+
+  @ValidateNested()
+  @Type(() => PostRelation)
+  @IsArray()
+  @IsOptional()
+  messages: PatchRelation[];
+
+  @ValidateNested()
+  @Type(() => PostRelation)
+  @IsArray()
+  @IsOptional()
+  requestLogs: PatchRelation[];
 }
 
 //Output

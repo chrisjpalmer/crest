@@ -21,6 +21,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
 import {
   GetInput,
+  GetOutput,
   PatchInput,
   PostInput,
   PostOutput,
@@ -117,7 +118,7 @@ export class UserController extends GenericController<User> {
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids: number[]): Promise<User[]> {
+  async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
     let query: SelectQueryBuilder<User>;
     query = this.userService.createQueryBuilder();
     //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
