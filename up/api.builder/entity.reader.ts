@@ -12,12 +12,13 @@ import {
   toLowerTitleCase,
   hasUniqueIndex,
   dotCase,
+  getEntityPath,
 } from '../util/util';
 
 /**
  * Open a file which corresponds to the entity we want to generate code for.
  * Read the file and return a class which represents the entity.
- * If the entityName was faultCategory, readEntityClass searches for the file src/database/app/fault.category.entity.ts
+ * If the entityName was faultCategory, readEntityClass searches for the file ${entityPath}/fault.category.entity.ts
  * @param entityName upper or lower camelcase name of the entity e.g. FaultCategory or faultCategory
  */
 export function readEntityClass(entityName: string, entityFilename: string) {
@@ -30,7 +31,7 @@ export function readEntityClass(entityName: string, entityFilename: string) {
   //Get the members of the source entity
   let project = new Project();
   let sourceFile = project.addExistingSourceFile(
-    `src/database/app/${entityFilename}.entity.ts`,
+    `${getEntityPath()}/${entityFilename}.entity.ts`,
   );
   let sourceClass = sourceFile.getClassOrThrow(entity.upper);
   let sourceNodes = sourceClass.getProperties();

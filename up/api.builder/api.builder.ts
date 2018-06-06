@@ -1,5 +1,5 @@
 import { Params } from "../util/util.class";
-import { dotCase, appRoutesPath, mkdirRecursive, writeFilePromise } from "../util/util";
+import { dotCase, appRoutesPath, mkdirRecursive, writeFilePromise, setEntityPath } from "../util/util";
 import { buildController } from "./controller.builder";
 import { buildClass } from "./class.builder";
 import { buildService } from "./service.builder";
@@ -7,6 +7,9 @@ import { readEntityClass } from "./entity.reader";
 import { AddToModule } from "./module.builder";
 
 export async function createAPI(params:Params) {
+    if(params.coreMode) {
+      setEntityPath('src/database/core');
+    }
     //For testing purposes
     let prefix = '';
   

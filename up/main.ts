@@ -1,8 +1,8 @@
-import { UpMode, Params } from "./util/util.class";
-import { RunFormatter } from "./util/util";
-import { createAPI } from "./api.builder/api.builder";
-import { createEntity } from "./entity.builder/entity.builder";
-import "./util/string.util";
+import { UpMode, Params } from './util/util.class';
+import { RunFormatter } from './util/util';
+import { createAPI } from './api.builder/api.builder';
+import { createEntity } from './entity.builder/entity.builder';
+import './util/string.util';
 
 async function main() {
   let entityName:string = "";
@@ -27,7 +27,13 @@ async function main() {
     entityName = args[0];
   }
 
-  await perform({entityName:entityName}, upMode);
+  let coreMode = false;
+  if(entityName.indexOf('core/') !== -1) {
+    coreMode = true;
+    entityName = entityName.substring(0, 'core/'.length);
+  }
+
+  await perform({entityName:entityName, coreMode:coreMode}, upMode);
 }
 
 async function perform(params:Params, mode:UpMode) {
