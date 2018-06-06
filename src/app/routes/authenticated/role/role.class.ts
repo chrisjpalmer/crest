@@ -11,7 +11,13 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
+import {
+  GetRelation,
+  PostRelation,
+  PatchRelation,
+  SyncInput,
+  GenericGetMode,
+} from 'core';
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
@@ -38,6 +44,18 @@ export class GetParameterSearch {
   name: string;
 
   description: string;
+}
+
+export interface GetOutput {
+  id: number;
+  updatedAt: Date;
+  createdAt: Date;
+  name: string;
+
+  description: string;
+
+  //---------Relationships--------\\
+  privileges: Partial<GetRelation>[];
 }
 
 //-----------Post----------\\
