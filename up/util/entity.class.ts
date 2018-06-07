@@ -49,7 +49,7 @@ export function toFieldType(t: Type<ts.Type>) {
     case 'boolean':
       return FieldType.Boolean;
     case 'number':
-      return FieldType.Boolean;
+      return FieldType.Number;
   }
   return null; //unsupported
 }
