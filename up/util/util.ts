@@ -154,6 +154,18 @@ export function hasUniqueIndex(n: PropertyDeclaration) {
   return true;
 }
 
+export function isTypeORMField(n: PropertyDeclaration) {
+  const typeORMDecorators = ["Column", "ManyToOne", "OneToMany", "OneToOne","PrimaryGeneratedColumn","CreateDateColumn","UpdateDateColumn"];
+  //Is at least one of the node's decorators a typeORM decorator? - do some / one correspond to the typeORMDecorators array
+  let aDecoratorIsTypeORM = n.getDecorators().some(nodeDecorator => {
+    let nodeDecoratorText = nodeDecorator.getName();
+    //Is nodeDecoratorText in typeORMDecorators? - do some / one resemble nodeDecoratorText?
+    let nodeDecoratorIsTypeORM = typeORMDecorators.some(typeORMDecorator => nodeDecoratorText.indexOf(typeORMDecorator) !== -1);
+    return nodeDecoratorIsTypeORM;
+  });
+  return aDecoratorIsTypeORM;
+}
+
 export function RunFormatter() {
   shell.exec('npm run format', { async: false });
 }

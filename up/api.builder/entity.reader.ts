@@ -13,6 +13,7 @@ import {
   hasUniqueIndex,
   dotCase,
   getEntityPath,
+  isTypeORMField,
 } from '../util/util';
 
 /**
@@ -46,7 +47,10 @@ export function readEntityClass(entityName: string, entityFilename: string) {
    * TODO: Make this process take into account TypeORM decorators instead of assuming
    * all model properties are used for TypeORM
    */
-  sourceNodes.forEach(n => {
+
+  sourceNodes
+  .filter(n => isTypeORMField(n)) //Only bother processing fields which have typeORM decorators ie. are database fields
+  .forEach(n => {
     let t = n.getType();
     let mode: ChildMode;
 
