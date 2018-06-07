@@ -7,13 +7,9 @@
 import { Component, BadRequestException } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Privilege, PrivilegeToken } from 'database';
-import {
-  IndexSet,
-  RepoAllType,
-  StitchSet,
-  InjectRepo,
-  GenericEntityService,
-} from 'core';
+import { GenericEntityService } from './generic.entity.service';
+import { InjectRepo } from '../core/core.database.provider';
+import { StitchSet } from '../core/core.database.util';
 import { Role } from 'database';
 
 @Component()

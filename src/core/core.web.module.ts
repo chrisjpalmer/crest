@@ -1,7 +1,7 @@
 /** BOILERPLATE - don't touch unless you are brave */
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigService } from './service/config.service';
-import { PrivilegeGuard } from './request/privilege.guard';
+import { PrivilegeGuard } from './controller/privilege.guard';
 import { UserService } from './entity.service/user.service';
 import { RoleService } from './entity.service/role.service';
 import { PrivilegeService } from './entity.service/privilege.service';
@@ -14,7 +14,7 @@ import {
 } from './core/core.database.provider';
 import { NestProvider } from './core/core.provider';
 import { CryptoService } from './auth/crypto.service';
-import { LoggingInterceptor } from './request/logging.interceptor';
+import { LoggingInterceptor } from './controller/logging.interceptor';
 
 @Module({
   components: [
