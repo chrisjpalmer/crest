@@ -155,7 +155,7 @@ export function hasUniqueIndex(n: PropertyDeclaration) {
 }
 
 export function isTypeORMField(n: PropertyDeclaration) {
-  const typeORMDecorators = ["Column", "ManyToOne", "OneToMany", "OneToOne","PrimaryGeneratedColumn","CreateDateColumn","UpdateDateColumn"];
+  const typeORMDecorators = ["Column", "ManyToOne", "OneToMany", "OneToOne", "ManyToMany", "PrimaryGeneratedColumn", "CreateDateColumn", "UpdateDateColumn"];
   //Is at least one of the node's decorators a typeORM decorator? - do some / one correspond to the typeORMDecorators array
   let aDecoratorIsTypeORM = n.getDecorators().some(nodeDecorator => {
     let nodeDecoratorText = nodeDecorator.getName();
