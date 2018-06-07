@@ -3,30 +3,22 @@
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
-import { Get, Controller, Param, Post, Body, Patch } from '@nestjs/common';
-import { AuthController, AuthService, UserService, InjectRepo } from 'core';
-import { Repository } from 'typeorm';
-import { Role, RoleToken } from 'database';
-import { PostInput, PostOutput } from './login.class';
+import { Get, Controller, Param, Post, Body, Patch, Request } from '@nestjs/common';
+import { AuthController, AuthService, InjectRepo, CoreRequest } from 'core';
+import { PostInput, PostOutput } from './logout.class';
 
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 @Controller('login')
-export class LoginController {
+export class LogoutController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
-    @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
   ) {}
 
   @Post()
-  async Post(@Body() input: PostInput): Promise<PostOutput> {
-    let user = await this.authService.authenticatedUserCred(
-      input.username,
-      input.password,
-    );
-    let token = await this.authService.createUserToken(user.id);
-    return { token: token.access_token };
+  async Post(@Body() input: PostInput, @Request() req:CoreRequest): Promise<PostOutput> {
+    let user = await this.authService.deleteUserSession(req.user.currentSession);
+    return { sessionId: req.user.currentSession.id };
   }
 }

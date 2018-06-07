@@ -13,10 +13,6 @@
         "ordered-imports": [
             false
         ],
-        "max-line-length": [
-            true,
-            120
-        ],
         "member-ordering": [
             false
         ],

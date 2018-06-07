@@ -16,6 +16,7 @@ import { Entities as CoreEntities } from 'database';
 import * as passport from 'passport';
 import { InitController } from './routes/init/init.controller';
 import { LoginController } from './routes/login/login.controller';
+import { LogoutController } from './routes/logout/logout.controller';
 import { UserController } from './routes/authenticated/user/user.controller';
 
 @Module({
@@ -27,6 +28,8 @@ import { UserController } from './routes/authenticated/user/user.controller';
     InitController,
     // /login
     LoginController,
+    // /logout
+    LogoutController,
 
     // /authenticated
 

@@ -50,6 +50,14 @@ export class AuthService {
   }
 
   /**
+   * deletes the user's session to effectively logout the user.
+   * @param sessionId should be the sessionId that was provided in the JWT token
+   */
+  async deleteUserSession(session:Session) {
+    await this.sessionRepository.delete(session.id);
+  }
+
+  /**
    * authenticatedUserCred is called by a login controller
    * its job is to verify the user's credentials
    * if success it returns the user object
@@ -134,6 +142,9 @@ export class AuthService {
     session.lastUsed = new Date();
     await this.sessionRepository.save(session);
 
-    return await this.userService.findById(authPayload.userId);
+    let userToReturn = await this.userService.findById(authPayload.userId);
+    userToReturn.currentSession = session;
+
+    return userToReturn;
   }
 }
