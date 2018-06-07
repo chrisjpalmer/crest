@@ -8,7 +8,7 @@
     "login": "bash src/tester/login.sh",
     "format": "prettier --write \"src/**/*.ts\"",
     "format-up": "prettier --write \"up/*.ts\"",
-    "init": "ts-node -r tsconfig-paths/register config/main.ts",
+    "init": "ts-node -r tsconfig-paths/register config/template/main.ts",
     "up": "ts-node -r tsconfig-paths/register up/main.ts",
     "start:dev": "nodemon",
     "prestart:prod": "rm -rf dist && tsc",

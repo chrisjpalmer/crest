@@ -52,7 +52,7 @@
                 "ts-node/register",
                 "-r",
                 "tsconfig-paths/register",
-                "config/main.ts"
+                "config/template/main.ts"
             ],
             "cwd": "${workspaceFolder}",
             "protocol": "inspector"
