@@ -46,7 +46,7 @@ function promptPromise(prompts: any[]): any {
 }
 
 async function main() {
-  let gitUrl: string = '';
+  let gitUrl: string = 'https://my.git.url';
   let cwd: string = process.cwd();
 
 
@@ -97,7 +97,7 @@ async function main() {
   configJSONData.auth.keyPath = path.join(cwd, 'config', 'config.json');
   await writeFilePromise(
     `${cwd}/config/config.json`,
-    JSON.stringify(configJSONData),
+    JSON.stringify(configJSONData, null, " "),
   );
 
   //package.json
@@ -106,11 +106,12 @@ async function main() {
   let packageJSONData = JSON.parse(packageJSON);
   packageJSONData.scripts.start = `ts-node -r tsconfig-paths/register src/main.ts --config=\"${path.join(
     cwd,
-    'package.json',
+    'config',
+    'config.json',
   )}\"`;
   await writeFilePromise(
     `${cwd}/package.json`,
-    JSON.stringify(packageJSONData),
+    JSON.stringify(packageJSONData, null, " "),
   );
 }
 

@@ -24,16 +24,14 @@ Crest creates standard CRUD APIs with the following features:
 
 
 ## Getting Started
-### Prepare
+### Init
 Get the npm packages
 ```bash
 cd projdir #Or open the command console in VS Code
 npm install
+npm run init
+set config/config.json with your database settings
 ```
-
-### MySQL
-1. Boot up a MySQL Server
-2. update `config.json` with your database settings
 
 ### Up
 Create the demo APIs
@@ -48,6 +46,7 @@ npm run up MessageCategory
 cd projdir #Or open the command console in VS Code
 npm run start
 ```
+
 ### Test
 Crest supports a test system which allows you to send json payloads to the web server.
 The payloads are located under the `src/tester` folder and are organized according to the resource path.
