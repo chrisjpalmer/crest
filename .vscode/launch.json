@@ -40,5 +40,22 @@
             "cwd": "${workspaceFolder}",
             "protocol": "inspector"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Init",
+            "runtimeArgs": [
+                "--no-lazy"
+            ],
+            "args": [
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register",
+                "config/main.ts"
+            ],
+            "cwd": "${workspaceFolder}",
+            "protocol": "inspector"
+        },
     ]
 }

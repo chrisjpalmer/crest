@@ -8,7 +8,7 @@
     "login": "bash src/tester/login.sh",
     "format": "prettier --write \"src/**/*.ts\"",
     "format-up": "prettier --write \"up/*.ts\"",
-    "start": "ts-node -r tsconfig-paths/register src/main.ts --config=\"E:\\Documents\\Software Local\\Nest\\nest-co2-sample\\config.json\"",
+    "init": "ts-node -r tsconfig-paths/register config/main.ts",
     "up": "ts-node -r tsconfig-paths/register up/main.ts",
     "start:dev": "nodemon",
     "prestart:prod": "rm -rf dist && tsc",

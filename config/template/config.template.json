@@ -1,0 +1,17 @@
+{
+    "database": {
+        "username":"",
+        "password":"",
+        "host":"",
+        "port":3306,
+        "schema":""
+    },
+    "auth": {
+        "keyPath":"path/to/this/repo/key.pem",
+        "expiry":3600,
+        "saltRounds":10
+    },
+    "app": {
+        "debug": true
+    }
+}
