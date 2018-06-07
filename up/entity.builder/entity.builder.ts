@@ -1,5 +1,5 @@
 import { Params } from "../util/util.class";
-import { templatePath, replaceByObject, readFilePromise, dotCase, writeFilePromise, entityPath, toUpperTitleCase } from "../util/util";
+import { templatePath, replaceByObject, readFilePromise, dotCase, writeFilePromise, toUpperTitleCase, getEntityPath } from "../util/util";
 import Project from 'ts-simple-ast';
 
 export async function createEntity(params: Params) {
@@ -13,7 +13,7 @@ export async function createEntity(params: Params) {
     let entity = replaceByObject(entityTemplate, {
         '${entity.upper}': entityUpper,
     });
-    await writeFilePromise(`${entityPath}/${entityDot}.entity.ts`, entity);
+    await writeFilePromise(`${getEntityPath()}/${entityDot}.entity.ts`, entity);
 
     //Append the entity to the index.ts file
     let sourceFile = await readFilePromise(
