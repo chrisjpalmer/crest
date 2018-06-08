@@ -57,10 +57,10 @@ export function addToComponentsArray(
 ) {
   let controllersConfig = moduleConfig.getPropertyOrThrow('components');
   let originalStatement = controllersConfig.getText();
-  let comma = "";
+  let comma = '';
 
-  if(originalStatement.indexOf('[]') === -1) {
-    comma = ","
+  if (originalStatement.indexOf('[]') === -1) {
+    comma = ',';
   }
 
   let closingArrayBracket = originalStatement.indexOf(']');
@@ -70,6 +70,9 @@ export function addToComponentsArray(
     originalStatement.length - closingArrayBracket,
   );
   let newStatement =
-    topArrayExpression + comma + `${entity.upper}Service` + bottomArrayExpression;
+    topArrayExpression +
+    comma +
+    `${entity.upper}Service` +
+    bottomArrayExpression;
   controllersConfig.replaceWithText(newStatement);
 }

@@ -49,53 +49,53 @@ export function readEntityClass(entityName: string, entityFilename: string) {
    */
 
   sourceNodes
-  .filter(n => isTypeORMField(n)) //Only bother processing fields which have typeORM decorators ie. are database fields
-  .forEach(n => {
-    let t = n.getType();
-    let mode: ChildMode;
+    .filter(n => isTypeORMField(n)) //Only bother processing fields which have typeORM decorators ie. are database fields
+    .forEach(n => {
+      let t = n.getType();
+      let mode: ChildMode;
 
-    //Is the type of object an array OR object. If so, this represents a relatinship.
-    if (t.isObjectType() || t.isArrayType()) {
-      mode = ChildMode.relationship;
-    } else {
-      mode = ChildMode.field;
-    }
+      //Is the type of object an array OR object. If so, this represents a relatinship.
+      if (t.isObjectType() || t.isArrayType()) {
+        mode = ChildMode.relationship;
+      } else {
+        mode = ChildMode.field;
+      }
 
-    //Based on the whether this is a relationship OR field, lets add members
-    //To the child entity class
-    switch (mode) {
-      case ChildMode.relationship:
-        let childEntity: ChildEntity = new ChildEntity();
-        childEntity.fieldName = n.getName();
+      //Based on the whether this is a relationship OR field, lets add members
+      //To the child entity class
+      switch (mode) {
+        case ChildMode.relationship:
+          let childEntity: ChildEntity = new ChildEntity();
+          childEntity.fieldName = n.getName();
 
-        //inspect whether the property is an object
-        //if so, its type will be the relation's entity type.
-        //we can extract the type information from there
-        //if the object is an array... we need to extract the get
-        if (t.isArrayType()) {
-          childEntity.mode = ChildEntityMode.multiple;
-          childEntity.upper = t.getArrayType().getText();
-          childEntity.lower = toLowerTitleCase(childEntity.upper);
-        } else {
-          childEntity.mode = ChildEntityMode.single;
-          childEntity.upper = t.getText();
-          childEntity.lower = toLowerTitleCase(childEntity.upper);
-        }
-        entity.childEntities.push(childEntity);
-        break;
-      case ChildMode.field:
-        let childField: ChildField = new ChildField();
-        childField.fieldName = n.getName();
-        childField.fieldType = toFieldType(t);
-        if (hasUniqueIndex(n)) {
-          if (!entity.uniqueIndex) {
-            entity.uniqueIndex = childField;
+          //inspect whether the property is an object
+          //if so, its type will be the relation's entity type.
+          //we can extract the type information from there
+          //if the object is an array... we need to extract the get
+          if (t.isArrayType()) {
+            childEntity.mode = ChildEntityMode.multiple;
+            childEntity.upper = t.getArrayType().getText();
+            childEntity.lower = toLowerTitleCase(childEntity.upper);
+          } else {
+            childEntity.mode = ChildEntityMode.single;
+            childEntity.upper = t.getText();
+            childEntity.lower = toLowerTitleCase(childEntity.upper);
           }
-        }
-        entity.childFields.push(childField);
-        break;
-    }
-  });
+          entity.childEntities.push(childEntity);
+          break;
+        case ChildMode.field:
+          let childField: ChildField = new ChildField();
+          childField.fieldName = n.getName();
+          childField.fieldType = toFieldType(t);
+          if (hasUniqueIndex(n)) {
+            if (!entity.uniqueIndex) {
+              entity.uniqueIndex = childField;
+            }
+          }
+          entity.childFields.push(childField);
+          break;
+      }
+    });
 
   return entity;
 }

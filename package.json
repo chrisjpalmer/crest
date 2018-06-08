@@ -9,7 +9,7 @@
     "format-app": "prettier --write \"src/app/**/*.ts\"",
     "format-core": "prettier --write \"src/core/**/*.ts\"",
     "format-database": "prettier --write \"src/database/**/*.ts\"",
-    "format-up": "prettier --write \"up/*.ts\"",
+    "format-up": "prettier --write \"up/**/*.ts\" --ignore-path \"up/.prettierignore\"",
     "init": "ts-node -r tsconfig-paths/register config/template/main.ts",
     "up": "ts-node -r tsconfig-paths/register up/main.ts",
     "start:dev": "nodemon",

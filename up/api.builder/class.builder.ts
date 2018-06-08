@@ -25,10 +25,7 @@ export async function buildClass(controllerPath: string, entity: Entity) {
 
   /// < entity.class.get.field.template >
   let getField = await buildClassGetField(entity);
-  cls = cls.replaceAll(
-    `/// < entity.class.get.field.template >`,
-    getField,
-  );
+  cls = cls.replaceAll(`/// < entity.class.get.field.template >`, getField);
   /// < entity.class.get.relation.template >
   let getRelation = await buildClassGetRelation(entity);
   cls = cls.replaceAll(
@@ -37,10 +34,7 @@ export async function buildClass(controllerPath: string, entity: Entity) {
   );
   /// < entity.class.post.field.template >
   let postField = await buildClassPostField(entity);
-  cls = cls.replaceAll(
-    `/// < entity.class.post.field.template >`,
-    postField,
-  );
+  cls = cls.replaceAll(`/// < entity.class.post.field.template >`, postField);
   /// < entity.class.post.relation.template >
   let postRelation = await buildClassPostRelation(entity);
   cls = cls.replaceAll(
@@ -49,10 +43,7 @@ export async function buildClass(controllerPath: string, entity: Entity) {
   );
   /// < entity.class.patch.field.template >
   let patchField = await buildClassPatchField(entity);
-  cls = cls.replaceAll(
-    `/// < entity.class.patch.field.template >`,
-    patchField,
-  );
+  cls = cls.replaceAll(`/// < entity.class.patch.field.template >`, patchField);
   /// < entity.class.patch.relation.template >
   let patchRelation = await buildClassPatchRelation(entity);
   cls = cls.replaceAll(
@@ -127,8 +118,6 @@ function buildClassGetRelationForChild(
   });
   return getRelation;
 }
-
-
 
 /** POST */
 async function buildClassPostField(entity: Entity) {

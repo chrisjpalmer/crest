@@ -9,7 +9,7 @@ export var templatePath: string = 'up/template';
 export var appRoutesPath: string = 'src/app/routes';
 var entityPath: string = 'src/database/app';
 
-export function setEntityPath(path:string) {
+export function setEntityPath(path: string) {
   entityPath = path;
 }
 
@@ -136,44 +136,59 @@ export function hasUniqueIndex(n: PropertyDeclaration) {
   if (!indexDecorator) {
     return false;
   }
-  let oneArgumentContainsATrueUniqueProperty = indexDecorator.getArguments().some((arg:ObjectLiteralExpression) =>  {
-    let uniqueProperty = arg.getProperty('unique');
-    if(!uniqueProperty){
-      return false;
-    }
+  let oneArgumentContainsATrueUniqueProperty = indexDecorator
+    .getArguments()
+    .some((arg: ObjectLiteralExpression) => {
+      let uniqueProperty = arg.getProperty('unique');
+      if (!uniqueProperty) {
+        return false;
+      }
 
-    if(uniqueProperty.getText().indexOf('true') === -1) {
-      return false;
-    }
+      if (uniqueProperty.getText().indexOf('true') === -1) {
+        return false;
+      }
 
-    return true;
-  });
-  if(!oneArgumentContainsATrueUniqueProperty) {
+      return true;
+    });
+  if (!oneArgumentContainsATrueUniqueProperty) {
     return false;
   }
   return true;
 }
 
 export function isTypeORMField(n: PropertyDeclaration) {
-  const typeORMDecorators = ["Column", "ManyToOne", "OneToMany", "OneToOne", "ManyToMany", "PrimaryGeneratedColumn", "CreateDateColumn", "UpdateDateColumn"];
+  const typeORMDecorators = [
+    'Column',
+    'ManyToOne',
+    'OneToMany',
+    'OneToOne',
+    'ManyToMany',
+    'PrimaryGeneratedColumn',
+    'CreateDateColumn',
+    'UpdateDateColumn',
+  ];
   //Is at least one of the node's decorators a typeORM decorator? - do some / one correspond to the typeORMDecorators array
   let aDecoratorIsTypeORM = n.getDecorators().some(nodeDecorator => {
     let nodeDecoratorText = nodeDecorator.getName();
     //Is nodeDecoratorText in typeORMDecorators? - do some / one resemble nodeDecoratorText?
-    let nodeDecoratorIsTypeORM = typeORMDecorators.some(typeORMDecorator => nodeDecoratorText.indexOf(typeORMDecorator) !== -1);
+    let nodeDecoratorIsTypeORM = typeORMDecorators.some(
+      typeORMDecorator => nodeDecoratorText.indexOf(typeORMDecorator) !== -1,
+    );
     return nodeDecoratorIsTypeORM;
   });
   return aDecoratorIsTypeORM;
 }
 
-export function RunFormatterFile(file:string) {
+export function RunFormatterFile(file: string) {
   RunFormatter(`${file}`);
 }
 
-export function RunFormatterDir(dir:string) {
+export function RunFormatterDir(dir: string) {
   RunFormatter(`${dir}/**/*.ts`);
 }
 
-function RunFormatter(filter:string) {
-  shell.exec(`node node_modules/prettier/bin-prettier.js --write ${filter}`, {async: false});
+function RunFormatter(filter: string) {
+  shell.exec(`node node_modules/prettier/bin-prettier.js --write ${filter}`, {
+    async: false,
+  });
 }
