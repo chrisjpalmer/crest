@@ -62,7 +62,7 @@ export class User extends GenericEntity {
   @OneToMany(type => Session, session => session.user)
   sessions?: Session[];
 
-  currentSession?:Session; //Not used for database purposes
+  currentSession?: Session; //Not used for database purposes
 
   //UserPassword
   @OneToOne(type => UserPassword, userPassword => userPassword.user)

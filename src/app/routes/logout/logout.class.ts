@@ -7,10 +7,9 @@ import { IsString, IsNotEmpty } from 'class-validator';
 //-----------POST----------\\
 
 //Input
-export class PostInput {
-}
+export class PostInput {}
 
 //Output
 export class PostOutput {
-  sessionId:number;
+  sessionId: number;
 }

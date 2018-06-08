@@ -53,7 +53,7 @@ export class AuthService {
    * deletes the user's session to effectively logout the user.
    * @param sessionId should be the sessionId that was provided in the JWT token
    */
-  async deleteUserSession(session:Session) {
+  async deleteUserSession(session: Session) {
     await this.sessionRepository.delete(session.id);
   }
 
