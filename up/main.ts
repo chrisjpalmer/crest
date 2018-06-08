@@ -1,5 +1,4 @@
 import { UpMode, Params } from './util/util.class';
-import { RunFormatter } from './util/util';
 import { createAPI } from './api.builder/api.builder';
 import { createEntity } from './entity.builder/entity.builder';
 import './util/string.util';
@@ -45,7 +44,6 @@ async function perform(params:Params, mode:UpMode) {
       await createEntity(params);
       break;
   }
-  RunFormatter();
 }
 
 

@@ -1,8 +1,10 @@
 import { Params } from "../util/util.class";
-import { templatePath, replaceByObject, readFilePromise, dotCase, writeFilePromise, toUpperTitleCase, getEntityPath } from "../util/util";
+import { templatePath, replaceByObject, readFilePromise, dotCase, writeFilePromise, toUpperTitleCase, getEntityPath, RunFormatterFile } from "../util/util";
 import Project from 'ts-simple-ast';
 
 export async function createEntity(params: Params) {
+    const entityIndexPath = `src/database/index.ts`;
+
     let entityDot = dotCase(params.entityName);
     let entityUpper = toUpperTitleCase(params.entityName);
 
@@ -13,11 +15,12 @@ export async function createEntity(params: Params) {
     let entity = replaceByObject(entityTemplate, {
         '${entity.upper}': entityUpper,
     });
-    await writeFilePromise(`${getEntityPath()}/${entityDot}.entity.ts`, entity);
+    let entityFilepath = `${getEntityPath()}/${entityDot}.entity.ts`;
+    await writeFilePromise(entityFilepath, entity);
 
     //Append the entity to the index.ts file
     let sourceFile = await readFilePromise(
-        `src/database/index.ts`
+        entityIndexPath
     );
     
     //Add code to export the entity
@@ -26,5 +29,7 @@ export async function createEntity(params: Params) {
     sourceFile = sourceFile.replace('/// < export entity.token >', `export const ${entityUpper}Token = '${entityUpper}';\n/// < export entity.token >`);
     sourceFile = sourceFile.replace('/// < export entity.object >', `{ token: ${entityUpper}Token, type: ${entityUpper} },\n/// < export entity.object >`);
 
-    await writeFilePromise(`src/database/index.ts`, sourceFile);
+    await writeFilePromise(entityIndexPath, sourceFile);
+    RunFormatterFile(entityFilepath);
+    RunFormatterFile(entityIndexPath);
 }

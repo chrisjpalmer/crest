@@ -1,5 +1,5 @@
 import { Params } from "../util/util.class";
-import { dotCase, appRoutesPath, mkdirRecursive, writeFilePromise, setEntityPath } from "../util/util";
+import { dotCase, appRoutesPath, mkdirRecursive, writeFilePromise, setEntityPath, RunFormatterDir, RunFormatterFile } from "../util/util";
 import { buildController } from "./controller.builder";
 import { buildClass } from "./class.builder";
 import { buildService } from "./service.builder";
@@ -35,4 +35,7 @@ export async function createAPI(params:Params) {
     await writeFilePromise(`${path}/${entityFilename}.service.ts`, serviceCode);
   
     AddToModule(controllerPath, entityFilename, entity);
+
+    RunFormatterDir(path);
+    RunFormatterFile(`src/app/app.module.ts`);
   }

@@ -6,7 +6,9 @@
   "scripts": {
     "use": "bash src/tester/use.sh",
     "login": "bash src/tester/login.sh",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format-app": "prettier --write \"src/app/**/*.ts\"",
+    "format-core": "prettier --write \"src/core/**/*.ts\"",
+    "format-database": "prettier --write \"src/database/**/*.ts\"",
     "format-up": "prettier --write \"up/*.ts\"",
     "init": "ts-node -r tsconfig-paths/register config/template/main.ts",
     "up": "ts-node -r tsconfig-paths/register up/main.ts",

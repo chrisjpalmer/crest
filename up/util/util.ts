@@ -166,6 +166,14 @@ export function isTypeORMField(n: PropertyDeclaration) {
   return aDecoratorIsTypeORM;
 }
 
-export function RunFormatter() {
-  shell.exec('npm run format', { async: false });
+export function RunFormatterFile(file:string) {
+  RunFormatter(`${file}`);
+}
+
+export function RunFormatterDir(dir:string) {
+  RunFormatter(`${dir}/**/*.ts`);
+}
+
+function RunFormatter(filter:string) {
+  shell.exec(`node node_modules/prettier/bin-prettier.js --write ${filter}`, {async: false});
 }
