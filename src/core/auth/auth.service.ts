@@ -69,8 +69,6 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<User> {
-    let hash = await this.cryptoService.hashPassword(password);
-
     let user: User = null;
     try {
       //TODO: Consider whether this could be done more succintly with just

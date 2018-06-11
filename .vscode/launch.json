@@ -17,7 +17,7 @@
                 "-r",
                 "tsconfig-paths/register",
                 "src/main.ts",
-                "--config=config.json"
+                "--config=config/config.json"
             ],
             "cwd": "${workspaceFolder}",
             "protocol": "inspector"

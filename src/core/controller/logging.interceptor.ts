@@ -55,14 +55,14 @@ export class LoggingInterceptor implements NestInterceptor {
     /**
      * Perform logging
      */
-    stream$ = stream$
-      .do(async () => {
+    stream$.subscribe(
+      async () => {
         await this.postLog(requestLog);
-      })
-      .catch(async err => {
+      },
+      async err => {
         await this.postLog(requestLog, err);
-        return Observable.of(null);
-      });
+      },
+    );
 
     /**
      * Handle Exceptions
@@ -71,7 +71,8 @@ export class LoggingInterceptor implements NestInterceptor {
     if (this.configService.app.debug) {
       //In debug mode, expose the exception directly to the output.
       stream$ = stream$.catch(err => {
-        if (err instanceof HttpException) {
+        if (err.getStatus !== undefined) {
+          //Test is it of HttpException class?
           return Observable.throw(err); //Just throw the exception if we already have an HTTP exception
         } else {
           return Observable.throw(
