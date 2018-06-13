@@ -122,7 +122,7 @@ export class LoggingInterceptor implements NestInterceptor {
         requestLog.uri
       } - TIME: ${requestLog.endTime.toISOString()} - DURATION: ${
         requestLog.duration
-      }ms`,
+      }ms` + (exception ? ` - ERROR: ${exception}` : '')
     );
   }
 }
