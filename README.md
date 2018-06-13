@@ -53,7 +53,7 @@ The payloads are located under the `src/tester` folder and are organized accordi
 
 Try these commands to get going as a root user:
 ```bash
-curl -X POST http://localhost:3000/init
+curl -X POST -H 'Content-Type: application/json' http://localhost:3000/init
 npm run login root.post myuser #Login as "root" user, save auth as "myuser"
 npm run use message/create.post myuser #POST message/create.post as "myuser"
 ``` 
