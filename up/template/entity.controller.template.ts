@@ -67,7 +67,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
   async handleList(input:GetInput) {
     let query = this.${entity.lower}Service
         .createQueryBuilder()
-        .select('id', 'updateAt');
+        .select(this.${entity.lower}Service.transformColumns(['id', 'updatedAt']));
     
     /**
      * Apply Conditions to the query
@@ -116,8 +116,9 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
   async handleData(ids:number[]) : Promise<Partial<GetOutput>[]> {
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
-    //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
+    //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.${entity.lower}Service.applyStems(query);
+    query = this.${entity.lower}Service.applyCondition(query, ids);
     return await query.getMany();
   }
 

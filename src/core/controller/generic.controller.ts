@@ -74,7 +74,7 @@ export class GenericController<T> {
    * @param sync
    */
   private async _handleData(sync: Sync): Promise<SyncDataOutput> {
-    this.validate(sync.ids, sync.validation);
+    await this.validate(sync.ids, sync.validation);
 
     let resultData = await this.handleData(sync.ids);
     let mappedData = IndexSet(resultData, v => v.id);
@@ -91,12 +91,6 @@ export class GenericController<T> {
    */
 
   authorize(ids: SyncHash[]): Promise<string> {
-    if (this.configService.app.debug) {
-      return new Promise(resolve => {
-        resolve('');
-      });
-    }
-
     return new Promise((resolve, reject) => {
       let payload: SyncJWT = { ids: ids.map(v => v.id) };
       let token: string = jwt.sign(
@@ -106,6 +100,8 @@ export class GenericController<T> {
           if (!!err) {
             reject(err);
           }
+
+          resolve(token);
         },
       );
     });

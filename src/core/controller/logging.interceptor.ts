@@ -11,6 +11,7 @@ import { HttpException } from '@nestjs/core';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/throw';
 import 'rxjs/add/observable/of';
+import 'rxjs/add/operator/shareReplay';
 import { CoreRequest } from '../core/core.util';
 import { User, RequestLog, RequestLogToken } from 'database';
 import { Repository } from 'typeorm';
@@ -51,6 +52,8 @@ export class LoggingInterceptor implements NestInterceptor {
      * Registers a log in the database
      */
     let requestLog = await this.preLog(request, context);
+
+    stream$ = stream$.shareReplay();
 
     /**
      * Perform logging

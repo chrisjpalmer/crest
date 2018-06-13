@@ -63,7 +63,9 @@ export class GenericEntityService<T extends GenericEntity> {
     pageSize?: number,
   ): Promise<Map<number, T>> {
     let query = this.applyStems(this.createQueryBuilder());
-    query = this.applyCondition(query, condition);
+    if (!!condition) {
+      query = this.applyCondition(query, condition);
+    }
 
     if (!!page) {
       query = this.applyPagination(query, page, pageSize);
@@ -79,6 +81,14 @@ export class GenericEntityService<T extends GenericEntity> {
    */
   createQueryBuilder(): SelectQueryBuilder<T> {
     return null;
+  }
+
+  /**
+   * transformColumns - prepends the mainTableAlias to each column. If the table was called 'message' and the columns variable were ['id'], it would output: ['message.id']
+   * @param columns columns to prepend the mainTableAlias to
+   */
+  transformColumns(columns:string[]) : string[] {
+    return columns.map(c => `${this.mainTableAlias}.${c}`);
   }
 
   /**

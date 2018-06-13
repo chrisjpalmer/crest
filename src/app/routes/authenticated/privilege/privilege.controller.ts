@@ -70,7 +70,7 @@ export class PrivilegeController extends GenericController<Privilege> {
   async handleList(input: GetInput) {
     let query = this.privilegeService
       .createQueryBuilder()
-      .select('id', 'updateAt');
+      .select(this.privilegeService.transformColumns(['id', 'updatedAt']));
 
     /**
      * Apply Conditions to the query
@@ -119,8 +119,9 @@ export class PrivilegeController extends GenericController<Privilege> {
   async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
     let query: SelectQueryBuilder<Privilege>;
     query = this.privilegeService.createQueryBuilder();
-    //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
+    //query = query.select(this.privilegeService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.privilegeService.applyStems(query);
+    query = this.privilegeService.applyCondition(query, ids);
     return await query.getMany();
   }
 

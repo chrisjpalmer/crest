@@ -560,7 +560,7 @@ Under the hood `GenericController` packages the `SyncHash[]` into a JWT token an
 async handleList(input: GetInput) {
   let query = this.messageCategoryService
     .createQueryBuilder()
-    .select('id', 'updateAt');
+    .select(this.messageCategoryService.transformColumns(['id', 'updatedAt']));
 
   /**
    * Apply Conditions to the query
@@ -609,8 +609,9 @@ In Phase 2 of a Sync, `MessageCategoryController.handleData()` returns rows whic
 async handleData(ids: number[]): Promise<MessageCategory[]> {
     let query: SelectQueryBuilder<MessageCategory>;
     query = this.messageCategoryService.createQueryBuilder();
-    //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
+    //query = query.select(this.messageCategoryService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.messageCategoryService.applyStems(query);
+    query = this.messageCategoryService.applyCondition(query, ids);
     return await query.getMany();
   }
 ```

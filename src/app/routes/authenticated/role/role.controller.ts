@@ -67,7 +67,7 @@ export class RoleController extends GenericController<Role> {
    * @param input parameters for the request
    */
   async handleList(input: GetInput) {
-    let query = this.roleService.createQueryBuilder().select('id', 'updateAt');
+    let query = this.roleService.createQueryBuilder().select(this.roleService.transformColumns(['id', 'updatedAt']));
 
     /**
      * Apply Conditions to the query
@@ -116,8 +116,9 @@ export class RoleController extends GenericController<Role> {
   async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
     let query: SelectQueryBuilder<Role>;
     query = this.roleService.createQueryBuilder();
-    //query = query.select('mycolumn1', 'mycolumn2'); //Override which columns of the table are returned here, otherwise all are returned.
+    //query = query.select(this.roleService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.roleService.applyStems(query);
+    query = this.roleService.applyCondition(query, ids);
     return await query.getMany();
   }
 

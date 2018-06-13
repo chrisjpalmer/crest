@@ -94,7 +94,7 @@ async function main() {
   //config.json
   let configJSON = await readFilePromise(`${cwd}/config/config.json`);
   let configJSONData = JSON.parse(configJSON);
-  configJSONData.auth.keyPath = path.join(cwd, 'config', 'config.json');
+  configJSONData.auth.keyPath = path.join(cwd, 'config', 'key.pem');
   await writeFilePromise(
     `${cwd}/config/config.json`,
     JSON.stringify(configJSONData, null, " "),
