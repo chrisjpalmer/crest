@@ -31,7 +31,7 @@ import {
 } from './user.class';
 import { User, UserToken } from 'database';
 import { UserService } from 'core';
-import { Role, Session, UserPassword, Message, RequestLog } from 'database';
+import { Role } from 'database';
 
 class UserPwdWrapper {
   user: User;
