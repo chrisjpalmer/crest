@@ -29,15 +29,12 @@ export class GenericEntityService<T extends GenericEntity> {
     protected mainTableAlias: string,
     protected nameColumn?: string,
   ) {}
-  async existsById(id: number, modifier?: SelectModifier<T>): Promise<boolean> {
-    return !!await this.findById(id, modifier);
+  async existsById(id: number): Promise<boolean> {
+    return !!await this.findById(id);
   }
 
-  async existsByName(
-    name: string,
-    modifier?: SelectModifier<T>,
-  ): Promise<boolean> {
-    return !!await this.findByName(name, modifier);
+  async existsByName(name: string): Promise<boolean> {
+    return !!await this.findByName(name);
   }
 
   async findById(id: number, modifier?: SelectModifier<T>): Promise<T> {

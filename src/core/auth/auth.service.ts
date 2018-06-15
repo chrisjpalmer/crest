@@ -140,8 +140,9 @@ export class AuthService {
     session.lastUsed = new Date();
     await this.sessionRepository.save(session);
 
-    let userToReturn = await this.userService.findById(authPayload.userId, s =>
-      this.userService.applyStemsRole(s),
+    let userToReturn = await this.userService.findById(
+      authPayload.userId,
+      query => this.userService.applyStemsRole(query),
     );
     userToReturn.currentSession = session;
 
