@@ -85,7 +85,7 @@ export class UserController extends GenericController<User> {
         break;
       case GenericGetMode.Discrete:
         //GenericGetMode.Discrete -> get only specific ids
-        query = this.userService.applyCondition(query, input.ids);
+        query = query.whereInIds(input.ids);
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
@@ -128,7 +128,7 @@ export class UserController extends GenericController<User> {
     //query = this.userService.applyStemsMessages(query); //Comment out at your leisure.
     //query = this.userService.applyStemsRequestLogs(query); //Comment out at your leisure.
 
-    query = this.userService.applyCondition(query, ids);
+    query = query.whereInIds(ids);
     return await query.getMany();
   }
 

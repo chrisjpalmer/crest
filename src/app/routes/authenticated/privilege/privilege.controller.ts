@@ -81,7 +81,7 @@ export class PrivilegeController extends GenericController<Privilege> {
         break;
       case GenericGetMode.Discrete:
         //GenericGetMode.Discrete -> get only specific ids
-        query = this.privilegeService.applyCondition(query, input.ids);
+        query = query.whereInIds(input.ids);
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
@@ -120,7 +120,7 @@ export class PrivilegeController extends GenericController<Privilege> {
     //query = query.select(this.privilegeService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
 
-    query = this.privilegeService.applyCondition(query, ids);
+    query = query.whereInIds(ids);
     return await query.getMany();
   }
 

@@ -80,7 +80,7 @@ export class RoleController extends GenericController<Role> {
         break;
       case GenericGetMode.Discrete:
         //GenericGetMode.Discrete -> get only specific ids
-        query = this.roleService.applyCondition(query, input.ids);
+        query = query.whereInIds(input.ids);
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
@@ -120,7 +120,7 @@ export class RoleController extends GenericController<Role> {
     query = this.roleService.applyStemsPrivileges(query); //Comment out at your leisure.
     //query = this.roleService.applyStemsUsers(query); //Comment out at your leisure.
 
-    query = this.roleService.applyCondition(query, ids);
+    query = query.whereInIds(ids);
     return await query.getMany();
   }
 

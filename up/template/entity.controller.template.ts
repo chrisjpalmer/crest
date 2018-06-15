@@ -78,7 +78,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
         break;
       case GenericGetMode.Discrete:
         //GenericGetMode.Discrete -> get only specific ids
-        query = this.${entity.lower}Service.applyCondition(query, input.ids);
+        query = query.whereInIds(input.ids);
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
@@ -116,7 +116,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     /// < entity.controller.get.stems.template >
-    query = this.${entity.lower}Service.applyCondition(query, ids);
+    query = query.whereInIds(ids);
     return await query.getMany();
   }
 

@@ -61,21 +61,21 @@ export class GenericEntityService<T extends GenericEntity> {
 
   /**
    * findIndexed performs a select query and returns the set as a map, indexed by id.
-   * @param condition id[], single id, null (fetches all data)
+   * @param ids an id or ids to limit the result set
    * @param modifier a function which modifies the query in some way using typeORM chainable functions
    * @param page [optional] the 0ed page number - pagination breaks the dataset into 'pages' of an arbitrary size, allowing subsets of the overall dataset to be retrieved
    * @param pageSize [required for pagination] the size of each page for pagination
    */
   async findIndexed(
-    condition?: number[] | number,
+    ids?: number[] | number,
     modifier?: SelectModifier<T>,
     page?: number,
     pageSize?: number,
   ): Promise<Map<number, T>> {
     let query = this.createQueryBuilder();
 
-    if (!!condition) {
-      query = this.applyCondition(query, condition);
+    if (!!ids) {
+      query = query.whereInIds(ids);
     }
 
     if (!!modifier) {
@@ -118,23 +118,6 @@ export class GenericEntityService<T extends GenericEntity> {
    */
   transformColumns(columns: string[]): string[] {
     return columns.map(c => `${this.mainTableAlias}.${c}`);
-  }
-
-  /**
-   * applyCondition - a convenience method for applying conditions to the query
-   * @param query the query to manipulate
-   * @param condition an array of ids, a single id OR a SelectModifier - a function which manipulates the query and returns the resulting query
-   */
-  applyCondition(query: SelectQueryBuilder<T>, condition: number[] | number) {
-    if (typeof condition === 'number') {
-      query = query.whereInIds([condition]);
-    } else if (typeof condition === 'object') {
-      query = query.whereInIds(condition);
-    } else {
-      throw 'condition argument was null or undefined to applyCondition()';
-    }
-
-    return query;
   }
 
   /**
