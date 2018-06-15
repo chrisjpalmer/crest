@@ -1,0 +1,1 @@
+await this.${entity.lower}Service.pingStems${childEntity.fieldNameUpper}(input.entries); //Comment out at your leisure.

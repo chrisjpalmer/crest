@@ -117,7 +117,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    /// < entity.controller.get.stems >
+    /// < entity.controller.get.stems.template >
     query = this.${entity.lower}Service.applyCondition(query, ids);
     return await query.getMany();
   }
@@ -147,6 +147,9 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
 
     //2) Save all rows
     await this.${entity.lower}Repository.save(entities);
+
+    //3) Ping stems
+    /// < entity.controller.ping.template >
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -189,6 +192,9 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
 
     //4) Save all entries at once - all effects from above routine are saved in this line
     await this.${entity.lower}Repository.save(toSave);
+
+    //5) Ping stems
+    /// < entity.controller.ping.template >
 
     //Return result
     return { result: toSave.map(v => v.id) };

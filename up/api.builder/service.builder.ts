@@ -20,8 +20,23 @@ export async function buildService(controllerPath: string, entity: Entity) {
   let service = replaceByObject(serviceTemplate, {
     '${entity.upper}': entity.upper,
     '${entity.lower}': entity.lower,
-    '/// < entity.imports.template >': buildImport(entity),
+    '${entity.filename}': entity.filename,
+    '/// < entity.imports.template >': buildImport(entity, true),
   });
+
+   /// < entity.service.relation.repository.template >
+   let relationRepository = await buildRelationRepository(entity);
+   service = service.replaceAll(
+     `/// < entity.service.relation.repository.template >`,
+     relationRepository,
+   );
+
+  /// < entity.service.ping.template >
+  let ping = await buildServicePing(entity);
+  service = service.replaceAll(
+    `/// < entity.service.ping.template >`,
+    ping,
+  );
 
   /// < entity.service.supercall.template >
   let superCall = await buildServiceSuperCall(entity);
@@ -45,6 +60,87 @@ export async function buildService(controllerPath: string, entity: Entity) {
   );
 
   return service;
+}
+
+async function buildRelationRepository(entity: Entity) {
+  let relationRepositoryTemplate = await readFilePromise(
+    `${templatePath}/entity.service.relation.repository.template.ts`,
+  );
+
+  let relationRepository = '';
+  entity.childEntities
+    .map(c => {
+      return buildRelationRepositoryForChild(
+        entity,
+        c,
+        relationRepositoryTemplate,
+      );
+    })
+    .forEach(sqb => {
+      relationRepository += sqb + '\n';
+    });
+
+  return relationRepository;
+}
+
+function buildRelationRepositoryForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  relationRepositoryTemplate: string,
+) {
+  let relationRepository = replaceByObject(relationRepositoryTemplate, {
+    '${childEntity.upper}': childEntity.upper,
+    '${childEntity.lower}': childEntity.lower,
+  });
+  relationRepository;
+  return relationRepository;
+}
+
+async function buildServicePing(entity: Entity) {
+  let pingMultiple = await readFilePromise(
+    `${templatePath}/entity.service.ping.multiple.template.ts`,
+  );
+  let pingSingle = await readFilePromise(
+    `${templatePath}/entity.service.ping.single.template.ts`,
+  );
+  let ping = '';
+
+  entity.childEntities
+    .map(c => {
+      if (c.mode == ChildEntityMode.multiple) {
+        return buildServicePingForChild(
+          entity,
+          c,
+          pingMultiple,
+        );
+      } else {
+        return buildServicePingForChild(
+          entity,
+          c,
+          pingSingle,
+        );
+      }
+    })
+    .forEach(pr => {
+      ping += pr + '\n\n';
+    });
+
+  return ping;
+}
+
+function buildServicePingForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  pingTemplate: string,
+) {
+  let ping = replaceByObject(pingTemplate, {
+    '${entity.upper}': entity.upper,
+    '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
+    '${childEntity.fieldName}': childEntity.fieldName,
+    '${childEntity.upper}': childEntity.upper,
+    '${childEntity.lower}': childEntity.lower,
+  });
+  return ping;
 }
 
 async function buildServiceSuperCall(entity: Entity) {
@@ -125,7 +221,6 @@ async function buildSelectQueryBuilder(entity: Entity) {
       selectQueryBuilder += sqb + '\n';
     });
 
-  selectQueryBuilder += ';';
   return selectQueryBuilder;
 }
 

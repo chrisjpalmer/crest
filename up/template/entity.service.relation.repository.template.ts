@@ -1,0 +1,1 @@
+@InjectRepo(${childEntity.upper}Token) private readonly ${childEntity.lower}Repository: Repository<${childEntity.upper}>,

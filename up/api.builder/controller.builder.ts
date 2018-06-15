@@ -27,13 +27,13 @@ export async function buildController(controllerPath: string, entity: Entity) {
     '${entity.lowerPlural}': toPlural(entity.lower),
     '${controllerPath}': controllerPath,
     '${entity.filename}': entity.filename,
-    '/// < entity.imports.template >': buildImport(entity),
+    '/// < entity.imports.template >': buildImport(entity, false),
   });
 
-  /// < entity.controller.get.stems >
+  /// < entity.controller.get.stems.template >
   let getStems = await buildControllerGetStems(entity);
   controller = controller.replaceAll(
-    `/// < entity.controller.get.stems >`,
+    `/// < entity.controller.get.stems.template >`,
     getStems,
   );
 
@@ -62,6 +62,13 @@ export async function buildController(controllerPath: string, entity: Entity) {
     patchRelation,
   );
 
+  /// < entity.controller.ping.template >
+  let ping = await buildControllerPing(entity);
+  controller = controller.replaceAll(
+    `/// < entity.controller.ping.template >`,
+    ping,
+  );
+
   return controller;
 }
 
@@ -70,7 +77,7 @@ buildControllerGetStems;
 /** GET */
 async function buildControllerGetStems(entity: Entity) {
   let getStemsTemplate = await readFilePromise(
-    `${templatePath}/entity.controller.get.stems.ts`,
+    `${templatePath}/entity.controller.get.stems.template.ts`,
   );
   let getStems = '';
 
@@ -79,7 +86,7 @@ async function buildControllerGetStems(entity: Entity) {
       return buildControllerGetStemsForChild(entity, c, getStemsTemplate);
     })
     .forEach(fw => {
-      getStems += fw + '\n\n';
+      getStems += fw + '\n';
     });
 
   return getStems;
@@ -241,4 +248,33 @@ function buildControllerPatchRelationForChild(
     '${childEntity.upper}': childEntity.upper,
   });
   return patchRelation;
+}
+
+async function buildControllerPing(entity: Entity) {
+  let pingTemplate = await readFilePromise(
+    `${templatePath}/entity.controller.ping.template.ts`,
+  );
+  let ping = '';
+
+  entity.childEntities
+    .map(c => {
+      return buildControllerPingForChild(entity, c, pingTemplate);
+    })
+    .forEach(fw => {
+      ping += fw + '\n';
+    });
+
+  return ping;
+}
+
+function buildControllerPingForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  pingTemplate: string,
+) {
+  let ping = replaceByObject(pingTemplate, {
+    '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
+    '${entity.lower}': entity.lower,
+  });
+  return ping;
 }

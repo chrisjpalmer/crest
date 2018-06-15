@@ -1,8 +1,9 @@
 /** BOILERPLATE - don't touch unless you are brave */
 
-import { RepoAllType, IndexSet } from '../core/core.database.util';
+import { IndexSet } from '../core/core.database.util';
 import { SelectQueryBuilder } from 'typeorm';
 import { GenericEntity } from 'database';
+import { PostRelation, PatchRelation } from '../controller/post-patch';
 
 /** A function which should contain conditional SELECT logic.
  * It accepts a parameter s, representing the current selectQueryBuilder object.
@@ -72,6 +73,20 @@ export class GenericEntityService<T extends GenericEntity> {
     }
 
     return IndexSet(await query.getMany(), v => v.id);
+  }
+
+  /**
+   * relationsToPingIds - converts PostRelations and PatchRelations to an array of ids which can then be used for stem pinging
+   * @param relations - the relations to convert to an array of ids
+   */
+  relationsToPingIds(relations:(PostRelation | PatchRelation)[]) : number[] {
+    let uniquePingList = new Map<number, boolean>();
+    relations.forEach(r => {
+      uniquePingList.set(r.id, true);
+    });
+    let pingList:number[] = [];
+    uniquePingList.forEach((v, i) => pingList.push(i));
+    return pingList;
   }
 
   /**
