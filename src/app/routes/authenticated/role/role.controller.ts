@@ -192,7 +192,7 @@ export class RoleController extends GenericController<Role> {
           query = this.roleService.applyStemsPrivileges(query);
           //query = this.roleService.applyStemsUsers(query);
           return query;
-        })
+        });
       }),
     );
 

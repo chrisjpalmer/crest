@@ -184,7 +184,7 @@ export class PrivilegeController extends GenericController<Privilege> {
         return this.privilegeService.findById(v.id, query => {
           query = this.privilegeService.applyStemsRoles(query);
           return query;
-        })
+        });
       }),
     );
 

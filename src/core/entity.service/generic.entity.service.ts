@@ -28,18 +28,20 @@ export class GenericEntityService<T extends GenericEntity> {
   constructor(
     protected mainTableAlias: string,
     protected nameColumn?: string,
-  ) { }
+  ) {}
   async existsById(id: number, modifier?: SelectModifier<T>): Promise<boolean> {
     return !!await this.findById(id, modifier);
   }
 
-  async existsByName(name: string, modifier?: SelectModifier<T>): Promise<boolean> {
+  async existsByName(
+    name: string,
+    modifier?: SelectModifier<T>,
+  ): Promise<boolean> {
     return !!await this.findByName(name, modifier);
   }
 
   async findById(id: number, modifier?: SelectModifier<T>): Promise<T> {
-    let query = this.createQueryBuilder()
-      .whereInIds([id]);
+    let query = this.createQueryBuilder().whereInIds([id]);
     if (!!modifier) {
       query = modifier(query);
     }
@@ -50,8 +52,10 @@ export class GenericEntityService<T extends GenericEntity> {
     if (!this.nameColumn) {
       throw 'finding by name does not work if a unique index does not exist on the table';
     }
-    let query = this.createQueryBuilder()
-      .where(`${this.mainTableAlias}.${this.nameColumn} = :name`, { name });
+    let query = this.createQueryBuilder().where(
+      `${this.mainTableAlias}.${this.nameColumn} = :name`,
+      { name },
+    );
     if (!!modifier) {
       query = modifier(query);
     }
@@ -124,10 +128,7 @@ export class GenericEntityService<T extends GenericEntity> {
    * @param query the query to manipulate
    * @param condition an array of ids, a single id OR a SelectModifier - a function which manipulates the query and returns the resulting query
    */
-  applyCondition(
-    query: SelectQueryBuilder<T>,
-    condition: number[] | number,
-  ) {
+  applyCondition(query: SelectQueryBuilder<T>, condition: number[] | number) {
     if (typeof condition === 'number') {
       query = query.whereInIds([condition]);
     } else if (typeof condition === 'object') {

@@ -24,19 +24,16 @@ export async function buildService(controllerPath: string, entity: Entity) {
     '/// < entity.imports.template >': buildImport(entity, true),
   });
 
-   /// < entity.service.relation.repository.template >
-   let relationRepository = await buildRelationRepository(entity);
-   service = service.replaceAll(
-     `/// < entity.service.relation.repository.template >`,
-     relationRepository,
-   );
+  /// < entity.service.relation.repository.template >
+  let relationRepository = await buildRelationRepository(entity);
+  service = service.replaceAll(
+    `/// < entity.service.relation.repository.template >`,
+    relationRepository,
+  );
 
   /// < entity.service.ping.template >
   let ping = await buildServicePing(entity);
-  service = service.replaceAll(
-    `/// < entity.service.ping.template >`,
-    ping,
-  );
+  service = service.replaceAll(`/// < entity.service.ping.template >`, ping);
 
   /// < entity.service.supercall.template >
   let superCall = await buildServiceSuperCall(entity);
@@ -108,17 +105,9 @@ async function buildServicePing(entity: Entity) {
   entity.childEntities
     .map(c => {
       if (c.mode == ChildEntityMode.multiple) {
-        return buildServicePingForChild(
-          entity,
-          c,
-          pingMultiple,
-        );
+        return buildServicePingForChild(entity, c, pingMultiple);
       } else {
-        return buildServicePingForChild(
-          entity,
-          c,
-          pingSingle,
-        );
+        return buildServicePingForChild(entity, c, pingSingle);
       }
     })
     .forEach(pr => {
