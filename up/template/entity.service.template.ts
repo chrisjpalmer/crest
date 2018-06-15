@@ -31,8 +31,6 @@ export class ${entity.upper}Service extends GenericEntityService<${entity.upper}
       .createQueryBuilder(this.mainTableAlias);
   }
 
-  applyStems(query:SelectQueryBuilder<${entity.upper}>): SelectQueryBuilder<${entity.upper}> {
-    return query
-    /// < entity.service.selectQueryBuilder.template >
-  }
+  
+  /// < entity.service.selectQueryBuilder.template >
 }

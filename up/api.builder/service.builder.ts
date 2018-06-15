@@ -135,9 +135,12 @@ function buildSelectQueryBuilderForChild(
   selectQueryBuilderTemplate: string,
 ) {
   let selectQueryBuilder = replaceByObject(selectQueryBuilderTemplate, {
+    '${entity.upper}': entity.upper,
     '${entity.lower}': entity.lower,
+    '${childEntity.upper}': childEntity.upper,
     '${childEntity.lower}': childEntity.lower,
     '${childEntity.fieldName}': childEntity.fieldName,
+    '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
   });
   selectQueryBuilder;
   return selectQueryBuilder;

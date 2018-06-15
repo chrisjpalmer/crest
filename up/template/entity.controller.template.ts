@@ -117,7 +117,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    query = this.${entity.lower}Service.applyStems(query);
+    /// < entity.controller.get.stems >
     query = this.${entity.lower}Service.applyCondition(query, ids);
     return await query.getMany();
   }

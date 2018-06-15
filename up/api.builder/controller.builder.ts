@@ -30,6 +30,13 @@ export async function buildController(controllerPath: string, entity: Entity) {
     '/// < entity.imports.template >': buildImport(entity),
   });
 
+  /// < entity.controller.get.stems >
+  let getStems = await buildControllerGetStems(entity);
+  controller = controller.replaceAll(
+    `/// < entity.controller.get.stems >`,
+    getStems,
+  );
+
   /// < entity.controller.post.field.template >
   let postField = await buildControllerPostField(entity);
   controller = controller.replaceAll(
@@ -56,6 +63,38 @@ export async function buildController(controllerPath: string, entity: Entity) {
   );
 
   return controller;
+}
+
+buildControllerGetStems;
+
+/** GET */
+async function buildControllerGetStems(entity: Entity) {
+  let getStemsTemplate = await readFilePromise(
+    `${templatePath}/entity.controller.get.stems.ts`,
+  );
+  let getStems = '';
+
+  entity.childEntities
+    .map(c => {
+      return buildControllerGetStemsForChild(entity, c, getStemsTemplate);
+    })
+    .forEach(fw => {
+      getStems += fw + '\n\n';
+    });
+
+  return getStems;
+}
+
+function buildControllerGetStemsForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  getStemsTemplate: string,
+) {
+  let getStems = replaceByObject(getStemsTemplate, {
+    '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
+    '${entity.lower}': entity.lower,
+  });
+  return getStems;
 }
 
 /** POST */
