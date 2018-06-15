@@ -1,21 +1,32 @@
-/** BOILERPLATE - don't touch unless you are brave */
 /**
  * NEVER import like this - import { MyAwesomeFunction, MyAwesomeClass } from ".."; OR import { MyAwesomeFunction, MyAwesomeClass } from ".";
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
-import { Component, BadRequestException } from '@nestjs/common';
+import { Component } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Role, RoleToken } from 'database';
 import { GenericEntityService } from './generic.entity.service';
 import { InjectRepo } from '../core/core.database.provider';
 import { StitchSet } from '../core/core.database.util';
-import { Privilege, User } from 'database';
+import { PostRelation, PatchRelation } from '../controller/post-patch';
+import { Privilege, PrivilegeToken, User, UserToken } from 'database';
+
+interface PostInputRole {
+  privileges: PostRelation[];
+}
+
+interface PatchInputRole {
+  privileges: PatchRelation[];
+}
 
 @Component()
 export class RoleService extends GenericEntityService<Role> {
   constructor(
     @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
+    @InjectRepo(PrivilegeToken)
+    private readonly privilegeRepository: Repository<Privilege>,
+    @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
   ) {
     super('role', 'name');
   }
@@ -48,15 +59,30 @@ export class RoleService extends GenericEntityService<Role> {
     return this.roleRepository.createQueryBuilder(this.mainTableAlias);
   }
 
-  applyStems(query: SelectQueryBuilder<Role>): SelectQueryBuilder<Role> {
+  applyStemsPrivileges(
+    query: SelectQueryBuilder<Role>,
+  ): SelectQueryBuilder<Role> {
     return query
       .leftJoin(this.mainTableAlias + '.privileges', 'privilege')
       .addSelect('privilege.id');
   }
-
-  applyUserStems(query: SelectQueryBuilder<Role>): SelectQueryBuilder<Role> {
+  applyStemsUsers(query: SelectQueryBuilder<Role>): SelectQueryBuilder<Role> {
     return query
       .leftJoin(this.mainTableAlias + '.users', 'user')
       .addSelect('user.id');
+  }
+
+  async pingStemsPrivileges(
+    entries: (PostInputRole | PatchInputRole)[],
+  ): Promise<void> {
+    let relations: (PostRelation | PatchRelation)[] = [];
+    entries.map(v => v.privileges).forEach(r => relations.push(...r));
+    let pingList = this.relationsToPingIds(relations);
+
+    await this.privilegeRepository
+      .createQueryBuilder('privilege')
+      .update({ updatedAt: new Date() })
+      .whereInIds(pingList)
+      .execute();
   }
 }

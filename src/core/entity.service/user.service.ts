@@ -10,21 +10,42 @@ import { User, UserToken } from 'database';
 import { GenericEntityService } from './generic.entity.service';
 import { InjectRepo } from '../core/core.database.provider';
 import { StitchSet } from '../core/core.database.util';
+import { PostRelation, PatchRelation } from '../controller/post-patch';
 import {
   Role,
+  RoleToken,
   Session,
+  SessionToken,
   UserPassword,
   UserPasswordToken,
+  Message,
+  MessageToken,
   RequestLog,
+  RequestLogToken,
 } from 'database';
 import { CryptoService } from '../auth/crypto.service';
+
+interface PostInputUser {
+  role: PostRelation;
+}
+
+interface PatchInputUser {
+  role: PostRelation;
+}
 
 @Component()
 export class UserService extends GenericEntityService<User> {
   constructor(
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
+    @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
+    @InjectRepo(SessionToken)
+    private readonly sessionRepository: Repository<Session>,
     @InjectRepo(UserPasswordToken)
     private readonly userPasswordRepository: Repository<UserPassword>,
+    @InjectRepo(MessageToken)
+    private readonly messageRepository: Repository<Message>,
+    @InjectRepo(RequestLogToken)
+    private readonly requestLogRepository: Repository<RequestLog>,
     private readonly cryptoService: CryptoService,
   ) {
     super('user', 'username');
@@ -123,9 +144,23 @@ export class UserService extends GenericEntityService<User> {
     return this.userRepository.createQueryBuilder(this.mainTableAlias);
   }
 
-  applyStems(query: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
+  applyStemsRole(query: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
     return query
       .leftJoin(this.mainTableAlias + '.role', 'role')
       .addSelect('role.id');
+  }
+
+  async pingStemsRole(
+    entries: (PostInputUser | PatchInputUser)[],
+  ): Promise<void> {
+    let relations: (PostRelation | PatchRelation)[] = [];
+    entries.map(v => v.role).forEach(r => relations.push(r));
+    let pingList = this.relationsToPingIds(relations);
+
+    await this.roleRepository
+      .createQueryBuilder('role')
+      .update({ updatedAt: new Date() })
+      .whereInIds(pingList)
+      .execute();
   }
 }

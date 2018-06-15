@@ -67,7 +67,9 @@ export class RoleController extends GenericController<Role> {
    * @param input parameters for the request
    */
   async handleList(input: GetInput) {
-    let query = this.roleService.createQueryBuilder().select(this.roleService.transformColumns(['id', 'updatedAt']));
+    let query = this.roleService
+      .createQueryBuilder()
+      .select(this.roleService.transformColumns(['id', 'updatedAt']));
 
     /**
      * Apply Conditions to the query
@@ -117,7 +119,9 @@ export class RoleController extends GenericController<Role> {
     let query: SelectQueryBuilder<Role>;
     query = this.roleService.createQueryBuilder();
     //query = query.select(this.roleService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    query = this.roleService.applyStems(query);
+    query = this.roleService.applyStemsPrivileges(query); //Comment out at your leisure.
+    //query = this.roleService.applyStemsUsers(query); //Comment out at your leisure.
+
     query = this.roleService.applyCondition(query, ids);
     return await query.getMany();
   }
@@ -147,11 +151,19 @@ export class RoleController extends GenericController<Role> {
         o.privileges = v.privileges.map(dc => <Privilege>{ id: dc.id });
       }
 
+      //if (!!v.users) {
+      //  o.users = v.users.map(dc => <User>{ id: dc.id });
+      //}
+
       return o;
     });
 
     //2) Save all rows
     await this.roleRepository.save(entities);
+
+    //3) Ping stems
+    await this.roleService.pingStemsPrivileges(input.entries); //Comment out at your leisure.
+    //await this.roleService.pingStemsUsers(input.entries); //Comment out at your leisure.
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -204,11 +216,20 @@ export class RoleController extends GenericController<Role> {
         );
       }
 
+      //Apply update to relationship
+      //if (!!input.entries[i].users) {
+      //  o.users = PatchRelationApply(v.id, v.users, input.entries[i].users);
+      //}
+
       return o;
     });
 
     //4) Save all entries at once - all effects from above routine are saved in this line
     await this.roleRepository.save(toSave);
+
+    //5) Ping stems
+    await this.roleService.pingStemsPrivileges(input.entries); //Comment out at your leisure.
+    //await this.roleService.pingStemsUsers(input.entries); //Comment out at your leisure.
 
     //Return result
     return { result: toSave.map(v => v.id) };

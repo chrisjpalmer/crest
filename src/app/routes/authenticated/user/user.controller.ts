@@ -72,7 +72,9 @@ export class UserController extends GenericController<User> {
    * @param input parameters for the request
    */
   async handleList(input: GetInput) {
-    let query = this.userService.createQueryBuilder().select(this.userService.transformColumns(['id', 'updatedAt']));
+    let query = this.userService
+      .createQueryBuilder()
+      .select(this.userService.transformColumns(['id', 'updatedAt']));
 
     /**
      * Apply Conditions to the query
@@ -122,7 +124,12 @@ export class UserController extends GenericController<User> {
     let query: SelectQueryBuilder<User>;
     query = this.userService.createQueryBuilder();
     //query = query.select(this.userService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    query = this.userService.applyStems(query);
+    query = this.userService.applyStemsRole(query); //Comment out at your leisure.
+    //query = this.userService.applyStemsSessions(query); //Comment out at your leisure.
+    //query = this.userService.applyStemsUserPassword(query); //Comment out at your leisure.
+    //query = this.userService.applyStemsMessages(query); //Comment out at your leisure.
+    //query = this.userService.applyStemsRequestLogs(query); //Comment out at your leisure.
+
     query = this.userService.applyCondition(query, ids);
     return await query.getMany();
   }

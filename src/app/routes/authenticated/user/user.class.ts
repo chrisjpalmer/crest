@@ -7,6 +7,7 @@ import {
   ValidateNested,
   IsArray,
   IsNumber,
+  IsBoolean,
   IsString,
   IsOptional,
 } from 'class-validator';

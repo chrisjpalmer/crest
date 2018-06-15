@@ -120,7 +120,8 @@ export class PrivilegeController extends GenericController<Privilege> {
     let query: SelectQueryBuilder<Privilege>;
     query = this.privilegeService.createQueryBuilder();
     //query = query.select(this.privilegeService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    query = this.privilegeService.applyStems(query);
+    query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
+
     query = this.privilegeService.applyCondition(query, ids);
     return await query.getMany();
   }
@@ -153,6 +154,9 @@ export class PrivilegeController extends GenericController<Privilege> {
 
     //2) Save all rows
     await this.privilegeRepository.save(entities);
+
+    //3) Ping stems
+    await this.privilegeService.pingStemsRoles(input.entries); //Comment out at your leisure.
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -201,6 +205,9 @@ export class PrivilegeController extends GenericController<Privilege> {
 
     //4) Save all entries at once - all effects from above routine are saved in this line
     await this.privilegeRepository.save(toSave);
+
+    //5) Ping stems
+    await this.privilegeService.pingStemsRoles(input.entries); //Comment out at your leisure.
 
     //Return result
     return { result: toSave.map(v => v.id) };
