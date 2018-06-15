@@ -138,29 +138,6 @@ export class PatchInputUser {
   @Type(() => PostRelation)
   @IsOptional()
   role: PatchRelation;
-
-  @ValidateNested()
-  @Type(() => PostRelation)
-  @IsArray()
-  @IsOptional()
-  sessions: PatchRelation[];
-
-  @ValidateNested()
-  @Type(() => PostRelation)
-  @IsOptional()
-  userPassword: PatchRelation;
-
-  @ValidateNested()
-  @Type(() => PostRelation)
-  @IsArray()
-  @IsOptional()
-  messages: PatchRelation[];
-
-  @ValidateNested()
-  @Type(() => PostRelation)
-  @IsArray()
-  @IsOptional()
-  requestLogs: PatchRelation[];
 }
 
 //Output
