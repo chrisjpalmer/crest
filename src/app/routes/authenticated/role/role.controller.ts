@@ -84,9 +84,7 @@ export class RoleController extends GenericController<Role> {
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
-        query = this.roleService.applyCondition(query, s => {
-          return s.where(input.parameterSearch);
-        });
+        query = query.where(input.parameterSearch);
         break;
     }
 
@@ -189,7 +187,13 @@ export class RoleController extends GenericController<Role> {
 
     //2) For each entry, find the row it pertains to.
     let toApply: Role[] = await promiseArray(
-      toFind.map(v => this.roleService.findById(v.id)), //We use role service so that we can retrieve the subobject structure...
+      toFind.map(v => {
+        return this.roleService.findById(v.id, query => {
+          query = this.roleService.applyStemsPrivileges(query);
+          //query = this.roleService.applyStemsUsers(query);
+          return query;
+        })
+      }),
     );
 
     //3) For each entry, apply the update from the input parameters

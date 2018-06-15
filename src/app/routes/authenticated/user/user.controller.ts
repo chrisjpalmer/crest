@@ -89,9 +89,7 @@ export class UserController extends GenericController<User> {
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
-        query = this.userService.applyCondition(query, s => {
-          return s.where(input.parameterSearch);
-        });
+        query = query.where(input.parameterSearch);
         break;
     }
 

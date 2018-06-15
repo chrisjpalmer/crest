@@ -41,10 +41,10 @@ export class AuthStrategy extends Strategy {
       let user = await this.authService.authenticateUserToken(payload);
 
       //Get all privileges
-      let privileges = await this.privilegeService.findIndexed();
+      let privileges = await this.privilegeService.findIndexed(null, (s) => this.privilegeService.applyStemsRoles(s));
 
       //Get the user's role and embed the privileges inside.
-      let role = await this.roleService.findById(user.role.id);
+      let role = await this.roleService.findById(user.role.id, (s) => this.roleService.applyStemsPrivileges(s));
       this.roleService.fillWithPrivileges(role, privileges);
 
       //Embed the role in the user object

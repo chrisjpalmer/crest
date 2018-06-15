@@ -82,9 +82,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
-        query = this.${entity.lower}Service.applyCondition(query, s => {
-          return s.where(input.parameterSearch);
-        });
+        query = query.where(input.parameterSearch);
         break;
     }
 
@@ -175,7 +173,12 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
 
     //2) For each entry, find the row it pertains to.
     let toApply: ${entity.upper}[] = await promiseArray(
-      toFind.map(v => this.${entity.lower}Service.findById(v.id)), //We use ${entity.lower} service so that we can retrieve the subobject structure...
+      toFind.map(v => {
+        return this.${entity.lower}Service.findById(v.id, query => {
+          /// < entity.controller.get.stems.template >
+          return query;
+        })
+      }),
     );
 
     //3) For each entry, apply the update from the input parameters

@@ -28,44 +28,57 @@ export class GenericEntityService<T extends GenericEntity> {
   constructor(
     protected mainTableAlias: string,
     protected nameColumn?: string,
-  ) {}
-  async existsById(id: number): Promise<boolean> {
-    return !!await this.findById(id);
+  ) { }
+  async existsById(id: number, modifier?: SelectModifier<T>): Promise<boolean> {
+    return !!await this.findById(id, modifier);
   }
 
-  async existsByName(name: string): Promise<boolean> {
-    return !!await this.findByName(name);
+  async existsByName(name: string, modifier?: SelectModifier<T>): Promise<boolean> {
+    return !!await this.findByName(name, modifier);
   }
 
-  async findById(id: number): Promise<T> {
-    return this.applyStems(this.createQueryBuilder())
-      .whereInIds([id])
-      .getOne();
+  async findById(id: number, modifier?: SelectModifier<T>): Promise<T> {
+    let query = this.createQueryBuilder()
+      .whereInIds([id]);
+    if (!!modifier) {
+      query = modifier(query);
+    }
+    return query.getOne();
   }
 
-  async findByName(name: string): Promise<T> {
+  async findByName(name: string, modifier?: SelectModifier<T>): Promise<T> {
     if (!this.nameColumn) {
       throw 'finding by name does not work if a unique index does not exist on the table';
     }
-    return this.applyStems(this.createQueryBuilder())
-      .where(`${this.mainTableAlias}.${this.nameColumn} = :name`, { name })
-      .getOne();
+    let query = this.createQueryBuilder()
+      .where(`${this.mainTableAlias}.${this.nameColumn} = :name`, { name });
+    if (!!modifier) {
+      query = modifier(query);
+    }
+    return query.getOne();
   }
 
   /**
    * findIndexed performs a select query and returns the set as a map, indexed by id.
-   * @param condition id[], single id, RepoAll (fetches all data), custom condition function
+   * @param condition id[], single id, null (fetches all data)
+   * @param modifier a function which modifies the query in some way using typeORM chainable functions
    * @param page [optional] the 0ed page number - pagination breaks the dataset into 'pages' of an arbitrary size, allowing subsets of the overall dataset to be retrieved
    * @param pageSize [required for pagination] the size of each page for pagination
    */
   async findIndexed(
-    condition?: number[] | number | SelectModifier<T>,
+    condition?: number[] | number,
+    modifier?: SelectModifier<T>,
     page?: number,
     pageSize?: number,
   ): Promise<Map<number, T>> {
-    let query = this.applyStems(this.createQueryBuilder());
+    let query = this.createQueryBuilder();
+
     if (!!condition) {
       query = this.applyCondition(query, condition);
+    }
+
+    if (!!modifier) {
+      query = modifier(query);
     }
 
     if (!!page) {
@@ -79,12 +92,12 @@ export class GenericEntityService<T extends GenericEntity> {
    * relationsToPingIds - converts PostRelations and PatchRelations to an array of ids which can then be used for stem pinging
    * @param relations - the relations to convert to an array of ids
    */
-  relationsToPingIds(relations:(PostRelation | PatchRelation)[]) : number[] {
+  relationsToPingIds(relations: (PostRelation | PatchRelation)[]): number[] {
     let uniquePingList = new Map<number, boolean>();
     relations.forEach(r => {
       uniquePingList.set(r.id, true);
     });
-    let pingList:number[] = [];
+    let pingList: number[] = [];
     uniquePingList.forEach((v, i) => pingList.push(i));
     return pingList;
   }
@@ -113,14 +126,12 @@ export class GenericEntityService<T extends GenericEntity> {
    */
   applyCondition(
     query: SelectQueryBuilder<T>,
-    condition: number[] | number | SelectModifier<T>,
+    condition: number[] | number,
   ) {
     if (typeof condition === 'number') {
       query = query.whereInIds([condition]);
     } else if (typeof condition === 'object') {
       query = query.whereInIds(condition);
-    } else if (typeof condition === 'function') {
-      query = condition(query);
     } else {
       throw 'condition argument was null or undefined to applyCondition()';
     }
@@ -161,7 +172,4 @@ export class GenericEntityService<T extends GenericEntity> {
    * Its preferable to leave 'Stitching' to the client application of this web server, to even reduce the HTTP results going back to the client.
    * @param query
    */
-  applyStems(query: SelectQueryBuilder<T>): SelectQueryBuilder<T> {
-    return null;
-  }
 }

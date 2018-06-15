@@ -85,9 +85,7 @@ export class PrivilegeController extends GenericController<Privilege> {
         break;
       case GenericGetMode.ParameterSearch:
         //GenericGetMode.ParameterSearch -> get rows which match the search parameters
-        query = this.privilegeService.applyCondition(query, s => {
-          return s.where(input.parameterSearch);
-        });
+        query = query.where(input.parameterSearch);
         break;
     }
 
@@ -182,7 +180,12 @@ export class PrivilegeController extends GenericController<Privilege> {
 
     //2) For each entry, find the row it pertains to.
     let toApply: Privilege[] = await promiseArray(
-      toFind.map(v => this.privilegeService.findById(v.id)), //We use privilege service so that we can retrieve the subobject structure...
+      toFind.map(v => {
+        return this.privilegeService.findById(v.id, query => {
+          query = this.privilegeService.applyStemsRoles(query);
+          return query;
+        })
+      }),
     );
 
     //3) For each entry, apply the update from the input parameters
