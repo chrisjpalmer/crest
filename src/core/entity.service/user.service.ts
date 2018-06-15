@@ -150,7 +150,11 @@ export class UserService extends GenericEntityService<User> {
     entries: (PostInputUser | PatchInputUser)[],
   ): Promise<void> {
     let relations: (PostRelation | PatchRelation)[] = [];
-    entries.map(v => v.role).forEach(r => relations.push(r));
+    entries.map(v => v.role).forEach(r => {
+      if(!!r) {
+        relations.push(r)
+      }
+    });
     let pingList = this.relationsToPingIds(relations);
 
     await this.roleRepository
