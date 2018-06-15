@@ -18,8 +18,6 @@ import {
   SessionToken,
   UserPassword,
   UserPasswordToken,
-  Message,
-  MessageToken,
   RequestLog,
   RequestLogToken,
 } from 'database';
@@ -42,8 +40,6 @@ export class UserService extends GenericEntityService<User> {
     private readonly sessionRepository: Repository<Session>,
     @InjectRepo(UserPasswordToken)
     private readonly userPasswordRepository: Repository<UserPassword>,
-    @InjectRepo(MessageToken)
-    private readonly messageRepository: Repository<Message>,
     @InjectRepo(RequestLogToken)
     private readonly requestLogRepository: Repository<RequestLog>,
     private readonly cryptoService: CryptoService,
