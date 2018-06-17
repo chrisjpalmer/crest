@@ -1,166 +1,238 @@
-import { Entity, ChildEntity, ChildField, ChildEntityMode } from "../util/entity.class";
-import { dotCase, toPlural, replaceByObject, toUpperTitleCase, fieldTypeToString, readTemplateFilePromise, fieldTypeToValidator } from "../util/util";
-import { buildImport } from "./import.builder";
+import {
+  Entity,
+  ChildEntity,
+  ChildField,
+  ChildEntityMode,
+} from '../util/entity.class';
+import {
+  dotCase,
+  toPlural,
+  replaceByObject,
+  toUpperTitleCase,
+  fieldTypeToString,
+  readTemplateFilePromise,
+  fieldTypeToValidator,
+} from '../util/util';
+import { buildImport } from './import.builder';
 
-export async function buildGeneric(template:string, controllerPath: string, entity: Entity) : Promise<string> {
-    let codeIteration1 = genericReplace(template, controllerPath, entity);
-    let codeIteration2 = await handleTemplateReferences(codeIteration1, controllerPath, entity);
-    return codeIteration2 
+export async function buildGeneric(
+  template: string,
+  controllerPath: string,
+  entity: Entity,
+): Promise<string> {
+  let codeIteration1 = genericReplace(template, controllerPath, entity);
+  let codeIteration2 = await handleTemplateReferences(
+    codeIteration1,
+    controllerPath,
+    entity,
+  );
+  return codeIteration2;
 }
 
-export function genericReplace(template:string, controllerPath:string, entity:Entity) {
-    return replaceByObject(template, {
-        '${entity.upper}': entity.upper,
-        '${entity.dot}': dotCase(entity.upper),
-        '${entity.lower}': entity.lower,
-        '${entity.lowerPlural}': toPlural(entity.lower),
-        '${controllerPath}': controllerPath,
-        '${entity.filename}': entity.filename,
-        '///cust:importChildEntitiesAndTokens': buildImport(entity, true),
-        '///cust:importChildEntities': buildImport(entity, false),
-      });
+export function genericReplace(
+  template: string,
+  controllerPath: string,
+  entity: Entity,
+) {
+  return replaceByObject(template, {
+    '${entity.upper}': entity.upper,
+    '${entity.dot}': dotCase(entity.upper),
+    '${entity.lower}': entity.lower,
+    '${entity.lowerPlural}': toPlural(entity.lower),
+    '${controllerPath}': controllerPath,
+    '${entity.filename}': entity.filename,
+    '///cust:importChildEntitiesAndTokens': buildImport(entity, true),
+    '///cust:importChildEntities': buildImport(entity, false),
+  });
 }
 
 export enum TemplateReferenceMode {
-    ChildEntityMultipleSingle,
-    ChildEntityNormal,
-    EntityUniqueNonUnique,
-    ChildFieldNormal,
+  ChildEntityMultipleSingle,
+  ChildEntityNormal,
+  EntityUniqueNonUnique,
+  ChildFieldNormal,
 }
 
-export type TemplateMultipleSingle = { multiple:string, single:string };
-export type TemplateUniqueNonUnique = { unique:string, nonUnique:string };
-export type TemplateNormal = string; 
+export type TemplateMultipleSingle = { multiple: string; single: string };
+export type TemplateUniqueNonUnique = { unique: string; nonUnique: string };
+export type TemplateNormal = string;
 
 export class TemplateReference {
-    mode: string; //childEntity.multipleSingle, childEntity.normal, childField.normal, entity.uniqueNonUnique
-    templateFile:string;
+  mode: string; //childEntity.multipleSingle, childEntity.normal, childField.normal, entity.uniqueNonUnique
+  templateFile: string;
 
-    compositeMode:TemplateReferenceMode;
-    compositeTemplate:TemplateNormal | TemplateMultipleSingle | TemplateUniqueNonUnique;
+  compositeMode: TemplateReferenceMode;
+  compositeTemplate:
+    | TemplateNormal
+    | TemplateMultipleSingle
+    | TemplateUniqueNonUnique;
 }
 
-export async function handleTemplateReferences(mainTemplate:string, controllerPath:string, entity:Entity) : Promise<string> {
-    //Should be able to handle whether it is entity OR field mode -> and then multiple or single mode.
-    let sections = mainTemplate.split('///ref:');
-    let compositeSections = [];
-    for(let i = 0; i < sections.length; i++) {
-        let section = sections[i];
-        if(i === 0) {
-            compositeSections.push(section);
-            continue;
-        }
-
-        let firstline = section.substring(0, section.indexOf('\n'));
-        let restOfSection = section.substring(section.indexOf('\n'), section.length);
-        let ref:TemplateReference = JSON.parse(firstline);
-        
-        if(ref.mode === 'childEntity.multipleSingle') {
-            ref.compositeMode = TemplateReferenceMode.ChildEntityMultipleSingle;
-        } else if (ref.mode === 'childEntity.normal') {
-            ref.compositeMode = TemplateReferenceMode.ChildEntityNormal;
-        } else if(ref.mode === 'entity.uniqueNonUnique') {
-            ref.compositeMode = TemplateReferenceMode.EntityUniqueNonUnique;
-        } else if(ref.mode === 'childField.normal') {
-            ref.compositeMode = TemplateReferenceMode.ChildFieldNormal;
-        } else {
-            throw 'unknown template reference type';
-        }
-
-        switch(ref.compositeMode) {
-            case TemplateReferenceMode.ChildEntityMultipleSingle:
-                let multiple = await readTemplateFilePromise(ref.templateFile + '.multiple.ts');
-                let single = await readTemplateFilePromise(ref.templateFile + '.single.ts');
-                ref.compositeTemplate = <TemplateMultipleSingle> {
-                    multiple,
-                    single
-                };
-                break;
-            case TemplateReferenceMode.EntityUniqueNonUnique:
-                let unique = await readTemplateFilePromise(ref.templateFile + '.unique.ts');
-                let nonUnique = await readTemplateFilePromise(ref.templateFile + '.non.unique.ts');
-                ref.compositeTemplate = <TemplateUniqueNonUnique> {
-                    unique,
-                    nonUnique
-                };
-                break;
-            case TemplateReferenceMode.ChildFieldNormal:
-            case TemplateReferenceMode.ChildEntityNormal:
-                ref.compositeTemplate = <TemplateNormal> await readTemplateFilePromise(ref.templateFile + '.ts');
-                break;
-        }
-
-        let generatedTemplateCode = '';
-        switch(ref.compositeMode) {
-            case TemplateReferenceMode.ChildEntityNormal:
-            case TemplateReferenceMode.ChildEntityMultipleSingle:
-                generatedTemplateCode = entity.childEntities.map(e => genericReplaceChildEntityTemplate(ref, controllerPath, entity, e)).join('\n');
-                break;
-            case TemplateReferenceMode.ChildFieldNormal:
-                 generatedTemplateCode = entity.childFields.map(f => genericReplaceChildFieldTemplate(ref, controllerPath, entity, f)).join('\n');
-                 break;
-            case TemplateReferenceMode.EntityUniqueNonUnique:
-                generatedTemplateCode = genericReplaceEntityUniqueNonUniqueTemplate(ref, controllerPath, entity);
-                break;
-        }
-        restOfSection = generatedTemplateCode + restOfSection;
-        
-        compositeSections.push(restOfSection);
+export async function handleTemplateReferences(
+  mainTemplate: string,
+  controllerPath: string,
+  entity: Entity,
+): Promise<string> {
+  //Should be able to handle whether it is entity OR field mode -> and then multiple or single mode.
+  let sections = mainTemplate.split('///ref:');
+  let compositeSections = [];
+  for (let i = 0; i < sections.length; i++) {
+    let section = sections[i];
+    if (i === 0) {
+      compositeSections.push(section);
+      continue;
     }
-    let fullyGeneratedCode = compositeSections.join(' ');
-    return fullyGeneratedCode;
-}
 
-export function genericReplaceChildEntityTemplate(ref:TemplateReference, controllerPath:string, entity:Entity, childEntity:ChildEntity) {
-    let template:string;
-    if(ref.compositeMode === TemplateReferenceMode.ChildEntityMultipleSingle) {
-        if(childEntity.mode === ChildEntityMode.multiple) {
-            template = (<TemplateMultipleSingle>ref.compositeTemplate).multiple;
-        } else {
-            template = (<TemplateMultipleSingle>ref.compositeTemplate).single;
-        }
+    let firstline = section.substring(0, section.indexOf('\n'));
+    let restOfSection = section.substring(
+      section.indexOf('\n'),
+      section.length,
+    );
+    let ref: TemplateReference = JSON.parse(firstline);
+
+    if (ref.mode === 'childEntity.multipleSingle') {
+      ref.compositeMode = TemplateReferenceMode.ChildEntityMultipleSingle;
+    } else if (ref.mode === 'childEntity.normal') {
+      ref.compositeMode = TemplateReferenceMode.ChildEntityNormal;
+    } else if (ref.mode === 'entity.uniqueNonUnique') {
+      ref.compositeMode = TemplateReferenceMode.EntityUniqueNonUnique;
+    } else if (ref.mode === 'childField.normal') {
+      ref.compositeMode = TemplateReferenceMode.ChildFieldNormal;
     } else {
-        template = (<TemplateNormal>ref.compositeTemplate);
+      throw 'unknown template reference type';
     }
 
+    switch (ref.compositeMode) {
+      case TemplateReferenceMode.ChildEntityMultipleSingle:
+        let multiple = await readTemplateFilePromise(
+          ref.templateFile + '.multiple.ts',
+        );
+        let single = await readTemplateFilePromise(
+          ref.templateFile + '.single.ts',
+        );
+        ref.compositeTemplate = <TemplateMultipleSingle>{
+          multiple,
+          single,
+        };
+        break;
+      case TemplateReferenceMode.EntityUniqueNonUnique:
+        let unique = await readTemplateFilePromise(
+          ref.templateFile + '.unique.ts',
+        );
+        let nonUnique = await readTemplateFilePromise(
+          ref.templateFile + '.non.unique.ts',
+        );
+        ref.compositeTemplate = <TemplateUniqueNonUnique>{
+          unique,
+          nonUnique,
+        };
+        break;
+      case TemplateReferenceMode.ChildFieldNormal:
+      case TemplateReferenceMode.ChildEntityNormal:
+        ref.compositeTemplate = <TemplateNormal>await readTemplateFilePromise(
+          ref.templateFile + '.ts',
+        );
+        break;
+    }
 
-    let result = genericReplace(template, controllerPath, entity);
-    result = replaceByObject(result, {
-        '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
-        '${childEntity.fieldName}': childEntity.fieldName,
-        '${childEntity.upper}': childEntity.upper,
-        '${childEntity.lower}': childEntity.lower,
-    });
-    return result;
+    let generatedTemplateCode = '';
+    switch (ref.compositeMode) {
+      case TemplateReferenceMode.ChildEntityNormal:
+      case TemplateReferenceMode.ChildEntityMultipleSingle:
+        generatedTemplateCode = entity.childEntities
+          .map(e =>
+            genericReplaceChildEntityTemplate(ref, controllerPath, entity, e),
+          )
+          .join('\n');
+        break;
+      case TemplateReferenceMode.ChildFieldNormal:
+        generatedTemplateCode = entity.childFields
+          .map(f =>
+            genericReplaceChildFieldTemplate(ref, controllerPath, entity, f),
+          )
+          .join('\n');
+        break;
+      case TemplateReferenceMode.EntityUniqueNonUnique:
+        generatedTemplateCode = genericReplaceEntityUniqueNonUniqueTemplate(
+          ref,
+          controllerPath,
+          entity,
+        );
+        break;
+    }
+    restOfSection = generatedTemplateCode + restOfSection;
+
+    compositeSections.push(restOfSection);
+  }
+  let fullyGeneratedCode = compositeSections.join(' ');
+  return fullyGeneratedCode;
 }
 
-export function genericReplaceChildFieldTemplate(ref:TemplateReference, controllerPath:string, entity:Entity, childField:ChildField) {
-    let template:string = <TemplateNormal> ref.compositeTemplate;
-
-    let result = genericReplace(template, controllerPath, entity);
-    result = replaceByObject(result, {
-        '${childField.fieldName}': childField.fieldName,
-        '${childField.fieldType}': fieldTypeToString(childField.fieldType),
-        '${childField.fieldTypeValidator}': fieldTypeToValidator(childField.fieldType),
-    });
-    return result;
-}
-
-export function genericReplaceEntityUniqueNonUniqueTemplate(ref:TemplateReference, controllerPath:string, entity:Entity) {
-    let template:string;
-    if(!!entity.uniqueIndex) {
-        template = (<TemplateUniqueNonUnique>ref.compositeTemplate).unique;
+export function genericReplaceChildEntityTemplate(
+  ref: TemplateReference,
+  controllerPath: string,
+  entity: Entity,
+  childEntity: ChildEntity,
+) {
+  let template: string;
+  if (ref.compositeMode === TemplateReferenceMode.ChildEntityMultipleSingle) {
+    if (childEntity.mode === ChildEntityMode.multiple) {
+      template = (<TemplateMultipleSingle>ref.compositeTemplate).multiple;
     } else {
-        template = (<TemplateUniqueNonUnique>ref.compositeTemplate).nonUnique;
+      template = (<TemplateMultipleSingle>ref.compositeTemplate).single;
     }
+  } else {
+    template = <TemplateNormal>ref.compositeTemplate;
+  }
 
-    let result = genericReplace(template, controllerPath, entity);
-    let replaceObj = {
-        '${entity.lower}': entity.lower,
-    };
-    if(!!entity.uniqueIndex) {
-        replaceObj['${entity.uniqueIndex}'] = entity.uniqueIndex.fieldName;
-    }
-    result = replaceByObject(result, replaceObj);
-    return result;
+  let result = genericReplace(template, controllerPath, entity);
+  result = replaceByObject(result, {
+    '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
+    '${childEntity.fieldName}': childEntity.fieldName,
+    '${childEntity.upper}': childEntity.upper,
+    '${childEntity.lower}': childEntity.lower,
+  });
+  return result;
+}
+
+export function genericReplaceChildFieldTemplate(
+  ref: TemplateReference,
+  controllerPath: string,
+  entity: Entity,
+  childField: ChildField,
+) {
+  let template: string = <TemplateNormal>ref.compositeTemplate;
+
+  let result = genericReplace(template, controllerPath, entity);
+  result = replaceByObject(result, {
+    '${childField.fieldName}': childField.fieldName,
+    '${childField.fieldType}': fieldTypeToString(childField.fieldType),
+    '${childField.fieldTypeValidator}': fieldTypeToValidator(
+      childField.fieldType,
+    ),
+  });
+  return result;
+}
+
+export function genericReplaceEntityUniqueNonUniqueTemplate(
+  ref: TemplateReference,
+  controllerPath: string,
+  entity: Entity,
+) {
+  let template: string;
+  if (!!entity.uniqueIndex) {
+    template = (<TemplateUniqueNonUnique>ref.compositeTemplate).unique;
+  } else {
+    template = (<TemplateUniqueNonUnique>ref.compositeTemplate).nonUnique;
+  }
+
+  let result = genericReplace(template, controllerPath, entity);
+  let replaceObj = {
+    '${entity.lower}': entity.lower,
+  };
+  if (!!entity.uniqueIndex) {
+    replaceObj['${entity.uniqueIndex}'] = entity.uniqueIndex.fieldName;
+  }
+  result = replaceByObject(result, replaceObj);
+  return result;
 }

@@ -75,7 +75,7 @@ export class GenericEntityService<T extends GenericEntity> {
     let query = this.createQueryBuilder();
 
     if (!!ids) {
-      if(typeof ids === 'number') {
+      if (typeof ids === 'number') {
         query = query.whereInIds([ids]);
       } else {
         query = query.whereInIds(ids);

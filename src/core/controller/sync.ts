@@ -17,7 +17,7 @@ export class SyncHash {
   id: number;
   hash: string;
 
-  constructor(id: number, updatedAt:Date, ...hashFodder: any[]) {
+  constructor(id: number, updatedAt: Date, ...hashFodder: any[]) {
     this.id = id;
     let hashMaterial = '';
     hashMaterial += id;
@@ -34,7 +34,7 @@ export class SyncHash {
         }
       }
     });
-    
+
     this.hash = farmhash.hash64(hashMaterial);
   }
 }

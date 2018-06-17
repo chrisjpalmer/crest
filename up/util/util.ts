@@ -54,7 +54,7 @@ export function readFilePromise(fileLocation: string): Promise<string> {
   return fileReadPromise;
 }
 
-export function readTemplateFilePromise(fileLocation:string):Promise<string> {
+export function readTemplateFilePromise(fileLocation: string): Promise<string> {
   return readFilePromise(`${templatePath}/${fileLocation}`);
 }
 

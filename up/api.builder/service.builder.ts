@@ -13,7 +13,10 @@ import {
 } from '../util/util';
 import { buildGeneric } from './generic.builder';
 
-export async function buildService(controllerPath: string, entity: Entity) : Promise<string> {
+export async function buildService(
+  controllerPath: string,
+  entity: Entity,
+): Promise<string> {
   //Open the service template
   let serviceTemplate = await readTemplateFilePromise(
     `service/service.template.ts`,

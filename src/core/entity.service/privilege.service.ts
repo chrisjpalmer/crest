@@ -59,8 +59,8 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
   ): Promise<void> {
     let relations: (PostRelation | PatchRelation)[] = [];
     entries.map(v => v.roles).forEach(r => {
-      if(!!r) {
-        relations.push(...r)
+      if (!!r) {
+        relations.push(...r);
       }
     });
     let pingList = this.relationsToPingIds(relations);
