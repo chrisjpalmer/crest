@@ -36,7 +36,7 @@ export class GetParameterSearch {
   @IsOptional() id:number;
   @IsOptional() updatedAt:Date;
   @IsOptional() createdAt:Date;
-  ///ref:{"mode":"childField.normal", "templateFile":"class/get/field.template"}
+  ///ref:{"mode":"childField.normal", "templateFile":"class/get/parameter.field.template"}
 }
 
 export interface GetOutput {

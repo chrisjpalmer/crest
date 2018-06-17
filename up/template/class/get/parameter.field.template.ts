@@ -1,0 +1,1 @@
+@IsOptional() ${childField.fieldName}: ${childField.fieldType};
