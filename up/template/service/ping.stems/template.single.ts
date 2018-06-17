@@ -2,7 +2,7 @@ async pingStems${childEntity.fieldNameUpper} (entries:Entry[]) : Promise<void> {
     let relations:GenericRelation[] = [];
     entries.map(v => v.${childEntity.fieldName}).forEach(r => {
       if(!!r) {
-        relations.push(...r)
+        relations.push(r)
       }
     });
     let pingList = this.relationsToPingIds(relations);
@@ -13,3 +13,4 @@ async pingStems${childEntity.fieldNameUpper} (entries:Entry[]) : Promise<void> {
     .whereInIds(pingList)
     .execute();
   }
+  

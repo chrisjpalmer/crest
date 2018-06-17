@@ -5,7 +5,7 @@ indexed${childEntity.fieldNameUpper}: Map<number, ${childEntity.upper}>,
     StitchSet(
         ${entity.lower},
         indexed${childEntity.fieldNameUpper},
-        p => p.${childEntity.fieldName}.map(c => c.id),
-        (p, c) => (p.${childEntity.fieldName} = c),
+        p => [p.${childEntity.fieldName}.id],
+        (p, c) => (p.${childEntity.fieldName} = c[0]),
     );
 }

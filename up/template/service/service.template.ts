@@ -10,14 +10,12 @@ import {
   StitchSet,
   InjectRepo,
   GenericEntityService,
-  PostRelation,
-  PatchRelation,
   GenericRelation,
 } from 'core';
-/// < entity.imports.template >
+///cust:importChildEntitiesAndTokens
 
 interface Entry {
-  /// < entity.service.entity.interface.template >
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/entry.interface/template"}
 }
 
 @Component()
@@ -25,20 +23,31 @@ export class ${entity.upper}Service extends GenericEntityService<${entity.upper}
   constructor(
     @InjectRepo(${entity.upper}Token)
     private readonly ${entity.lower}Repository: Repository<${entity.upper}>,
-    /// < entity.service.relation.repository.template >
+    ///ref:{"mode":"childEntity.normal", "templateFile":"service/repository/template"}
   ) {
-    /// < entity.service.supercall.template >
+    ///ref:{"mode":"entity.uniqueNonUnique", "templateFile":"service/super.call/template"}
   }
 
-  /// < entity.service.fillWith.template >
-
+  /**
+   * createQueryBuilder - convenience abstraction of repository.createQueryBuilder(tableAlias)
+   */
   createQueryBuilder() {
     return this.${entity.lower}Repository
       .createQueryBuilder(this.mainTableAlias);
   }
 
-  
-  /// < entity.service.selectQueryBuilder.template >
+  /**
+   * Fill with methods  
+   */  
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/fill.with/template"}
 
-  /// < entity.service.ping.template >
+  /**
+   * Apply Stems methods  
+   */  
+  ///ref:{"mode":"childEntity.normal", "templateFile":"service/apply.stems/template"}
+
+  /**
+   * Ping Stems methods  
+   */  
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/ping.stems/template"}
 }

@@ -36,17 +36,17 @@ export class GetParameterSearch {
   @IsOptional() id:number;
   @IsOptional() updatedAt:Date;
   @IsOptional() createdAt:Date;
-  /// < entity.class.get.field.template >
+  ///ref:{"mode":"childField.normal", "templateFile":"class/get/field.template"}
 }
 
 export interface GetOutput {
   id:number;
   updatedAt:Date;
   createdAt:Date;
-  /// < entity.class.get.field.template >
+  ///ref:{"mode":"childField.normal", "templateFile":"class/get/field.template"}
 
   //---------Relationships--------\\
-  /// < entity.class.get.relation.template >
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"class/get/relation.template"}
 }
 
 //-----------Post----------\\
@@ -60,10 +60,10 @@ export class PostInput {
 }
 
 export class PostInput${entity.upper} {
-  /// < entity.class.post.field.template >
+  ///ref:{"mode":"childField.normal", "templateFile":"class/post/field.template"}
 
   //---------Relationships--------\\
-  /// < entity.class.post.relation.template >
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"class/post/relation.template"}
 }
 
 //Output
@@ -84,10 +84,10 @@ export class PatchInput {
 export class PatchInput${entity.upper} {
   @IsNumber() id: number;
 
-  /// < entity.class.patch.field.template >
+  ///ref:{"mode":"childField.normal", "templateFile":"class/patch/field.template"}
 
   //---------Relationships--------\\
-  /// < entity.class.patch.relation.template >
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"class/patch/relation.template"}
 }
 
 //Output

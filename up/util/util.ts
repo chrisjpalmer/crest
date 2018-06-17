@@ -54,6 +54,10 @@ export function readFilePromise(fileLocation: string): Promise<string> {
   return fileReadPromise;
 }
 
+export function readTemplateFilePromise(fileLocation:string):Promise<string> {
+  return readFilePromise(`${templatePath}/${fileLocation}`);
+}
+
 export function makeDirectoryPromise(directoryLocation: string): Promise<void> {
   let makeDirectoryPromise = new Promise<void>((resolve, reject) => {
     fs.mkdir(directoryLocation, err => {

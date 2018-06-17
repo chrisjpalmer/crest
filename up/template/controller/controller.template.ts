@@ -31,7 +31,7 @@ import {
 } from './${entity.filename}.class';
 import { ${entity.upper}, ${entity.upper}Token } from 'database';
 import { ${entity.upper}Service } from './${entity.filename}.service';
-/// < entity.imports.template >
+///cust:importChildEntities
 
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
@@ -115,7 +115,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    /// < entity.controller.get.stems.template >
+    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
     query = query.whereInIds(ids);
     return await query.getMany();
   }
@@ -137,9 +137,9 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     let entities = input.entries.map(v => {
         let o: ${entity.upper} = this.${entity.lower}Repository.create();
 
-        /// < entity.controller.post.field.template >
+        ///ref:{"mode":"childField.normal", "templateFile":"controller/post/field.template"}
 
-        /// < entity.controller.post.relation.template >
+        ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/post/relation.template"}
         return o;
       });
 
@@ -147,7 +147,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     await this.${entity.lower}Repository.save(entities);
 
     //3) Ping stems
-    /// < entity.controller.ping.template >
+    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/ping.template"}
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -175,7 +175,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     let toApply: ${entity.upper}[] = await promiseArray(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
-          /// < entity.controller.get.stems.template >
+          ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
           return query;
         })
       }),
@@ -186,9 +186,9 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
       //duplicate the input value v to o. o stands for output
       let o = this.${entity.lower}Repository.create(v);
 
-      /// < entity.controller.patch.field.template >
+      ///ref:{"mode":"childField.normal", "templateFile":"controller/patch/field.template"}
 
-      /// < entity.controller.patch.relation.template >
+      ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/patch/relation.template"}
 
       return o;
     });
@@ -197,7 +197,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     await this.${entity.lower}Repository.save(toSave);
 
     //5) Ping stems
-    /// < entity.controller.ping.template >
+    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/ping.template"}
 
     //Return result
     return { result: toSave.map(v => v.id) };
@@ -221,7 +221,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     let toDelete: ${entity.upper}[] = await promiseArray(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
-          /// < entity.controller.get.stems.template >
+          ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
           return query;
         })
       }),
@@ -234,7 +234,7 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     await this.${entity.lower}Repository.delete(deleteIDs);
 
     //5) Ping stems
-    /// < entity.controller.ping.delete.template >
+    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/delete/ping.template"}
 
     //Return result
     return { result: deleteIDs };
