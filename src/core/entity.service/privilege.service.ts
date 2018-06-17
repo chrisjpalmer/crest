@@ -67,7 +67,7 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
 
     await this.roleRepository
       .createQueryBuilder('role')
-      .update({ updatedAt: new Date() })
+      .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
       .whereInIds(pingList)
       .execute();
   }

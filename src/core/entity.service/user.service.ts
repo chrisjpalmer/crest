@@ -159,7 +159,7 @@ export class UserService extends GenericEntityService<User> {
 
     await this.roleRepository
       .createQueryBuilder('role')
-      .update({ updatedAt: new Date() })
+      .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
       .whereInIds(pingList)
       .execute();
   }

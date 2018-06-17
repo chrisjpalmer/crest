@@ -5,12 +5,12 @@
  */
 import {
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
   CreateDateColumn,
+  Column,
 } from 'typeorm';
 
 export class GenericEntity {
   @PrimaryGeneratedColumn() id?: number;
-  @CreateDateColumn() createdAt?: Date;
-  @UpdateDateColumn() updatedAt?: Date;
+  @CreateDateColumn({type:'timestamp'}) createdAt?: Date;
+  @Column('timestamp', {precision:6, default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)'}) updatedAt?: Date;
 }

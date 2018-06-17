@@ -9,7 +9,7 @@ async pingStems${childEntity.fieldNameUpper} (entries:(PostInput${entity.upper} 
     
     await this.${childEntity.lower}Repository
     .createQueryBuilder('${childEntity.lower}')
-    .update({ updatedAt: new Date() })
+    .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
     .whereInIds(pingList)
     .execute();
   }

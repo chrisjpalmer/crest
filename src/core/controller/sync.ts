@@ -17,22 +17,25 @@ export class SyncHash {
   id: number;
   hash: string;
 
-  constructor(id: number, ...hashMaterial: any[]) {
+  constructor(id: number, updatedAt:Date, ...hashFodder: any[]) {
     this.id = id;
-    let _hashMaterial = '';
-    _hashMaterial += id;
-    hashMaterial.forEach(h => {
+    let hashMaterial = '';
+    hashMaterial += id;
+    hashMaterial += updatedAt.toISOString(); //The most precise form of the date which can be retrieved.
+
+    hashFodder.forEach(fodder => {
       try {
-        _hashMaterial += h.toString();
+        hashMaterial += fodder.toString();
       } catch (e) {
         try {
-          _hashMaterial += JSON.stringify(h);
+          hashMaterial += JSON.stringify(fodder);
         } catch (e) {
           throw 'SyncHash: data cannot be hashed';
         }
       }
     });
-    this.hash = farmhash.hash64(_hashMaterial);
+    
+    this.hash = farmhash.hash64(hashMaterial);
   }
 }
 
