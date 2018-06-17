@@ -31,6 +31,13 @@ export async function buildService(controllerPath: string, entity: Entity) {
     relationRepository,
   );
 
+  /// < entity.service.entity.interface.template >
+  let entityInterface = await buildServiceEntityInterface(entity);
+  service = service.replaceAll(
+    `/// < entity.service.entity.interface.template >`,
+    entityInterface,
+  );
+
   /// < entity.service.ping.template >
   let ping = await buildServicePing(entity);
   service = service.replaceAll(`/// < entity.service.ping.template >`, ping);
@@ -91,6 +98,41 @@ function buildRelationRepositoryForChild(
   });
   relationRepository;
   return relationRepository;
+}
+
+async function buildServiceEntityInterface(entity: Entity) {
+  let entityInterfaceMultiple = await readFilePromise(
+    `${templatePath}/entity.service.entity.interface.multiple.template.ts`,
+  );
+  let entityInterfaceSingle = await readFilePromise(
+    `${templatePath}/entity.service.entity.interface.single.template.ts`,
+  );
+  let entityInterface = '';
+
+  entity.childEntities
+    .map(c => {
+      if (c.mode == ChildEntityMode.multiple) {
+        return buildServiceEntityInterfaceForChild(entity, c, entityInterfaceMultiple);
+      } else {
+        return buildServiceEntityInterfaceForChild(entity, c, entityInterfaceSingle);
+      }
+    })
+    .forEach(pr => {
+      entityInterface += pr + '\n\n';
+    });
+
+  return entityInterface;
+}
+
+function buildServiceEntityInterfaceForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  entityInterfaceTemplate: string,
+) {
+  let entityInterface = replaceByObject(entityInterfaceTemplate, {
+    '${childEntity.fieldName}': childEntity.fieldName,
+  });
+  return entityInterface;
 }
 
 async function buildServicePing(entity: Entity) {

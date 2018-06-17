@@ -69,10 +69,15 @@ export async function buildController(controllerPath: string, entity: Entity) {
     ping,
   );
 
+  /// < entity.controller.ping.delete.template >
+  let pingDelete = await buildControllerPingDelete(entity);
+  controller = controller.replaceAll(
+    `/// < entity.controller.ping.delete.template >`,
+    pingDelete,
+  );
+
   return controller;
 }
-
-buildControllerGetStems;
 
 /** GET */
 async function buildControllerGetStems(entity: Entity) {
@@ -268,6 +273,35 @@ async function buildControllerPing(entity: Entity) {
 }
 
 function buildControllerPingForChild(
+  entity: Entity,
+  childEntity: ChildEntity,
+  pingTemplate: string,
+) {
+  let ping = replaceByObject(pingTemplate, {
+    '${childEntity.fieldNameUpper}': toUpperTitleCase(childEntity.fieldName),
+    '${entity.lower}': entity.lower,
+  });
+  return ping;
+}
+
+async function buildControllerPingDelete(entity: Entity) {
+  let pingTemplate = await readFilePromise(
+    `${templatePath}/entity.controller.ping.delete.template.ts`,
+  );
+  let ping = '';
+
+  entity.childEntities
+    .map(c => {
+      return buildControllerPingDeleteForChild(entity, c, pingTemplate);
+    })
+    .forEach(fw => {
+      ping += fw + '\n';
+    });
+
+  return ping;
+}
+
+function buildControllerPingDeleteForChild(
   entity: Entity,
   childEntity: ChildEntity,
   pingTemplate: string,

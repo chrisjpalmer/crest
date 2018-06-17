@@ -1,5 +1,5 @@
-async pingStems${childEntity.fieldNameUpper} (entries:(PostInput${entity.upper} | PatchInput${entity.upper})[]) : Promise<void> {
-    let relations:(PostRelation| PatchRelation)[] = [];
+async pingStems${childEntity.fieldNameUpper} (entries:Entry[]) : Promise<void> {
+    let relations:GenericRelation[] = [];
     entries.map(v => v.${childEntity.fieldName}).forEach(r => {
       if(!!r) {
         relations.push(r)

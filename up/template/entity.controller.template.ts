@@ -214,19 +214,27 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
-    //Prepare to find all rows in specified table by converting entries => entities
+    //1) Prepare to find all rows in specified table by converting entries => entities
     let toFind = input.entries.map(v => <${entity.upper}>{ id: v.id });
 
-    //For each entry, find the row it pertains to.
+    //2) For each entry, find the row it pertains to.
     let toDelete: ${entity.upper}[] = await promiseArray(
-      toFind.map(v => this.${entity.lower}Repository.findOne(v)),
+      toFind.map(v => {
+        return this.${entity.lower}Service.findById(v.id, query => {
+          /// < entity.controller.get.stems.template >
+          return query;
+        })
+      }),
     );
 
-    //All entries found... convert to an easier format for deletion
+    //3) All entries found... convert to an easier format for deletion
     let deleteIDs = toDelete.map(v => v.id);
 
-    //Delete all entries at once
+    //4) Delete all entries at once
     await this.${entity.lower}Repository.delete(deleteIDs);
+
+    //5) Ping stems
+    /// < entity.controller.ping.delete.template >
 
     //Return result
     return { result: deleteIDs };

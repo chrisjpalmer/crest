@@ -1,4 +1,4 @@
 @ValidateNested()
-@Type(() => PostRelation)
+@Type(() => PatchRelationSingle)
 @IsOptional()
-${childEntity.fieldName}: PatchRelation;
+${childEntity.fieldName}: PatchRelationSingle;

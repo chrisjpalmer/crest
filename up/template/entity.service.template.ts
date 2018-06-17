@@ -12,9 +12,13 @@ import {
   GenericEntityService,
   PostRelation,
   PatchRelation,
+  GenericRelation,
 } from 'core';
-import { PostInput${entity.upper}, PatchInput${entity.upper} } from './${entity.filename}.class';
 /// < entity.imports.template >
+
+interface Entry {
+  /// < entity.service.entity.interface.template >
+}
 
 @Component()
 export class ${entity.upper}Service extends GenericEntityService<${entity.upper}> {

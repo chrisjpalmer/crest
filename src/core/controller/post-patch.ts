@@ -14,6 +14,10 @@ export class PatchRelation {
   @IsNumber() id: number;
 }
 
+export class PatchRelationSingle {
+  @IsNumber() id: number;
+}
+
 export class PostRelation {
   @IsNumber() id: number;
 }
@@ -23,6 +27,10 @@ export interface GetRelation {
 }
 
 export interface patchRelationChild {
+  id?: number;
+}
+
+export interface GenericRelation {
   id?: number;
 }
 

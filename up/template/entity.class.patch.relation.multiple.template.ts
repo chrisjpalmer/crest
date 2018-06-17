@@ -1,5 +1,5 @@
 @ValidateNested()
-@Type(() => PostRelation)
+@Type(() => PatchRelation)
 @IsArray()
 @IsOptional()
 ${childEntity.fieldName}: PatchRelation[];

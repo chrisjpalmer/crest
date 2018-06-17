@@ -12,7 +12,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { GetRelation, PostRelation, PatchRelation, SyncInput, GenericGetMode } from 'core';
+import { GetRelation, PostRelation, PatchRelation, PatchRelationSingle, SyncInput, GenericGetMode } from 'core';
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
@@ -21,21 +21,21 @@ import { GetRelation, PostRelation, PatchRelation, SyncInput, GenericGetMode } f
 //-----------Get-----------\\
 export class GetInput extends SyncInput {
   //Query Mode
-  mode: GenericGetMode;
+  @IsOptional() mode: GenericGetMode;
   //Discrete Mode
-  ids: number[];
+  @IsOptional() ids: number[];
   //ParameterSearch Mode
-  parameterSearch: GetParameterSearch;
+  @IsOptional() parameterSearch: GetParameterSearch;
 
   //Pagination
-  page: number;
-  pageSize: number;
+  @IsOptional() page: number;
+  @IsOptional() pageSize: number;
 }
 
 export class GetParameterSearch {
-  id:number;
-  updatedAt:Date;
-  createdAt:Date;
+  @IsOptional() id:number;
+  @IsOptional() updatedAt:Date;
+  @IsOptional() createdAt:Date;
   /// < entity.class.get.field.template >
 }
 
