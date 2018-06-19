@@ -19,7 +19,7 @@ export async function createEntity(params: Params) {
 
   //Create the entity class file and save it
   let entityTemplate = await readFilePromise(
-    `${templatePath}/entity.template.ts`,
+    `${templatePath}/entity/entity.template.ts`,
   );
   let entity = replaceByObject(entityTemplate, {
     '${entity.upper}': entityUpper,
