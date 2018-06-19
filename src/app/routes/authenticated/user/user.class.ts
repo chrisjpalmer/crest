@@ -133,9 +133,9 @@ export class PatchInputUser {
 
   //---------Relationships--------\\
   @ValidateNested()
-  @Type(() => PostRelation)
+  @Type(() => PatchRelationSingle)
   @IsOptional()
-  role: PatchRelation;
+  role: PatchRelationSingle;
 }
 
 //Output

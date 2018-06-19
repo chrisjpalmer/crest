@@ -16,6 +16,7 @@ import {
   GetRelation,
   PostRelation,
   PatchRelation,
+  PatchRelationSingle,
   SyncInput,
   GenericGetMode,
 } from 'core';
@@ -27,24 +28,23 @@ import {
 //-----------Get-----------\\
 export class GetInput extends SyncInput {
   //Query Mode
-  mode: GenericGetMode;
+  @IsOptional() mode: GenericGetMode;
   //Discrete Mode
-  ids: number[];
+  @IsOptional() ids: number[];
   //ParameterSearch Mode
-  parameterSearch: GetParameterSearch;
+  @IsOptional() parameterSearch: GetParameterSearch;
 
   //Pagination
-  page: number;
-  pageSize: number;
+  @IsOptional() page: number;
+  @IsOptional() pageSize: number;
 }
 
 export class GetParameterSearch {
-  id: number;
-  updatedAt: Date;
-  createdAt: Date;
-  name: string;
-
-  description: string;
+  @IsOptional() id: number;
+  @IsOptional() updatedAt: Date;
+  @IsOptional() createdAt: Date;
+  @IsOptional() name: string;
+  @IsOptional() description: string;
 }
 
 export interface GetOutput {
@@ -52,7 +52,6 @@ export interface GetOutput {
   updatedAt: Date;
   createdAt: Date;
   name: string;
-
   description: string;
 
   //---------Relationships--------\\
@@ -110,7 +109,7 @@ export class PatchInputRole {
 
   //---------Relationships--------\\
   @ValidateNested()
-  @Type(() => PostRelation)
+  @Type(() => PatchRelation)
   @IsArray()
   @IsOptional()
   privileges: PatchRelation[];

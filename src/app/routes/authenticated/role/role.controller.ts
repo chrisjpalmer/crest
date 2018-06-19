@@ -189,8 +189,8 @@ export class RoleController extends GenericController<Role> {
     let toApply: Role[] = await promiseArray(
       toFind.map(v => {
         return this.roleService.findById(v.id, query => {
-          query = this.roleService.applyStemsPrivileges(query);
-          //query = this.roleService.applyStemsUsers(query);
+          query = this.roleService.applyStemsPrivileges(query); //Comment out at your leisure.
+          //query = this.roleService.applyStemsUsers(query); //Comment out at your leisure.
           return query;
         });
       }),
@@ -205,7 +205,6 @@ export class RoleController extends GenericController<Role> {
       if (!!input.entries[i].name) {
         o.name = input.entries[i].name;
       }
-
       //Apply update to the property
       if (!!input.entries[i].description) {
         o.description = input.entries[i].description;
@@ -219,7 +218,6 @@ export class RoleController extends GenericController<Role> {
           input.entries[i].privileges,
         );
       }
-
       //Apply update to relationship
       //if (!!input.entries[i].users) {
       //  o.users = PatchRelationApply(v.id, v.users, input.entries[i].users);
@@ -250,19 +248,27 @@ export class RoleController extends GenericController<Role> {
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
-    //Prepare to find all rows in specified table by converting entries => entities
+    //1) Prepare to find all rows in specified table by converting entries => entities
     let toFind = input.entries.map(v => <Role>{ id: v.id });
 
-    //For each entry, find the row it pertains to.
+    //2) For each entry, find the row it pertains to.
     let toDelete: Role[] = await promiseArray(
-      toFind.map(v => this.roleRepository.findOne(v)),
+      toFind.map(v => {
+        return this.roleService.findById(v.id, query => {
+          query = this.roleService.applyStemsPrivileges(query); //Comment out at your leisure.
+          return query;
+        });
+      }),
     );
 
-    //All entries found... convert to an easier format for deletion
+    //3) All entries found... convert to an easier format for deletion
     let deleteIDs = toDelete.map(v => v.id);
 
-    //Delete all entries at once
+    //4) Delete all entries at once
     await this.roleRepository.delete(deleteIDs);
+
+    //5) Ping stems
+    await this.roleService.pingStemsPrivileges(toDelete); //Comment out at your leisure.
 
     //Return result
     return { result: deleteIDs };

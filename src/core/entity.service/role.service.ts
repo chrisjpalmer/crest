@@ -9,15 +9,11 @@ import { Role, RoleToken } from 'database';
 import { GenericEntityService } from './generic.entity.service';
 import { InjectRepo } from '../core/core.database.provider';
 import { StitchSet } from '../core/core.database.util';
-import { PostRelation, PatchRelation } from '../controller/post-patch';
+import { GenericRelation } from '../controller/post-patch';
 import { Privilege, PrivilegeToken, User, UserToken } from 'database';
 
-interface PostInputRole {
-  privileges: PostRelation[];
-}
-
-interface PatchInputRole {
-  privileges: PatchRelation[];
+interface Entry {
+  privileges: GenericRelation[];
 }
 
 @Component()
@@ -30,6 +26,17 @@ export class RoleService extends GenericEntityService<Role> {
   ) {
     super('role', 'name');
   }
+
+  /**
+   * createQueryBuilder - convenience abstraction of repository.createQueryBuilder(tableAlias)
+   */
+  createQueryBuilder() {
+    return this.roleRepository.createQueryBuilder(this.mainTableAlias);
+  }
+
+  /**
+   * Fill with methods
+   */
 
   fillWithPrivileges(
     role: Role | Role[] | Map<number, Role>,
@@ -55,9 +62,9 @@ export class RoleService extends GenericEntityService<Role> {
     );
   }
 
-  createQueryBuilder() {
-    return this.roleRepository.createQueryBuilder(this.mainTableAlias);
-  }
+  /**
+   * Apply Stems methods
+   */
 
   applyStemsPrivileges(
     query: SelectQueryBuilder<Role>,
@@ -66,16 +73,19 @@ export class RoleService extends GenericEntityService<Role> {
       .leftJoin(this.mainTableAlias + '.privileges', 'privilege')
       .addSelect('privilege.id');
   }
+
   applyStemsUsers(query: SelectQueryBuilder<Role>): SelectQueryBuilder<Role> {
     return query
       .leftJoin(this.mainTableAlias + '.users', 'user')
       .addSelect('user.id');
   }
 
-  async pingStemsPrivileges(
-    entries: (PostInputRole | PatchInputRole)[],
-  ): Promise<void> {
-    let relations: (PostRelation | PatchRelation)[] = [];
+  /**
+   * Ping Stems methods
+   */
+
+  async pingStemsPrivileges(entries: Entry[]): Promise<void> {
+    let relations: GenericRelation[] = [];
     entries.map(v => v.privileges).forEach(r => {
       if (!!r) {
         relations.push(...r);
