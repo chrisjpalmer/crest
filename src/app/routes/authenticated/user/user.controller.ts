@@ -213,17 +213,14 @@ export class UserController extends GenericController<User> {
       if (!!v.username) {
         o.username = v.username;
       }
-
       //Apply update to the property
       if (!!v.firstName) {
         o.firstName = v.firstName;
       }
-
       //Apply update to the property
       if (!!v.lastName) {
         o.lastName = v.lastName;
       }
-
       //Apply update to the property
       if (!!v.emailAddress) {
         o.emailAddress = v.emailAddress;
@@ -267,18 +264,18 @@ export class UserController extends GenericController<User> {
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
-    //Prepare to find all rows in specified table by converting entries => entities
+    //1) Prepare to find all rows in specified table by converting entries => entities
     let toFind = input.entries.map(v => <User>{ id: v.id });
 
-    //For each entry, find the row it pertains to.
+    //2) For each entry, find the row it pertains to.
     let toDelete: User[] = await promiseArray(
       toFind.map(v => this.userRepository.findOne(v)),
     );
 
-    //All entries found... convert to an easier format for deletion
+    //3) All entries found... convert to an easier format for deletion
     let deleteIDs = toDelete.map(v => v.id);
 
-    //Delete all entries at once
+    //4) Delete all entries at once
     await this.userRepository.delete(deleteIDs);
 
     //Return result

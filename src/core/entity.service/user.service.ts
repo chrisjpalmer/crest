@@ -10,7 +10,7 @@ import { User, UserToken } from 'database';
 import { GenericEntityService } from './generic.entity.service';
 import { InjectRepo } from '../core/core.database.provider';
 import { StitchSet } from '../core/core.database.util';
-import { PostRelation, PatchRelation } from '../controller/post-patch';
+import { GenericRelation } from '../controller/post-patch';
 import {
   Role,
   RoleToken,
@@ -23,12 +23,8 @@ import {
 } from 'database';
 import { CryptoService } from '../auth/crypto.service';
 
-interface PostInputUser {
-  role: PostRelation;
-}
-
-interface PatchInputUser {
-  role: PostRelation;
+interface Entry {
+  role: GenericRelation;
 }
 
 @Component()
@@ -46,6 +42,17 @@ export class UserService extends GenericEntityService<User> {
   ) {
     super('user', 'username');
   }
+
+  /**
+   * createQueryBuilder - convenience abstraction of repository.createQueryBuilder(tableAlias)
+   */
+  createQueryBuilder() {
+    return this.userRepository.createQueryBuilder(this.mainTableAlias);
+  }
+
+  /**
+   * Fill with methods
+   */
 
   fillWithRole(
     user: User | User[] | Map<number, User>,
@@ -136,9 +143,9 @@ export class UserService extends GenericEntityService<User> {
     return user.id;
   }
 
-  createQueryBuilder() {
-    return this.userRepository.createQueryBuilder(this.mainTableAlias);
-  }
+  /**
+   * Apply Stems methods
+   */
 
   applyStemsRole(query: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
     return query
@@ -146,17 +153,18 @@ export class UserService extends GenericEntityService<User> {
       .addSelect('role.id');
   }
 
-  async pingStemsRole(
-    entries: (PostInputUser | PatchInputUser)[],
-  ): Promise<void> {
-    let relations: (PostRelation | PatchRelation)[] = [];
+  /**
+   * Ping Stems methods
+   */
+
+  async pingStemsRole(entries: Entry[]): Promise<void> {
+    let relations: GenericRelation[] = [];
     entries.map(v => v.role).forEach(r => {
       if (!!r) {
         relations.push(r);
       }
     });
     let pingList = this.relationsToPingIds(relations);
-
     await this.roleRepository
       .createQueryBuilder('role')
       .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
