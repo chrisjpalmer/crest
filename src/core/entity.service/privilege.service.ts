@@ -9,15 +9,11 @@ import { Privilege, PrivilegeToken } from 'database';
 import { GenericEntityService } from './generic.entity.service';
 import { InjectRepo } from '../core/core.database.provider';
 import { StitchSet } from '../core/core.database.util';
-import { PostRelation, PatchRelation } from '../controller/post-patch';
+import { GenericRelation } from '../controller/post-patch';
 import { Role, RoleToken } from 'database';
 
-interface PostInputPrivilege {
-  roles: PostRelation[];
-}
-
-interface PatchInputPrivilege {
-  roles: PatchRelation[];
+interface Entry {
+  roles: GenericRelation[];
 }
 
 @Component()
@@ -29,6 +25,17 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
   ) {
     super('privilege', 'name');
   }
+
+  /**
+   * createQueryBuilder - convenience abstraction of repository.createQueryBuilder(tableAlias)
+   */
+  createQueryBuilder() {
+    return this.privilegeRepository.createQueryBuilder(this.mainTableAlias);
+  }
+
+  /**
+   * Fill with methods
+   */
 
   fillWithRoles(
     privilege: Privilege | Privilege[] | Map<number, Privilege>,
@@ -42,9 +49,9 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
     );
   }
 
-  createQueryBuilder() {
-    return this.privilegeRepository.createQueryBuilder(this.mainTableAlias);
-  }
+  /**
+   * Apply Stems methods
+   */
 
   applyStemsRoles(
     query: SelectQueryBuilder<Privilege>,
@@ -54,10 +61,12 @@ export class PrivilegeService extends GenericEntityService<Privilege> {
       .addSelect('role.id');
   }
 
-  async pingStemsRoles(
-    entries: (PostInputPrivilege | PatchInputPrivilege)[],
-  ): Promise<void> {
-    let relations: (PostRelation | PatchRelation)[] = [];
+  /**
+   * Ping Stems methods
+   */
+
+  async pingStemsRoles(entries: Entry[]): Promise<void> {
+    let relations: GenericRelation[] = [];
     entries.map(v => v.roles).forEach(r => {
       if (!!r) {
         relations.push(...r);

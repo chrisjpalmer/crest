@@ -119,7 +119,6 @@ export class PrivilegeController extends GenericController<Privilege> {
     query = this.privilegeService.createQueryBuilder();
     //query = query.select(this.privilegeService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
-
     query = query.whereInIds(ids);
     return await query.getMany();
   }
@@ -146,7 +145,6 @@ export class PrivilegeController extends GenericController<Privilege> {
       if (!!v.roles) {
         o.roles = v.roles.map(dc => <Role>{ id: dc.id });
       }
-
       return o;
     });
 
@@ -182,7 +180,7 @@ export class PrivilegeController extends GenericController<Privilege> {
     let toApply: Privilege[] = await promiseArray(
       toFind.map(v => {
         return this.privilegeService.findById(v.id, query => {
-          query = this.privilegeService.applyStemsRoles(query);
+          query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
           return query;
         });
       }),
@@ -227,19 +225,27 @@ export class PrivilegeController extends GenericController<Privilege> {
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
-    //Prepare to find all rows in specified table by converting entries => entities
+    //1) Prepare to find all rows in specified table by converting entries => entities
     let toFind = input.entries.map(v => <Privilege>{ id: v.id });
 
-    //For each entry, find the row it pertains to.
+    //2) For each entry, find the row it pertains to.
     let toDelete: Privilege[] = await promiseArray(
-      toFind.map(v => this.privilegeRepository.findOne(v)),
+      toFind.map(v => {
+        return this.privilegeService.findById(v.id, query => {
+          query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
+          return query;
+        });
+      }),
     );
 
-    //All entries found... convert to an easier format for deletion
+    //3) All entries found... convert to an easier format for deletion
     let deleteIDs = toDelete.map(v => v.id);
 
-    //Delete all entries at once
+    //4) Delete all entries at once
     await this.privilegeRepository.delete(deleteIDs);
+
+    //5) Ping stems
+    await this.privilegeService.pingStemsRoles(toDelete); //Comment out at your leisure.
 
     //Return result
     return { result: deleteIDs };
