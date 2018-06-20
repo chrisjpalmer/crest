@@ -1,7 +1,7 @@
 # Crest
-**Crest = CRUD + REST + Nest**
+**Crest = CRUD + REST + [Nest](https://nestjs.com)**
 
-A rich starter for Nest and MySQL which makes building a web server fun again.
+A rich starter for [Nest](https://nestjs.com) and MySQL which makes building a web server fun again.
 
 ## Oh CRUD!
 In web applications, CRUD is the implementation of **C**reate, **R**ead, **U**pdate and **D**elete operations to manipulate database tables / entities. Applications these days scale fast and CRUD will require you to repeat a lot of code... CRUD!
@@ -27,7 +27,6 @@ Crest creates standard CRUD APIs with the following features:
 ### Init
 Get the npm packages
 ```bash
-cd projdir #Or open the command console in VS Code
 npm install
 npm run init
 set config/config.json with your database settings
@@ -36,49 +35,40 @@ set config/config.json with your database settings
 ### Up
 Create the demo APIs
 ```bash
-cd projdir #Or open the command console in VS Code
 npm run up Message
 npm run up MessageCategory
 ```
 
 ### Run
 ```bash
-cd projdir #Or open the command console in VS Code
 npm run start
 ```
-
-### Test
-Crest supports a test system which allows you to send json payloads to the web server.
-The payloads are located under the `src/tester` folder and are organized according to the resource path.
-
-Try these commands to get going as a root user:
-```bash
-curl -X POST -H 'Content-Type: application/json' http://localhost:3000/init
-npm run login root.post myuser #Login as "root" user, save auth as "myuser"
-npm run use message/create.post myuser #POST message/create.post as "myuser"
-``` 
 
 ### Debugging
 Debugging works out of the box for Visual Studio Code. Hit the green button to start!
 
 ### API Client
-Crest ships with an *API Client Starter* as well! You can clone it and point it to your crest project. 
-It will generate all the typings for your APIs!
+Crest's little brother is [crest-client](https://github.com/chrisjpalmer/crest-client) which can help you spin up an API Client in no time.
+
+Just clone the project and point it to your project.
 
 ```bash
-git clone https://github.com/chrisjpalmer/crest-client
-cd crest-client
+git clone https://github.com/chrisjpalmer/crest-client && cd crest-client
+
+npm install
 npm run down "path/on/my/drive/to/crest"
 ```
 
 For more information see the crest-client page
 
 # Use 'Up'
-Up has two functions. It can help you create TypeORM entities OR it can convert those TypeORM entities into APIs.
+`up` has two functions.
+1. help create [TypeORM](https://github.com/typeorm/typeorm) entities / tables
+2. convert those [TypeORM](https://github.com/typeorm/typeorm) entities / tables into APIs.
 
 ### Create Tables
-To create a table specify *create* after the up command:
-```
+To create a table, specify *create* after the `up` command:
+```bash
 npm run up create Genre
 ```
 
@@ -98,7 +88,7 @@ export class Genre extends GenericEntity {
 }
 ```
 
-It is important that you always specify the name of the table in PascalCase. `up` namespaces your apis using PascalCase:
+It is important that you always specify the name of the table in PascalCase. `up` namespaces your APIs using PascalCase:
 ```
 Genre => /genre
 BookGenre => /book/genre
@@ -106,9 +96,8 @@ BookGenre => /book/genre
 
 
 ### Create APIs
-To generate an API we simply run the `up` and pass the table name.
+To generate an API we simply run `up` and pass the table name.
 ```bash
-cd projdir #Or open the command console in VS Code
 npm run up Genre
 ```
 
@@ -139,7 +128,7 @@ export class Genre extends GenericEntity {
 ```
 ...what would our API look like?
 
-`up` generates *Get*, *Post*, *Patch* and *Delete* methods for *Create*, *Read*, *Update*, *Delete* operations:
+`up` generates *GET*, *POST*, *PATCH* and *DELETE* methods for *READ*, *CREATE*, *UPDATE* and *DELETE* operations:
 
 ## GET / Read
 **Input Signature**
@@ -166,7 +155,7 @@ export class GetParameterSearch {
 ```
 
 **Sample call:**
-TODO: Check these are right + mode should be compulsary.
+
 Get all genres:
 ```json
 {
@@ -205,6 +194,7 @@ export class PostInputGenre {
 ```
 
 **Sample call:**
+
 Create two genres. Put some books in the second genre.
 ```json
 {
@@ -230,7 +220,8 @@ export class PatchInputGenre {
 ```
 
 **Sample call:**
-Update the non-fiction genre and change its name. Add a book to it, and remove a book from it.
+
+Update the `"non-fiction"` genre and change its name. Add a book to it, remove a book from it.
 ```json
 {
   "entries": [
@@ -265,6 +256,7 @@ export class DeleteInputGenre {
 ```
 
 **Sample call:**
+
 Delete genres which have ids 2 and 3.
 ```json
 {
@@ -277,11 +269,11 @@ Delete genres which have ids 2 and 3.
 
 # Generated Code
 Under the hood, `up` generates:
-- Nest Controller => genre.controller.ts
+- [Nest](https://nestjs.com) Controller => genre.controller.ts
 - Input / Output Signatures => genre.class.ts
 - Service Class with Convenience Methods => genre.service.ts
 
-If you understand a bit about Nest already, the controller contains most of the logic for handling requests.
+If you understand a bit about [Nest](https://nestjs.com) already, the controller contains most of the logic for handling requests.
 `up` generates GET, POST, PATCH and DELETE handlers inside the controller:
 
 ```ts
@@ -311,21 +303,31 @@ If you understand a bit about Nest already, the controller contains most of the 
 ```
 
 **PrivilegeHas()**
-You will notice the use of the `@PrivilegeHas()` decorator which is part of Crest's users, roles and privileges system. 
-`@PrivilegesHas()` ensures that this method can only be called by a privileged user.
-In other words to call the Get method, the user must have the `"genre.get"` privilege OR the `"root"` privilege.
-If you need to check for other privileges you can specify them as additional arguments to the decorator.
+
+- You will notice the use of the `@PrivilegeHas()` decorator which is part of Crest's *users, roles and privileges* system. 
+- `@PrivilegesHas()` ensures that this method can only be called by a privileged user.
+In other words to call the GET method, the user must have the `"genre.get"` privilege.
+- `"root"` is a special privilege which accesses anything.
+- If you need to validate more privileges, specify them as additional arguments to the decorator.
 
 **Input / Output**
-By default Nest expects to deal with JSON input and output for an HTTP request. The input is validated and deserialized into the `input` parameter,thanks to Nest's `@Body` decorator. Each handler correspondingly returns an output who's signature is defined in `genre.class.ts`.
+
+- By default [Nest](https://nestjs.com) expects JSON input and returns JSON output.
+- The input is validated and deserialized into the `input` parameter, through [Nest's](https://nestjs.com) `@Body()` decorator. 
+- The output signatures for each response are located in `genre.class.ts`.
 
 **Request Object**
-The `req` parameter is the Express JS request object. Thanks to the use of the *passport* library, `req.user` contains the `User` object of whoever is calling the method.
+
+- The `req` parameter is the Express JS request object. 
+- [passport](http://www.passportjs.org/) is used to authenticate the user's jwt token and populates  `req.user` with the accessing user
 
 **Get is special**
-Crest implements a syncing protocol for GET. This syncing protocol has two phases. In the first phase the api client firstly obtains a lightweight signature of the result set, containing only ids and hashes of the database objects. In the second phase the api client can selectively download objects who's hashes do not match to its internal store OR who's ids it has never seen.
 
-For this reason the output signature of the GET handler is a multi-type, one for each phase of the sync.
+Crest implements a syncing protocol for GET. This syncing protocol has 2 phases. 
+1. The api client obtains a lightweight signature of the result set, containing only *ids* and *hashes* of the database objects. 
+2. The api client can selectively downloads objects whose hashes its never seen or are different to what is already has.
+
+You can see the return type of GET is a union of `SyncListOutput` and `SyncDataOutput`, for phase 1 and 2 respectively.
 
 
 # Generated Service
@@ -397,14 +399,14 @@ export class GenreService extends GenericEntityService<Genre> {
 ```
 
 Lets look at some of these convenience methods:
-- **createQueryBuilder():** just an abstraction of the `repository.createQueryBuilder` method which automatically subs in the table alias name `this.mainTableAlias`. `mainTableAlias` is set to `"genre"` in the `super()` call
+- **createQueryBuilder():** an abstraction of the `repository.createQueryBuilder()` method which automatically provides the table alias argument. It passes `this.mainTableAlias` which is initialized in the constructor as `"genre"`
 - **fillWithBooks():** builds on Crest's *stem* model which is explained below. Allows a bunch of hollow `genre` objects to be populated with `book` objects.
-- **applyStemsBooks:** also builds on Crest's *stem* model. Performs an INNER JOIN on a TypeORM query to fetch the stem columns of the `Book` table.
+- **applyStemsBooks:** also builds on Crest's *stem* model. Performs an INNER JOIN on a[ TypeORM](https://github.com/typeorm/typeorm) query to fetch the stem columns of the `Book` table.
 - **pingStemsBooks:** this method is used to change the `updatedAt` column of books which are related to any `genres` passed to the function. You may want to do this if the relationships change between some `books` and `genres`.
 
-## Stem model
-### Intro
-A table will often have rows which are related to another table's rows. This link is commonly defined through *Join Tables* or *Join Columns*. In TypeORM we are invited to forget about the underlying mechanics of database relationships. TypeORM treats all related entities to a row as sub-objects of that object.
+# Stem model
+## Intro
+A table will often have rows which are related to another table's rows. This link is commonly defined through *Join Tables* or *Join Columns*. In [TypeORM](https://github.com/typeorm/typeorm) we are invited to forget about the underlying mechanics of database relationships. [TypeORM](https://github.com/typeorm/typeorm) treats all related entities to a row as sub-objects of that object.
 
 In TypeORM, if we make this query...
 ```ts
@@ -413,12 +415,12 @@ let messageCategories = await this.messageCategoryRepository
 .innerJoinAndSelect('messageCategory.messages', 'message')
 .getMany();
 ```
-the `MessageCategory` table and the `Message` table will be joined. TypeORM gives the result set as an array of `MessageCategories`. Each `MessageCategory` will contain sub arrays of `Messages`.
+the `MessageCategory` table and the `Message` table will be joined. [TypeORM](https://github.com/typeorm/typeorm) gives the result set as an array of `MessageCategories`. Each `MessageCategory` will contain arrays of `Messages`.
 
-### Best Practices
-ORM libraries like TypeORM provide developers with a neat way to access the database. However they don't always enforce the best practices. To illustrate this point, lets revist the book, genre example.
+## Best Practices
+ORM libraries like [TypeORM](https://github.com/typeorm/typeorm) provide developers with a neat way to access the database. However they don't always enforce the best practices. To illustrate this point, lets revist the book, genre example.
 
-There is a finite list of `Genres` in the world but an ever growing list of `Books`. It is quite possible that a `Genre` have many columns of information associated with it, if we got pedantic!
+There is a finite list of `Genres` in the world but an ever growing list of `Books`. It is quite possible that a `Genre` may have many columns of information associated with it, if we got pedantic!
 
 Perhaps we want to query the database for some books `Books` and their related `Genres`:
 ```ts
@@ -428,7 +430,7 @@ let books = await this.bookRepository
 .getMany();
 ```
 
-TypeORM will produce this SQL statement when talking to MySQL:
+[TypeORM](https://github.com/typeorm/typeorm) will produce this SQL statement when talking to MySQL:
 ```sql
 SELECT book.*, genre.* FROM book
 INNER JOIN genre_book ON genre_book.book_id = book.id
@@ -437,6 +439,7 @@ INNER JOIN genre ON genre_book.genre_id = genre.id;
 
 This is all well and good but what if a lot of `Books` share many of the same `Genres`. And what if the dataset of `Books` was very large? This would result in a lot of data transfer between the database, server and client.
 
+## Introducing Stems...
 An approach is required to neutralize repetitive data in the query.
 
 Crest introduces the concept of `stems` to solve this problem. A `stem` is simply the *id column* of the related table. In our example it would be the `Genre.id` field. We could rewrite our query to only capture the `stem` of the `Genre` table:
@@ -449,14 +452,14 @@ let books = await this.bookRepository
 .getMany();
 ```
 
-TypeORM would generate the query like this:
+[TypeORM](https://github.com/typeorm/typeorm) would generate the query like this:
 ```sql
 SELECT book.*, genre.id FROM book
 INNER JOIN genre_book ON genre_book.book_id = book.id
 INNER JOIN genre ON genre_book.genre_id = genre.id;
 ```
 
-Though an *inner join* still has to be performed, we have minimized the `Genre` results to the smallest possible form. When TypeORM deserializes this into object format only the *id column* of the `Genre` sub-object will be populated.
+Though an *inner join* still has to be performed, we have minimized the `Genre` results to the smallest possible form. When [TypeORM](https://github.com/typeorm/typeorm) deserializes this into object format only the *id column* of the `Genre` sub-object will be populated.
 
 Of course, the client still needs the `Genre` information and it may choose to make a seperate request to the application server for the complete list of `Genre`s. Alternatively if the `Genre` dataset is also very large, the request could be made for just a specific set of `Genres` which are relevant.
 
@@ -464,14 +467,20 @@ This concept is called `stem` model, because only the `stem` columns of related 
 
 # Controller Concepts
 ## Routing
-The decorator `@AuthController('genre')` sets the controller route to `/authenticated/genre`.
-Any routes under `/authenticated` require a JWT token to be present in the `Authorization` header.
+You may we wondering how the path of your controller is set. This is down to the  `@AuthController()` decorator.
+
+```ts
+@AuthController('genre')
+export class GenreController extends GenericController<Genre> {
+```
+- In this example, the controller path is `/authenticated/genre`.
+- Any routes under `/authenticated` require a JWT token to be present in the `Authorization` header.
 
 ## Syncing
-If you use crest-client, you won't need to implement crest syncing protocol yourself. However it is a good thing to know how it works all the same.
+If you use [crest-client](https://github.com/chrisjpalmer/crest), you won't need to implement *Crest Syncing Protocol*. However, if you plan on building your own client, you will need to understand how it works.
 
-Lets imagine you want to get the complete list of `Books` from your Crest server. There may be hundereds of books in the database, many of who your client has seen before. You only want to download the ones that matter. Crest helps you by breaking your GET request into two phases:
-1. Get **LIST** of books as an array of book signatures (called `SyncHashes`)
+Lets imagine you want to get the complete list of `Books` from your Crest server. There may be hundereds of books in the database, many of which your application has seen before. You only want to download the ones that matter. Crest helps you by breaking your GET request into two phases:
+1. Get the **LIST** of books as an array of book signatures (called `SyncHashes`)
 2. Download the **DATA** for the books you don't have.
 
 ### Phase 1
@@ -501,7 +510,7 @@ async handleList(input: GetInput) {
 }
 ```
 
-The array of hashes will be put into the response to look something like this:
+The response may look something like this:
 ```json
 {
   "hashes": [
@@ -511,13 +520,18 @@ The array of hashes will be put into the response to look something like this:
   ],
   "validation": "eyJhbGciOiJIU..."
 }
+
 ```
-The hash represents the current state of that row in the database. If you update the row at a later time, its hash will change (due to the `updatedAt` column).
+The hash is calculated by:
+```
+farmhash(row.updatedAt + row.id)
+```
+If you update the row at a later time, its hash will be different and your client will know to redownload the row.
 
 You may be wondering what the `validation` property is all about. This is in fact a JWT token, containing the exact same information as the `hashes` object except signed by your server's private key (see crest config: TODO). Your api client will need to send this back to the server in phase 2, as proof that the objects you want to download were authorized to you. 
 
 ### Phase 2
-Your API Client will decide what objects it needs to download and make another get request:
+Your API Client will decide what objects it needs to download and make another GET request:
 ```json
 {
   "sync": {
@@ -528,7 +542,7 @@ Your API Client will decide what objects it needs to download and make another g
 }
 ```
 
-The server validates the JWT token and checks that the ids are valid. It then makes a database query for the whole objects:
+The server validates the JWT token and checks that the ids are valid. It then queries the database for those ids, this time downloading the full set of columns including any *stems*:
 ```ts
 async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
     let query: SelectQueryBuilder<Genre>;
@@ -538,6 +552,7 @@ async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
     return await query.getMany();
   }
 ```
+
 The result set is sent back as a data map for convenient access:
 ```json
 {
@@ -548,7 +563,7 @@ The result set is sent back as a data map for convenient access:
 }
 ```
 
-To complete the job, your API client will need to aggregate all the returned objects with those in its internal store. It should then refer back to the server response from Phase 1. The order of the objects is preserved here and should be used to build the output of the API request.
+To complete the job, your API client will need to aggregate all the returned objects with those it has downloaded in the past. It should then refer back to the server response from Phase 1. The order of the objects is preserved here and should be used to build the output of the API request.
 
 # Crest Config
 TODO -> write nice things here.
