@@ -125,7 +125,6 @@ export class UserController extends GenericController<User> {
     query = this.userService.applyStemsRole(query); //Comment out at your leisure.
     //query = this.userService.applyStemsSessions(query); //Comment out at your leisure.
     //query = this.userService.applyStemsUserPassword(query); //Comment out at your leisure.
-    //query = this.userService.applyStemsMessages(query); //Comment out at your leisure.
     //query = this.userService.applyStemsRequestLogs(query); //Comment out at your leisure.
 
     query = query.whereInIds(ids);

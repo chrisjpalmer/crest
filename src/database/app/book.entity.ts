@@ -10,11 +10,11 @@ import {
   ManyToOne,
   OneToMany,
   ManyToMany,
-  JoinTable,
   Index,
+  JoinTable,
 } from 'typeorm';
 import { GenericEntity } from '../core/generic.entity';
-import { Message } from './message.entity';
+import { Genre } from './genre.entity';
 
 /**
  * ManyToOne:                  target:Target
@@ -28,20 +28,23 @@ import { Message } from './message.entity';
  */
 
 /**
- * MessageCategory table. Make sure this is added to index.ts
+ * Book table. If you added without 'up', make sure this is added to index.ts
  */
 @Entity()
-export class MessageCategory extends GenericEntity {
+export class Book extends GenericEntity {
   @Index({ unique: true })
   @Column({ length: 200 })
   name: string;
+
+  author:string;
+
+  blurb:string;
 
   //-------------------------------------
   //-------------Relationships-----------
   //-------------------------------------
 
-  //Message
-  @ManyToMany(type => Message, message => message.categories)
+  @ManyToMany(type => Genre, genre => genre.books)
   @JoinTable()
-  messages: Message[];
+  genres:Genre[];
 }

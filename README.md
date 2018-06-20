@@ -17,7 +17,7 @@ Crest creates standard CRUD APIs with the following features:
 * Input Validation
 * Logging
 * Config File
-* API Tester
+* [API Client Generator](https://github.com/chrisjpalmer/crest-client)
 * Debug Support (VSCode at the moment)
 * Dockerization (coming soon)
 * Tests (coming soon)
@@ -35,8 +35,8 @@ set config/config.json with your database settings
 ### Up
 Create the demo APIs
 ```bash
-npm run up Message
-npm run up MessageCategory
+npm run up Book
+npm run up Genre
 ```
 
 ### Run

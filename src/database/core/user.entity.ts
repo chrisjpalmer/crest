@@ -18,7 +18,6 @@ import { Role } from './role.entity';
 import { Session } from './session.entity';
 import { UserPassword } from './user.password.entity';
 import { GenericEntity } from './generic.entity';
-import { Message } from '../app/message.entity';
 import { RequestLog } from '../core/request.log.entity';
 
 /**
@@ -68,10 +67,6 @@ export class User extends GenericEntity {
   @OneToOne(type => UserPassword, userPassword => userPassword.user)
   @JoinColumn()
   userPassword?: UserPassword;
-
-  //Message
-  @OneToMany(type => Message, message => message.user)
-  messages?: Message[];
 
   //RequestLogs
   @OneToMany(type => RequestLog, requestLog => requestLog.user)

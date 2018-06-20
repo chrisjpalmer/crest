@@ -11,8 +11,8 @@ import { Session } from './core/session.entity';
 import { User } from './core/user.entity';
 import { UserPassword } from './core/user.password.entity';
 import { RequestLog } from './core/request.log.entity';
-import { Message } from './app/message.entity';
-import { MessageCategory } from './app/message.category.entity';
+import { Genre } from './app/genre.entity';
+import { Book } from './app/book.entity';
 /// < import entity >
 
 export * from './core/privilege.entity';
@@ -21,8 +21,8 @@ export * from './core/session.entity';
 export * from './core/user.entity';
 export * from './core/user.password.entity';
 export * from './core/request.log.entity';
-export * from './app/message.entity';
-export * from './app/message.category.entity';
+export * from './app/genre.entity';
+export * from './app/book.entity';
 /// < export entity >
 
 /**
@@ -35,8 +35,8 @@ export const SessionToken = 'Session';
 export const UserToken = 'User';
 export const UserPasswordToken = 'UserPassword';
 export const RequestLogToken = 'RequestLog';
-export const MessageToken = 'Message';
-export const MessageCategoryToken = 'MessageCategory';
+export const GenreToken = 'Genre';
+export const BookToken = 'Book';
 /// < export entity.token >
 
 /**
@@ -50,7 +50,7 @@ export const Entities: { token: string; type: any }[] = [
   { token: UserToken, type: User },
   { token: UserPasswordToken, type: UserPassword },
   { token: RequestLogToken, type: RequestLog },
-  { token: MessageToken, type: Message },
-  { token: MessageCategoryToken, type: MessageCategory },
+  { token: GenreToken, type: Genre },
+  { token: BookToken, type: Book },
   /// < export entity.object >
 ];

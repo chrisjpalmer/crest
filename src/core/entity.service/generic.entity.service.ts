@@ -117,7 +117,7 @@ export class GenericEntityService<T extends GenericEntity> {
   }
 
   /**
-   * transformColumns - prepends the mainTableAlias to each column. If the table was called 'message' and the columns variable were ['id'], it would output: ['message.id']
+   * transformColumns - prepends the mainTableAlias to each column. If the table was called 'goat' and the columns variable were ['id'], it would output: ['goat.id']
    * @param columns columns to prepend the mainTableAlias to
    */
   transformColumns(columns: string[]): string[] {
