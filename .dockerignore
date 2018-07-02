@@ -1,0 +1,7 @@
+node_modules/
+test/
+up/
+docker/
+config/
+.vscode/
+npm-debug.log

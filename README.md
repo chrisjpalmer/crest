@@ -18,12 +18,17 @@ Crest creates standard CRUD APIs with the following features:
 * Logging
 * Config File
 * [API Client Generator](https://github.com/chrisjpalmer/crest-client)
+* Dockerization
 * Debug Support (VSCode at the moment)
-* Dockerization (coming soon)
 * Tests (coming soon)
 
 
 ## Getting Started
+### Prerequisites
+1. Node JS
+2. Visual Studio Code (recommended)
+3. Python - required to install bcrypt node dependency
+
 ### Init
 Get the npm packages
 ```bash
@@ -58,8 +63,13 @@ git clone https://github.com/chrisjpalmer/crest-client && cd crest-client
 npm install
 npm run down "path/on/my/drive/to/crest"
 ```
+*For more information see the [crest-client](https://github.com/chrisjpalmer/crest-client) page*
 
-For more information see the crest-client page
+### Docker
+```bash
+docker build -t my-crest-image .
+docker run -v /path/to/config.json:/config.json my-crest-image
+```
 
 # Use 'Up'
 `up` has two functions.
