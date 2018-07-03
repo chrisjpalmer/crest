@@ -44,9 +44,15 @@ npm run up Book
 npm run up Genre
 ```
 
-### Run
+### Run dev
 ```bash
 npm run start
+```
+
+### Run prod
+```bash
+npm run webpack
+npm run start:prod
 ```
 
 ### Debugging

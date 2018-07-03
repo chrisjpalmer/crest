@@ -100,19 +100,4 @@ async function main() {
     JSON.stringify(configJSONData, null, " "),
   );
 
-  //package.json
-  console.log('added `npm run start` to package.json');
-  let packageJSON = await readFilePromise(`${cwd}/package.json`);
-  let packageJSONData = JSON.parse(packageJSON);
-  packageJSONData.scripts.start = `ts-node -r tsconfig-paths/register src/main.ts --config=\"${path.join(
-    cwd,
-    'config',
-    'config.json',
-  )}\"`;
-  await writeFilePromise(
-    `${cwd}/package.json`,
-    JSON.stringify(packageJSONData, null, " "),
-  );
-}
-
 main();
