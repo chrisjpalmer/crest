@@ -13,6 +13,7 @@ import { buildClass } from './class.builder';
 import { buildService } from './service.builder';
 import { readEntityClass } from './entity.reader';
 import { AddToModule } from './module.builder';
+import { replaceAll } from '../util/string.util';
 
 export async function createAPI(params: Params) {
   if (params.coreMode) {
@@ -23,7 +24,7 @@ export async function createAPI(params: Params) {
 
   //Get the entity class
   let entityFilename = dotCase(params.entityName);
-  let controllerPath = prefix + entityFilename.replaceAll('.', '/');
+  let controllerPath = prefix + replaceAll(entityFilename, '.', '/');
   let entity = readEntityClass(params.entityName, entityFilename);
 
   //Create the code...

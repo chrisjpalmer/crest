@@ -55,7 +55,7 @@ export function addToComponentsArray(
   moduleConfig: ObjectLiteralExpression,
   entity: Entity,
 ) {
-  let controllersConfig = moduleConfig.getPropertyOrThrow('components');
+  let controllersConfig = moduleConfig.getPropertyOrThrow('providers');
   let originalStatement = controllersConfig.getText();
   let comma = '';
 

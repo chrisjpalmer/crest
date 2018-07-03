@@ -99,5 +99,6 @@ async function main() {
     `${cwd}/config/config.json`,
     JSON.stringify(configJSONData, null, " "),
   );
+}
 
 main();

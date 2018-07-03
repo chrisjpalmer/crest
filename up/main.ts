@@ -1,7 +1,6 @@
 import { UpMode, Params } from './util/util.class';
 import { createAPI } from './api.builder/api.builder';
 import { createEntity } from './entity.builder/entity.builder';
-import './util/string.util';
 
 async function main() {
   let entityName: string = '';

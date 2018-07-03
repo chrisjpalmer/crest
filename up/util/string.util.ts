@@ -1,7 +1,7 @@
-String.prototype.replaceAll = function(
-  this: string,
+export function replaceAll (
+  target: string,
   search: string,
   replacement: string,
 ): string {
-  return this.split(search).join(replacement);
+  return target.split(search).join(replacement);
 };
