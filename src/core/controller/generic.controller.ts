@@ -1,4 +1,3 @@
-import { GenericEntityService } from '../entity.service/generic.entity.service';
 import {
   SyncInput,
   SyncMode,
@@ -10,7 +9,7 @@ import {
 import { IndexSet } from '../core/core.database.util';
 import { mapToIndexedData } from '../core/core.util';
 import { GenericEntity } from 'database';
-import { ConfigService } from '..';
+import { ConfigService } from '../service/config.service';
 const jwt = require('jsonwebtoken');
 
 export class SyncJWT {

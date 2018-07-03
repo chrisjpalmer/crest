@@ -14,6 +14,8 @@ import { InitController } from './routes/init/init.controller';
 import { LoginController } from './routes/login/login.controller';
 import { LogoutController } from './routes/logout/logout.controller';
 import { UserController } from './routes/authenticated/user/user.controller';
+import { PrivilegeController } from './routes/authenticated/privilege/privilege.controller';
+import { RoleController } from './routes/authenticated/role/role.controller';
 
 @Module({
   imports: [
@@ -31,6 +33,12 @@ import { UserController } from './routes/authenticated/user/user.controller';
 
     // /autheticated/user
     UserController,
+
+    // /autheticated/privilege
+    PrivilegeController,
+
+    // /autheticated/role
+    RoleController,
   ],
   providers: [],
 })
@@ -46,5 +54,4 @@ export class AppModule implements NestModule {
     );
   }
 }
-
 //TODO lint the code on commit

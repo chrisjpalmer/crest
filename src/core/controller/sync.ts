@@ -1,8 +1,5 @@
 /** BOILERPLATE - don't touch unless you are brave */
-import { Get, BadRequestException } from '@nestjs/common';
-import { IsEnum, IsArray } from 'class-validator';
-import { transformAndValidate } from 'class-transformer-validator';
-import { IndexedData } from '..';
+import { IndexedData } from '../core/core.util';
 
 export const SyncDataValidate = 'SyncDataValidate';
 
