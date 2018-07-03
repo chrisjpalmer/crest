@@ -1,20 +1,13 @@
 /** BOILERPLATE - don't touch unless you are brave */
-import * as jwt from 'jsonwebtoken';
 import {
-  Component,
-  NotFoundException,
+  Injectable,
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Session, SessionToken, User, UserToken } from 'database';
-import { AuthPayload, AuthOptions } from './auth.class';
 import { ConfigService } from '../service/config.service';
-import { UserService } from '../entity.service/user.service';
-import { InjectRepo } from '../core/core.database.provider';
 import * as bcrypt from 'bcrypt';
 
-@Component()
+@Injectable()
 export class CryptoService {
   constructor(private readonly configService: ConfigService) {}
 

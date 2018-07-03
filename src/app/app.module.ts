@@ -2,14 +2,10 @@
 import {
   Module,
   NestModule,
-  MiddlewaresConsumer,
-  RequestMethod,
+  MiddlewareConsumer,
 } from '@nestjs/common';
 import {
   CoreWebModule,
-  MakeRepositoryProviders,
-  MakeDatabaseProvider,
-  AuthStrategy,
   AuthRoutes,
 } from 'core';
 import { Entities as CoreEntities } from 'database';
@@ -36,17 +32,17 @@ import { UserController } from './routes/authenticated/user/user.controller';
     // /autheticated/user
     UserController,
   ],
-  components: [],
+  providers: [],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewaresConsumer): MiddlewaresConsumer | void {
+  configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
     //DO NOT BE DECIEVED -> forRoutes does not take an array argument
     //It is a variadic function!
     consumer.apply(passport.authenticate('jwt', { session: false })).forRoutes(
       //AuthRoutes is a constant defined in core which identifies all authenticated routes
       //A controller can become part of the authenticated routes by using the @AuthController decorator
       //which automatically prepends the AuthPrefix constant to the route.
-      { path: AuthRoutes, method: RequestMethod.ALL },
+      AuthRoutes,
     );
   }
 }

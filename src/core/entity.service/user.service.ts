@@ -4,7 +4,7 @@
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
-import { Component, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { User, UserToken } from 'database';
 import { GenericEntityService } from './generic.entity.service';
@@ -27,7 +27,7 @@ interface Entry {
   role: GenericRelation;
 }
 
-@Component()
+@Injectable()
 export class UserService extends GenericEntityService<User> {
   constructor(
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
