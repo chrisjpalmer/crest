@@ -162,7 +162,7 @@ export class GetInput {
   pageSize: number;
 }
 
-export class GetParameterSearch {
+export interface GetParameterSearch {
   id: number;
   updatedAt: Date;
   createdAt: Date;

@@ -32,10 +32,10 @@ export class GetInput extends SyncInput {
   @IsOptional() pageSize: number;
 }
 
-export class GetParameterSearch {
-  @IsOptional() id:number;
-  @IsOptional() updatedAt:Date;
-  @IsOptional() createdAt:Date;
+export interface GetParameterSearch {
+  id?:number;
+  updatedAt?:Date;
+  createdAt?:Date;
   ///ref:{"mode":"childField.normal", "templateFile":"class/get/parameter.field.template"}
 }
 
