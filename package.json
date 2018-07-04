@@ -15,7 +15,7 @@
     "start:debug": "nodemon --config nodemon-debug.json",
     "start:debug-docker": "nodemon --config nodemon-debug-docker.json",
     "prestart:prod": "rimraf dist && tsc",
-    "start:prod": "node dist/main.js --config=config/config.json",
+    "start:prod": "node -r ./tsconfig.dist.js dist/main.js --config=config/config.json",
     "start:hmr": "node dist/server --config=config/config.json",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest",

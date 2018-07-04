@@ -51,7 +51,6 @@ npm run start
 
 ### Run prod
 ```bash
-npm run webpack
 npm run start:prod
 ```
 
