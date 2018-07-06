@@ -1,13 +1,13 @@
-import { bootstrap } from './boot';
+import { start } from './boot';
 
 declare const module: any;
 
-async function main() {
-  const app = await bootstrap();
+async function bootstrap() {
+  const app = await start();
 
   if (module.hot) {
     module.hot.accept();
     module.hot.dispose(() => app.close());
   }
 }
-main();
+bootstrap();

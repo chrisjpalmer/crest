@@ -1,6 +1,6 @@
-import { bootstrap } from './boot';
+import { start } from './boot';
 
-async function main() {
-  await bootstrap();
+async function bootstrap() {
+  await start();
 }
-main();
+bootstrap();

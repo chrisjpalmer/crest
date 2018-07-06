@@ -44,7 +44,7 @@ async function init(): Promise<ConfigData> {
 }
 
 //Makes it possible to catch exceptions
-export async function bootstrap() :Promise<INestApplication>{
+export async function start() :Promise<INestApplication>{
   let config = await init();
   if (config.app.debug) {
     //Much easier to find errors in the bootstrapping process
@@ -68,35 +68,11 @@ async function _bootstrap() {
     console.log('Booting Nest Server');
     const app = await NestFactory.create(AppModule);
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
-    app.useGlobalGuards(selectDynamic(app, 'CoreWebModule').get(PrivilegeGuard));
+    
+    app.useGlobalGuards(app.get(PrivilegeGuard));
     app.useGlobalInterceptors(
-      selectDynamic(app, 'CoreWebModule').get(LoggingInterceptor),
+      app.get(LoggingInterceptor),
     );
     await app.listen(3000);
     return app;
-  }
-
-  /**
- * This is a substitue for app.select() which doesn't work if the module was formed
- * dynamically. This function performs all the same operations that app does BUT searches
- * for the module using a different mechanism - which actually succeeds.
- * @param sapp
- * @param moduleName
- */
-function selectDynamic(sapp: any, moduleName: string) {
-    let map: Map<string, any> = sapp.container.modules;
-    let selectedModule = null;
-    map.forEach((v, k) => {
-      if (k.indexOf(moduleName) !== -1) {
-        selectedModule = v;
-      }
-    });
-    let moduleMetatype = sapp.contextModule.metatype;
-    let scope = sapp.scope.concat(moduleMetatype);
-    let moduleInstance = new NestApplicationContext(
-      sapp.container,
-      scope,
-      selectedModule,
-    );
-    return moduleInstance;
   }
