@@ -1,7 +1,5 @@
 /** BOILERPLATE - don't touch unless you are brave */
-import { Component, Inject } from '@nestjs/common';
-import { IsString, IsNumber, IsNotEmpty, validate } from 'class-validator';
-import { readFile } from 'fs';
+import { Injectable } from '@nestjs/common';
 import { ConfigData } from './config.class';
 
 //This service is registered with web module...
@@ -17,7 +15,7 @@ function copyKeysToTarget(source, target) {
     .forEach(obj => (target[obj.key] = obj.value));
 }
 
-@Component()
+@Injectable()
 export class ConfigService extends ConfigData {
   constructor() {
     super();

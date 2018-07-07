@@ -39,14 +39,14 @@ export class GetInput extends SyncInput {
   @IsOptional() pageSize: number;
 }
 
-export class GetParameterSearch {
-  @IsOptional() id: number;
-  @IsOptional() updatedAt: Date;
-  @IsOptional() createdAt: Date;
-  @IsOptional() username: string;
-  @IsOptional() firstName: string;
-  @IsOptional() lastName: string;
-  @IsOptional() emailAddress: string;
+export interface GetParameterSearch {
+  id?: number;
+  updatedAt?: Date;
+  createdAt?: Date;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  emailAddress?: string;
 }
 
 export interface GetOutput {

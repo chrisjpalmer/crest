@@ -12,12 +12,12 @@ import {
   MakeDatabaseProvider,
   MakeRepositoryProviders,
 } from './core/core.database.provider';
-import { NestProvider } from './core/core.provider';
 import { CryptoService } from './auth/crypto.service';
 import { LoggingInterceptor } from './controller/logging.interceptor';
+import { FactoryProvider } from '@nestjs/common/interfaces';
 
 @Module({
-  components: [
+  providers: [
     //Config Service
     ConfigService,
 
@@ -59,7 +59,7 @@ import { LoggingInterceptor } from './controller/logging.interceptor';
 })
 export class CoreWebModule {
   static forRoot(...entityGroups: EntityProvider[][]): DynamicModule {
-    let providers: NestProvider[] = [];
+    let providers: FactoryProvider[] = [];
 
     //Database components...
     //First we import the database provider, passing any entities to it which we need created.
@@ -68,7 +68,7 @@ export class CoreWebModule {
     providers.push(...MakeRepositoryProviders(...entityGroups));
     return {
       module: CoreWebModule,
-      components: providers,
+      providers: providers,
       exports: providers,
     };
   }

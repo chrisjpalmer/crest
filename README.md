@@ -44,9 +44,14 @@ npm run up Book
 npm run up Genre
 ```
 
-### Run
+### Run dev
 ```bash
 npm run start
+```
+
+### Run prod
+```bash
+npm run start:prod
 ```
 
 ### Debugging
@@ -156,7 +161,7 @@ export class GetInput {
   pageSize: number;
 }
 
-export class GetParameterSearch {
+export interface GetParameterSearch {
   id: number;
   updatedAt: Date;
   createdAt: Date;
@@ -344,7 +349,7 @@ You can see the return type of GET is a union of `SyncListOutput` and `SyncDataO
 `up` generates a service class with convenience methods for handling the entity.
 
 ```ts
-@Component()
+@Injectable()
 export class GenreService extends GenericEntityService<Genre> {
   constructor(
     @InjectRepo(GenreToken) private readonly genreRepository: Repository<Genre>,

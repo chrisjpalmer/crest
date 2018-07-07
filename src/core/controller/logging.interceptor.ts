@@ -1,28 +1,18 @@
 import {
-  Interceptor,
   NestInterceptor,
   ExecutionContext,
   InternalServerErrorException,
+  Injectable,
 } from '@nestjs/common';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/do';
+import { Observable } from 'rxjs';
+import { shareReplay, catchError } from 'rxjs/operators'
 import { ConfigService } from '../service/config.service';
-import { HttpException } from '@nestjs/core';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/throw';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/operator/shareReplay';
 import { CoreRequest } from '../core/core.util';
-import { User, RequestLog, RequestLogToken } from 'database';
+import { RequestLog, RequestLogToken } from 'database';
 import { Repository } from 'typeorm';
 import { InjectRepo } from '../core/core.database.provider';
 
-//TODO: Test exception mapping
-//TODO: Fix message delete method
-//TODO: Add exceptions to the log output
-//TODO: Log the full input and output to the database -> also introduce cleanup
-
-@Interceptor()
+@Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(
     private configService: ConfigService,
@@ -43,17 +33,17 @@ export class LoggingInterceptor implements NestInterceptor {
    * @param stream$
    */
   async intercept(
-    request: CoreRequest,
     context: ExecutionContext,
     stream$: Observable<any>,
   ): Promise<Observable<any>> {
+    const request = context.switchToHttp().getRequest();
     /**
      * Get requestLog object
      * Registers a log in the database
      */
     let requestLog = await this.preLog(request, context);
 
-    stream$ = stream$.shareReplay();
+    stream$ = stream$.pipe(shareReplay());
 
     /**
      * Perform logging
@@ -73,7 +63,7 @@ export class LoggingInterceptor implements NestInterceptor {
      */
     if (this.configService.app.debug) {
       //In debug mode, expose the exception directly to the output.
-      stream$ = stream$.catch(err => {
+      stream$.pipe(catchError(err => {
         if (err.getStatus !== undefined) {
           //Test is it of HttpException class?
           return Observable.throw(err); //Just throw the exception if we already have an HTTP exception
@@ -82,7 +72,7 @@ export class LoggingInterceptor implements NestInterceptor {
             new InternalServerErrorException(err.toString()),
           );
         }
-      });
+      }));
     } else {
       //In prod mode, do not expose exception directly except the special HttpExceptions (which the default exception filter will handle)
     }
@@ -125,7 +115,7 @@ export class LoggingInterceptor implements NestInterceptor {
         requestLog.uri
       } - TIME: ${requestLog.endTime.toISOString()} - DURATION: ${
         requestLog.duration
-      }ms` + (exception ? ` - ERROR: ${exception}` : ''),
+      }ms` + (exception ? ` - ERROR: ${exception.toString()}` : ''),
     );
   }
 }

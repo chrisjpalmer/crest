@@ -2,14 +2,10 @@
 import {
   Module,
   NestModule,
-  MiddlewaresConsumer,
-  RequestMethod,
+  MiddlewareConsumer,
 } from '@nestjs/common';
 import {
   CoreWebModule,
-  MakeRepositoryProviders,
-  MakeDatabaseProvider,
-  AuthStrategy,
   AuthRoutes,
 } from 'core';
 import { Entities as CoreEntities } from 'database';
@@ -18,6 +14,8 @@ import { InitController } from './routes/init/init.controller';
 import { LoginController } from './routes/login/login.controller';
 import { LogoutController } from './routes/logout/logout.controller';
 import { UserController } from './routes/authenticated/user/user.controller';
+import { PrivilegeController } from './routes/authenticated/privilege/privilege.controller';
+import { RoleController } from './routes/authenticated/role/role.controller';
 
 @Module({
   imports: [
@@ -35,20 +33,25 @@ import { UserController } from './routes/authenticated/user/user.controller';
 
     // /autheticated/user
     UserController,
+
+    // /autheticated/privilege
+    PrivilegeController,
+
+    // /autheticated/role
+    RoleController,
   ],
-  components: [],
+  providers: [],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewaresConsumer): MiddlewaresConsumer | void {
+  configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
     //DO NOT BE DECIEVED -> forRoutes does not take an array argument
     //It is a variadic function!
     consumer.apply(passport.authenticate('jwt', { session: false })).forRoutes(
       //AuthRoutes is a constant defined in core which identifies all authenticated routes
       //A controller can become part of the authenticated routes by using the @AuthController decorator
       //which automatically prepends the AuthPrefix constant to the route.
-      { path: AuthRoutes, method: RequestMethod.ALL },
+      AuthRoutes,
     );
   }
 }
-
 //TODO lint the code on commit

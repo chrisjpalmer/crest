@@ -1,17 +1,15 @@
 /** BOILERPLATE - don't touch unless you are brave */
 import * as passport from 'passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Component, Inject } from '@nestjs/common';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { Injectable } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request } from 'express';
 import { UserService } from '../entity.service/user.service';
 import { PrivilegeService } from '../entity.service/privilege.service';
 import { RoleService } from '../entity.service/role.service';
 import { CoreRequest } from '../core/core.util';
-import { RepoAll } from '../core/core.database.util';
 import { ConfigService } from '../service/config.service';
 
-@Component()
+@Injectable()
 export class AuthStrategy extends Strategy {
   constructor(
     private readonly authService: AuthService,

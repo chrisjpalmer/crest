@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { FieldType } from './entity.class';
 import { PropertyDeclaration, ObjectLiteralExpression } from 'ts-simple-ast';
+import { replaceAll } from './string.util';
 const snake = require('to-snake-case');
 const shell = require('shelljs');
 
@@ -22,7 +23,7 @@ export function snakeCase(input: string): string {
 }
 
 export function dotCase(input: string): string {
-  return snakeCase(input).replaceAll('_', '.');
+  return replaceAll(snakeCase(input), '_', '.');
 }
 
 export function toUpperTitleCase(str: string) {
@@ -103,7 +104,7 @@ export function replaceByObject(input: string, object: any): string {
   let toReplace: Map<string, string> = toMap(object);
   let output = input;
   toReplace.forEach((value, key) => {
-    output = output.replaceAll(key, value);
+    output = replaceAll(output, key, value);
   });
 
   return output;

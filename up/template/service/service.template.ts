@@ -3,7 +3,7 @@
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ${entity.upper}, ${entity.upper}Token } from 'database';
 import {
@@ -18,7 +18,7 @@ interface Entry {
   ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/entry.interface/template"}
 }
 
-@Component()
+@Injectable()
 export class ${entity.upper}Service extends GenericEntityService<${entity.upper}> {
   constructor(
     @InjectRepo(${entity.upper}Token)

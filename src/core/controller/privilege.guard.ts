@@ -1,11 +1,11 @@
 /** BOILERPLATE - don't touch unless you are brave */
 import {
-  Guard,
   CanActivate,
   ExecutionContext,
   ReflectMetadata,
+  Injectable,
 } from '@nestjs/common';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { CoreRequest } from '../core/core.util';
 import { Reflector } from '@nestjs/core';
 import { Role, Privilege } from 'database';
@@ -13,17 +13,16 @@ import { Role, Privilege } from 'database';
 export const PrivilegeHas = (...privileges: string[]) =>
   ReflectMetadata('privileges', privileges);
 
-@Guard()
+@Injectable()
 export class PrivilegeGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
   canActivate(
-    request: CoreRequest,
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
+    const request:CoreRequest = context.switchToHttp().getRequest();
     //Get the required privileges out of the metadata.
-    const { parent, handler } = context;
     const privileges =
-      this.reflector.get<string[]>('privileges', handler) || [];
+      this.reflector.get<string[]>('privileges', context.getHandler()) || [];
 
     //Get the user data out of the request and get the user privileges.
     let user = request.user;

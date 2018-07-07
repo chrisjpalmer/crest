@@ -2,7 +2,7 @@
 import { Inject } from '@nestjs/common';
 import { Connection, createConnection } from 'typeorm';
 import { ConfigService } from '../service/config.service';
-import { NestProvider } from './core.provider';
+import { FactoryProvider } from '@nestjs/common/interfaces';
 
 function repoToken(token: string) {
   return `${token}RepositoryToken`;
@@ -34,11 +34,11 @@ export function InjectRepo(token: string) {
  */
 export function MakeDatabaseProvider(
   ...entityGroups: EntityProvider[][]
-): NestProvider {
+): FactoryProvider {
   let totalEntities: EntityProvider[] = CompileEntities(entityGroups);
   let totalEntitiesTypes = totalEntities.map(e => e.type);
 
-  return {
+  let provider:FactoryProvider = {
     provide: DbConnectionToken,
     useFactory: async (configService: ConfigService) => {
       return await createConnection({
@@ -55,26 +55,29 @@ export function MakeDatabaseProvider(
     },
     inject: ['ConfigService'],
   };
+
+  return provider;
 }
 
 /**
- * MakeRepositoryProviders creates repositories for each entity and register that entity as a service class / NestJS Component.
+ * MakeRepositoryProviders creates repositories for each entity and register that entity as a service class / NestJS Injectable.
  * The component can then be later injected into any controller function using @InjectRepo(UserToken) userRepository:Repository<User>
  * MakeRepositoryProviders(a, b). Any entity in 'b' with the same token as that of 'a', overrides 'a'
  * @param entityGroups
  */
 export function MakeRepositoryProviders(
   ...entityGroups: EntityProvider[][]
-): NestProvider[] {
+): FactoryProvider[] {
   let totalEntities: EntityProvider[] = CompileEntities(entityGroups);
 
   return totalEntities.map(entity => {
-    return {
+    let provider:FactoryProvider = {
       provide: repoToken(entity.token),
       useFactory: (connection: Connection) =>
         connection.getRepository(entity.type),
       inject: [DbConnectionToken],
     };
+    return provider;
   });
 }
 
