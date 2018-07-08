@@ -4,7 +4,9 @@
 
 Build your first web server in 20 minutes!
 
-[![Build a web server in 20 minutes](https://img.youtube.com/vi/iLbd17jzQjE/0.jpg)](https://github.com/chrisjpalmer/book-shelf-app-starter)
+[![Build a web server in 20 minutes](https://img.youtube.com/vi/iLbd17jzQjE/0.jpg)](https://www.youtube.com/watch?v=iLbd17jzQjE)
+
+Tutorial Page - https://github.com/chrisjpalmer/book-shelf-app-starter
 
 ## Oh CRUD!
 In web applications, CRUD is the implementation of **C**reate, **R**ead, **U**pdate and **D**elete operations to manipulate database tables / entities. Applications these days scale fast and CRUD will require you to repeat a lot of code... CRUD!
