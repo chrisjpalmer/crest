@@ -36,8 +36,10 @@ export class Book extends GenericEntity {
   @Column({ length: 200 })
   name: string;
 
+  @Column({ length: 200 })
   author:string;
 
+  @Column({ length: 200 })
   blurb:string;
 
   //-------------------------------------
