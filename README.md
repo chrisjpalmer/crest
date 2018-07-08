@@ -1,7 +1,10 @@
 # Crest
+## Getting Started
 **Crest = CRUD + REST + [Nest](https://nestjs.com)**
 
-A rich starter for [Nest](https://nestjs.com) and MySQL which makes building a web server fun again.
+Build your first web server in 20 minutes!
+
+[![Build a web server in 20 minutes](https://img.youtube.com/vi/iLbd17jzQjE/0.jpg)](https://github.com/chrisjpalmer/book-shelf-app-starter)
 
 ## Oh CRUD!
 In web applications, CRUD is the implementation of **C**reate, **R**ead, **U**pdate and **D**elete operations to manipulate database tables / entities. Applications these days scale fast and CRUD will require you to repeat a lot of code... CRUD!
@@ -22,39 +25,45 @@ Crest creates standard CRUD APIs with the following features:
 * Debug Support (VSCode at the moment)
 * Tests (coming soon)
 
+# Crest Commands
 
-## Getting Started
 ### Prerequisites
-1. Node JS
-2. Visual Studio Code (recommended)
-3. Python - required to install bcrypt node dependency
+1. Git
+2. Node 8.9 or Higher
+3. Python 2.7 - required to install bcrypt node dependency
 
 ### Init
-Get the npm packages
 ```bash
 npm install
 npm run init
-set config/config.json with your database settings
+#set config/config.json with your database settings
 ```
 
-### Up
-Create the demo APIs
+### Create a table
+```
+npm run up create Book
+npm run up create Genre
+```
+
+### Build an API
 ```bash
 npm run up Book
 npm run up Genre
 ```
 
-### Run dev
+### Run
 ```bash
 npm run start
-```
-
-### Run prod
-```bash
 npm run start:prod
 ```
 
-### Debugging
+### Docker
+```bash
+docker build -t my-crest-image .
+docker run -v /path/to/config.json:/config.json my-crest-image
+```
+
+### Debug
 Debugging works out of the box for Visual Studio Code. Hit the green button to start!
 
 ### API Client
@@ -66,15 +75,10 @@ Just clone the project and point it to your project.
 git clone https://github.com/chrisjpalmer/crest-client && cd crest-client
 
 npm install
+npm run init
 npm run down "path/on/my/drive/to/crest"
 ```
 *For more information see the [crest-client](https://github.com/chrisjpalmer/crest-client) page*
-
-### Docker
-```bash
-docker build -t my-crest-image .
-docker run -v /path/to/config.json:/config.json my-crest-image
-```
 
 # Use 'Up'
 `up` has two functions.
