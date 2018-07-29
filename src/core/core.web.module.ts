@@ -14,7 +14,9 @@ import {
 } from './core/core.database.provider';
 import { CryptoService } from './auth/crypto.service';
 import { LoggingInterceptor } from './controller/logging.interceptor';
+import { HttpExceptionFilter } from './controller/exception.filter';
 import { FactoryProvider } from '@nestjs/common/interfaces';
+import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   providers: [
@@ -36,6 +38,13 @@ import { FactoryProvider } from '@nestjs/common/interfaces';
 
     //Interceptors
     LoggingInterceptor,
+
+    //ExceptionFilters,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+      inject: ['ConfigService']
+    },
   ],
   exports: [
     //Config Service

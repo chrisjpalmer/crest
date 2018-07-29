@@ -1,11 +1,10 @@
 import {
   NestInterceptor,
   ExecutionContext,
-  InternalServerErrorException,
   Injectable,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { shareReplay, catchError } from 'rxjs/operators'
+import { shareReplay } from 'rxjs/operators'
 import { ConfigService } from '../service/config.service';
 import { CoreRequest } from '../core/core.util';
 import { RequestLog, RequestLogToken } from 'database';
@@ -56,26 +55,6 @@ export class LoggingInterceptor implements NestInterceptor {
         await this.postLog(requestLog, err);
       },
     );
-
-    /**
-     * Handle Exceptions
-     * In debug mode, expose the error code properly to the outside world by converting the exception to a HttpException
-     */
-    if (this.configService.app.debug) {
-      //In debug mode, expose the exception directly to the output.
-      stream$.pipe(catchError(err => {
-        if (err.getStatus !== undefined) {
-          //Test is it of HttpException class?
-          return Observable.throw(err); //Just throw the exception if we already have an HTTP exception
-        } else {
-          return Observable.throw(
-            new InternalServerErrorException(err.toString()),
-          );
-        }
-      }));
-    } else {
-      //In prod mode, do not expose exception directly except the special HttpExceptions (which the default exception filter will handle)
-    }
 
     return stream$;
   }

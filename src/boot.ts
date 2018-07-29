@@ -1,5 +1,5 @@
 /** BOILERPLATE - don't touch unless you are brave */
-import { NestFactory, NestApplicationContext } from '@nestjs/core';
+import { NestFactory, APP_FILTER } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ValidationPipe, INestApplication } from '@nestjs/common';
 import {
@@ -68,7 +68,7 @@ async function _bootstrap() {
     console.log('Booting Nest Server');
     const app = await NestFactory.create(AppModule);
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
-    
+    app.useGlobalFilters(app.get(APP_FILTER));
     app.useGlobalGuards(app.get(PrivilegeGuard));
     app.useGlobalInterceptors(
       app.get(LoggingInterceptor),
