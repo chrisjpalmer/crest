@@ -68,6 +68,7 @@ async function _bootstrap() {
     console.log('Booting Nest Server');
     const app = await NestFactory.create(AppModule);
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.enableCors();
     app.useGlobalFilters(app.get(APP_FILTER));
     app.useGlobalGuards(app.get(PrivilegeGuard));
     app.useGlobalInterceptors(

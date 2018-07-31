@@ -2,6 +2,7 @@ import {
   NestInterceptor,
   ExecutionContext,
   Injectable,
+  HttpException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators'
@@ -87,6 +88,15 @@ export class LoggingInterceptor implements NestInterceptor {
     requestLog.duration =
       requestLog.endTime.getTime() - requestLog.startTime.getTime();
 
+      let errStr = null;
+      if(!!exception) {
+        if(exception instanceof HttpException) {
+          errStr = JSON.stringify(exception.getResponse());
+        } else {
+          errStr = exception.toString();
+        }
+      }
+
     //SAVE AND LOG
     await this.requestLogRepository.save(requestLog);
     console.log(
@@ -94,7 +104,7 @@ export class LoggingInterceptor implements NestInterceptor {
         requestLog.uri
       } - TIME: ${requestLog.endTime.toISOString()} - DURATION: ${
         requestLog.duration
-      }ms` + (exception ? ` - ERROR: ${exception.toString()}` : ''),
+      }ms` + (errStr ? ` - ERROR: ${errStr}` : ''),
     );
   }
 }
