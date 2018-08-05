@@ -36,8 +36,8 @@ import { Privilege, User } from 'database';
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('role') /* http://localhost:3000/authenticated/role */
-export class RoleController extends GenericController<Role> {
+@AuthController('role/sync') /* http://localhost:3000/authenticated/role/sync */
+export class RoleSyncController extends GenericController<Role> {
   constructor(
     configService: ConfigService,
     @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
@@ -47,12 +47,12 @@ export class RoleController extends GenericController<Role> {
   }
 
   /**
-   * Get() - Role -> queries the role table
+   * Post() - Role -> queries the role table
    * @param input parameters for the request
    * @param req the expressjs request object
    */
-  @Get()
-  @PrivilegeHas(`role.get`)
+  @Post()
+  @PrivilegeHas(`role.sync`)
   async Get(
     @Body() input: GetInput,
     @Request() req: CoreRequest,
@@ -123,7 +123,18 @@ export class RoleController extends GenericController<Role> {
     query = query.whereInIds(ids);
     return await query.getMany();
   }
+}
 
+//------------------------------------------------
+//------------------- CONTROLLER -----------------
+//------------------------------------------------
+@AuthController('role') /* http://localhost:3000/authenticated/role */
+export class RoleController {
+  constructor(
+    configService: ConfigService,
+    @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
+    private readonly roleService: RoleService,
+  ) {}
   /**
    * Post() - Role -> creates new role(s)
    * 1) convert - convert entries to entities that contain all the data they require

@@ -36,8 +36,8 @@ import { Role } from 'database';
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('privilege') /* http://localhost:3000/authenticated/privilege */
-export class PrivilegeController extends GenericController<Privilege> {
+@AuthController('privilege/sync') /* http://localhost:3000/authenticated/privilege/sync */
+export class PrivilegeSyncController extends GenericController<Privilege> {
   constructor(
     configService: ConfigService,
     @InjectRepo(PrivilegeToken)
@@ -48,12 +48,12 @@ export class PrivilegeController extends GenericController<Privilege> {
   }
 
   /**
-   * Get() - Privilege -> queries the privilege table
+   * Post() - Privilege -> queries the privilege table
    * @param input parameters for the request
    * @param req the expressjs request object
    */
-  @Get()
-  @PrivilegeHas(`privilege.get`)
+  @Post()
+  @PrivilegeHas(`privilege.sync`)
   async Get(
     @Body() input: GetInput,
     @Request() req: CoreRequest,
@@ -122,7 +122,19 @@ export class PrivilegeController extends GenericController<Privilege> {
     query = query.whereInIds(ids);
     return await query.getMany();
   }
+}
 
+//------------------------------------------------
+//------------------- CONTROLLER -----------------
+//------------------------------------------------
+@AuthController('privilege') /* http://localhost:3000/authenticated/privilege */
+export class PrivilegeController {
+  constructor(
+    configService: ConfigService,
+    @InjectRepo(PrivilegeToken)
+    private readonly privilegeRepository: Repository<Privilege>,
+    private readonly privilegeService: PrivilegeService,
+  ) {}
   /**
    * Post() - Privilege -> creates new privilege(s)
    * 1) convert - convert entries to entities that contain all the data they require

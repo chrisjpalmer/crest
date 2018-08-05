@@ -36,8 +36,8 @@ import { ${entity.upper}Service } from './${entity.filename}.service';
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('${controllerPath}') /* http://localhost:3000/authenticated/${controllerPath} */
-export class ${entity.upper}Controller extends GenericController<${entity.upper}> {
+@AuthController('${controllerPath}/sync') /* http://localhost:3000/authenticated/${controllerPath}/sync */
+export class ${entity.upper}SyncController extends GenericController<${entity.upper}> {
   constructor(
     configService: ConfigService,
     @InjectRepo(${entity.upper}Token)
@@ -48,12 +48,12 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
   }
 
   /**
-   * Get() - ${entity.upper} -> queries the ${entity.lower} table
+   * Post() - ${entity.upper} -> queries the ${entity.lower} table
    * @param input parameters for the request
    * @param req the expressjs request object
    */
-  @Get()
-  @PrivilegeHas(`${entity.dot}.get`)
+  @Post()
+  @PrivilegeHas(`${entity.dot}.sync`)
   async Get(@Body() input: GetInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
     //This class inherits GenericController. We call handleGet() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
@@ -119,7 +119,19 @@ export class ${entity.upper}Controller extends GenericController<${entity.upper}
     query = query.whereInIds(ids);
     return await query.getMany();
   }
+}
 
+//------------------------------------------------
+//------------------- CONTROLLER -----------------
+//------------------------------------------------
+@AuthController('${controllerPath}') /* http://localhost:3000/authenticated/${controllerPath} */
+export class ${entity.upper}Controller {
+  constructor(
+    configService: ConfigService,
+    @InjectRepo(${entity.upper}Token)
+    private readonly ${entity.lower}Repository: Repository<${entity.upper}>,
+    private readonly ${entity.lower}Service: ${entity.upper}Service,
+  ) {}
   /**
    * Post() - ${entity.upper} -> creates new ${entity.lowerPlural}
    * 1) convert - convert entries to entities that contain all the data they require

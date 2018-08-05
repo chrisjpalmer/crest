@@ -41,8 +41,8 @@ class UserPwdWrapper {
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('user') /* http://localhost:3000/authenticated/user */
-export class UserController extends GenericController<User> {
+@AuthController('user/sync') /* http://localhost:3000/authenticated/user/sync */
+export class UserSyncController extends GenericController<User> {
   constructor(
     configService: ConfigService,
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
@@ -52,12 +52,12 @@ export class UserController extends GenericController<User> {
   }
 
   /**
-   * Get() - User -> queries the user table
+   * Post() - User -> queries the user table
    * @param input parameters for the request
    * @param req the expressjs request object
    */
-  @Get()
-  @PrivilegeHas(`user.get`)
+  @Post()
+  @PrivilegeHas(`user.sync`)
   async Get(
     @Body() input: GetInput,
     @Request() req: CoreRequest,
@@ -130,7 +130,18 @@ export class UserController extends GenericController<User> {
     query = query.whereInIds(ids);
     return await query.getMany();
   }
+}
 
+//------------------------------------------------
+//------------------- CONTROLLER -----------------
+//------------------------------------------------
+@AuthController('user') /* http://localhost:3000/authenticated/user */
+export class UserController {
+  constructor(
+    configService: ConfigService,
+    @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
+    private readonly userService: UserService,
+  ) {}
   /**
    * Post() - User -> creates new user(s)
    * 1) convert - convert entries to entities that contain all the data they require
