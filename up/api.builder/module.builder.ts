@@ -9,7 +9,7 @@ export async function AddToModule(
   let project = new Project();
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
   moduleFile.addImportDeclaration({
-    namedImports: [`${entity.upper}Controller`],
+    namedImports: [`${entity.upper}Controller`, `${entity.upper}SyncController`],
     moduleSpecifier: `./routes/authenticated/${controllerPath}/${entityFilename}.controller`,
   });
   moduleFile.addImportDeclaration({
@@ -46,7 +46,10 @@ export function addToControllersArray(
     topArrayExpression +
     `\n    // /authenticated/${controllerPath}\n    ${
       entity.upper
-    }Controller,\n` +
+    }Controller,
+    ${
+      entity.upper
+    }SyncController,\n` +
     bottomArrayExpression;
   controllersConfig.replaceWithText(newStatement);
 }
