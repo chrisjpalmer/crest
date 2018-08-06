@@ -212,6 +212,9 @@ export class RoleController {
       //duplicate the input value v to o. o stands for output
       let o = this.roleRepository.create(v);
 
+      //Update the updatedAt column of the entry
+      o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
+
       //Apply update to the property
       if (!!input.entries[i].name) {
         o.name = input.entries[i].name;

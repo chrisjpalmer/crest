@@ -219,6 +219,9 @@ export class UserController {
       //duplicate the input value v to o. o stands for output
       let o: User = {};
 
+      //Update the updatedAt column of the entry
+      o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
+
       //Apply update to the property
       if (!!v.username) {
         o.username = v.username;

@@ -198,6 +198,9 @@ export class ${entity.upper}Controller {
       //duplicate the input value v to o. o stands for output
       let o = this.${entity.lower}Repository.create(v);
 
+      //Update the updatedAt column of the entry
+      o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
+
       ///ref:{"mode":"childField.normal", "templateFile":"controller/patch/field.template"}
 
       ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/patch/relation.template"}

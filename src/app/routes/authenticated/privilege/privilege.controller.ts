@@ -203,6 +203,9 @@ export class PrivilegeController {
       //duplicate the input value v to o. o stands for output
       let o = this.privilegeRepository.create(v);
 
+      //Update the updatedAt column of the entry
+      o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
+
       //Apply update to the property
       if (!!input.entries[i].name) {
         o.name = input.entries[i].name;
@@ -217,7 +220,9 @@ export class PrivilegeController {
     });
 
     //4) Save all entries at once - all effects from above routine are saved in this line
-    await this.privilegeRepository.save(toSave);
+    await this.privilegeRepository.save(toSave, {
+      
+    });
 
     //5) Ping stems
     await this.privilegeService.pingStemsRoles(input.entries); //Comment out at your leisure.

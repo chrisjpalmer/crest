@@ -12,5 +12,5 @@ import {
 export class GenericEntity {
   @PrimaryGeneratedColumn() id?: number;
   @CreateDateColumn({type:'timestamp'}) createdAt?: Date;
-  @Column('timestamp', {precision:6, default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)'}) updatedAt?: Date;
+  @Column('timestamp', {precision:6, default: () => 'CURRENT_TIMESTAMP(6)'}) updatedAt?: Date;
 }
