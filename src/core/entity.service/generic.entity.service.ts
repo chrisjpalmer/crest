@@ -86,7 +86,7 @@ export class GenericEntityService<T extends GenericEntity> {
       query = modifier(query);
     }
 
-    if (!!page) {
+    if (typeof page === 'number') {
       query = this.applyPagination(query, page, pageSize);
     }
 
@@ -135,7 +135,7 @@ export class GenericEntityService<T extends GenericEntity> {
     page: number,
     pageSize: number,
   ) {
-    if (!page || !pageSize) {
+    if (typeof page !== 'number' || typeof pageSize !== 'number') {
       throw 'pagination parameters were not defined properly';
     }
     query = query.skip(page * pageSize).take(pageSize);

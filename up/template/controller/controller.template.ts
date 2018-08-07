@@ -91,7 +91,7 @@ export class ${entity.upper}SyncController extends GenericController<${entity.up
      * in some cases where the dataset is so large, you may want to deny access to the service
      * unless pagination parameters are provided.
      */
-    if(!!input.page) {
+    if (typeof input.page === 'number') {
       query = this.${entity.lower}Service.applyPagination(
         query, 
         input.page, 
