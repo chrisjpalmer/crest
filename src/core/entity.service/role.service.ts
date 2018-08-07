@@ -12,7 +12,7 @@ import { StitchSet } from '../core/core.database.util';
 import { GenericRelation } from '../controller/post-patch';
 import { Privilege, PrivilegeToken, User, UserToken } from 'database';
 
-interface Entry {
+export interface RoleEntry {
   privileges: GenericRelation[];
 }
 
@@ -84,7 +84,7 @@ export class RoleService extends GenericEntityService<Role> {
    * Ping Stems methods
    */
 
-  async pingStemsPrivileges(entries: Entry[]): Promise<void> {
+  async pingStemsPrivileges(entries: RoleEntry[]): Promise<void> {
     let relations: GenericRelation[] = [];
     entries.map(v => v.privileges).forEach(r => {
       if (!!r) {

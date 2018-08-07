@@ -23,7 +23,7 @@ import {
 } from 'database';
 import { CryptoService } from '../auth/crypto.service';
 
-interface Entry {
+export interface UserEntry {
   role: GenericRelation;
 }
 
@@ -157,7 +157,7 @@ export class UserService extends GenericEntityService<User> {
    * Ping Stems methods
    */
 
-  async pingStemsRole(entries: Entry[]): Promise<void> {
+  async pingStemsRole(entries: UserEntry[]): Promise<void> {
     let relations: GenericRelation[] = [];
     entries.map(v => v.role).forEach(r => {
       if (!!r) {

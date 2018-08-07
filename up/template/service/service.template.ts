@@ -14,7 +14,7 @@ import {
 } from 'core';
 ///cust:importChildEntitiesAndTokens
 
-interface Entry {
+export interface ${entity.upper}Entry {
   ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/entry.interface/template"}
 }
 

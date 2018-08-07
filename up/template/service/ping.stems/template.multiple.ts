@@ -1,4 +1,4 @@
-async pingStems${childEntity.fieldNameUpper} (entries:Entry[]) : Promise<void> {
+async pingStems${childEntity.fieldNameUpper} (entries:${entity.upper}Entry[]) : Promise<void> {
     let relations:GenericRelation[] = [];
     entries.map(v => v.${childEntity.fieldName}).forEach(r => {
       if(!!r) {
