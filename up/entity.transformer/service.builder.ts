@@ -3,26 +3,26 @@ import {
   ChildEntity,
   ChildMode,
   ChildEntityMode,
-  ChildField,
 } from '../util/entity.class';
 import {
   readFilePromise,
   templatePath,
   toUpperTitleCase,
   replaceByObject,
-  fieldTypeToString,
-  fieldTypeToValidator,
   readTemplateFilePromise,
 } from '../util/util';
 import { buildGeneric } from './generic.builder';
 
-export async function buildClass(
+export async function buildService(
   controllerPath: string,
   entity: Entity,
 ): Promise<string> {
   //Open the service template
-  let classTemplate = await readTemplateFilePromise(`class/class.template.ts`);
+  let serviceTemplate = await readTemplateFilePromise(
+    `entity.controller/service/service.template.ts`,
+  );
 
-  let code = await buildGeneric(classTemplate, controllerPath, entity);
-  return code;
+  let service = await buildGeneric(serviceTemplate, controllerPath, entity);
+
+  return service;
 }

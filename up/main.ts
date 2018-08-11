@@ -1,48 +1,71 @@
 import { UpMode, Params } from './util/util.class';
-import { createAPI } from './api.builder/api.builder';
-import { createEntity } from './entity.builder/entity.builder';
+import { transformEntity } from './entity.transformer/main';
+import { createEntity } from './entity.builder/main';
 
-async function main() {
-  let entityName: string = '';
-  let upMode: UpMode = null;
+import {Command, flags} from '@oclif/command'
+import { replaceAll } from './util/string.util';
 
-  //Process first argument
-  let args = process.argv.slice(2);
-  if (!args[0] || args[0].length === 0) {
-    throw 'you must supply one argument - the entity name';
+class Up extends Command {
+  static flags = {
+    destination: flags.string({
+      required:false
+    }),
+    // run with --dir= or -d=
+    entity: flags.string({
+      required:false
+    }),
+    api: flags.boolean()
   }
 
-  if (args[0] === 'create' || args[0] === 'c') {
-    upMode = UpMode.CreateEntity;
+  static args = [
+    {name: 'mode'}
+  ]
 
-    //Process second argument
-    if (!args[1] || args[1].length === 0) {
-      throw 'you must supply one argument - the entity name';
+  async run() {
+    const {flags, args} = this.parse(Up);
+
+    //Global parsing
+    if(flags.entity) {
+      if(flags.entity[0].toUpperCase() !== flags.entity[0]) {
+        throw 'when specifying an entity, it should be specified in pascal case: ie. "Book", "BookCategory"';
+      }
     }
-    entityName = args[1];
-  } else {
-    upMode = UpMode.CreateAPI;
-    entityName = args[0];
-  }
 
-  let coreMode = false;
-  if (entityName.indexOf('core/') !== -1) {
-    coreMode = true;
-    entityName = entityName.substring('core/'.length, entityName.length);
-  }
+    if(flags.destination) {
+      //@ is a placeholder for authenticated
+      flags.destination = replaceAll(flags.destination, '@', 'authenticated');
+    }
 
-  await perform({ entityName: entityName, coreMode: coreMode }, upMode);
+    switch(args.mode) {
+      case 'create':
+        if(flags.entity && flags.api) {
+          throw '--api flag is not supported with --entity flag';
+        }
+        if(!flags.entity && !flags.api) {
+          throw 'expected --api OR --entity flag';
+        }
+        if(flags.api && !flags.destination) {
+          throw '--destination flag expected when in api mode';
+        }
+
+        if(flags.api) {
+          //Create a blank api
+        } else if(flags.entity) {
+          //create a new entity
+          await createEntity(flags.entity);
+        }
+        break;
+      case 'transform':
+        if(flags.api) {
+          throw '--api flag is not valid in transform mode';
+        }
+        await transformEntity(flags.entity, flags.destination);
+        break;
+      default:
+        throw 'requires mode of "create" OR "transform"';
+    }
+  }
 }
 
-async function perform(params: Params, mode: UpMode) {
-  switch (mode) {
-    case UpMode.CreateAPI:
-      await createAPI(params);
-      break;
-    case UpMode.CreateEntity:
-      await createEntity(params);
-      break;
-  }
-}
-
-main();
+Up.run()
+.catch(require('@oclif/errors/handle'));
