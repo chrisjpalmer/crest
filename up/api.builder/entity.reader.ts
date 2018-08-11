@@ -55,7 +55,7 @@ export function readEntityClass(entityName: string, entityFilename: string) {
       let mode: ChildMode;
 
       //Is the type of object an array OR object. If so, this represents a relatinship.
-      if (t.isObjectType() || t.isArrayType()) {
+      if ((t.isObjectType() && t.getText() !== 'Date') || t.isArrayType()) {
         mode = ChildMode.relationship;
       } else {
         mode = ChildMode.field;

@@ -11,6 +11,7 @@ export enum FieldType {
   String,
   Number,
   Boolean,
+  Date
 }
 
 export class ChildField {
@@ -50,6 +51,8 @@ export function toFieldType(t: Type<ts.Type>) {
       return FieldType.Boolean;
     case 'number':
       return FieldType.Number;
+    case 'Date':
+      return FieldType.Date;
   }
   return null; //unsupported
 }

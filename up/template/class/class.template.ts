@@ -10,6 +10,7 @@ import {
   IsBoolean,
   IsString,
   IsOptional,
+  IsDate
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { GetRelation, PostRelation, PatchRelation, PatchRelationSingle, SyncInput, GenericGetMode } from 'core';
