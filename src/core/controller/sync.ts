@@ -5,6 +5,12 @@ export const SyncDataValidate = 'SyncDataValidate';
 
 const farmhash = require('farmhash');
 
+export enum GenericSyncMode {
+  All,
+  Discrete,
+  ParameterSearch,
+}
+
 /**
  * SyncHash, SyncData, SyncResponse
  * These are all response level objects
@@ -61,6 +67,6 @@ export class Sync {
   validation: string;
 }
 
-export class SyncInput {
+export class GenericSyncInput {
   sync: Sync;
 }

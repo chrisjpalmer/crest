@@ -1,1 +1,1 @@
-${childEntity.fieldName}: Partial<GetRelation>[];
+${childEntity.fieldName}: Partial<SyncRelation>[];

@@ -22,7 +22,7 @@ export class PostRelation {
   @IsNumber() id: number;
 }
 
-export interface GetRelation {
+export interface SyncRelation {
   id: number;
 }
 

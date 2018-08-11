@@ -1,5 +1,5 @@
 import {
-  SyncInput,
+  GenericSyncInput,
   SyncMode,
   SyncHash,
   SyncListOutput,
@@ -7,7 +7,7 @@ import {
   SyncDataOutput,
 } from './sync';
 import { IndexSet } from '../core/core.database.util';
-import { mapToIndexedData } from '../core/core.util';
+import { mapToIndexedData, CoreRequest } from '../core/core.util';
 import { GenericEntity } from 'database';
 import { ConfigService } from '../service/config.service';
 const jwt = require('jsonwebtoken');
@@ -17,35 +17,35 @@ export class SyncJWT {
 }
 
 /**
- * Generic class GenericController implements common get web service
+ * Generic class SyncController implements common get web service
  * functionality in a single generic class.
- * Override this class, define the Get() method AND make a call to this.handleGet()
+ * Override this class, define the @Post() method AND make a call to this.handleSync()
  *
  * Most get methods to a large dataset require a syncing protocol,
- * pagination, various methods of query etc. GenericController's handleGet method
- * accepts an input of type SyncInput which supports a protocol for doing this
+ * pagination, various methods of query etc. SyncController's handleSync method
+ * accepts an input of type GenericSyncInput which supports a protocol for doing this
  */
-export class GenericController<T> {
+export class SyncController<T> {
   constructor(private configService: ConfigService) {}
 
   /**
-   * handleGet is the entry point for the get request handling.
+   * handleSync is the entry point for the get request handling.
    * it's job is to work out what kind of sync mode the client is in:
    * 1) List - fetch the list of hashes which pertain to the query I want to make
    * 2) Data - client sends a list of ids it doesn't have and server provides full data back
    *
-   * You do not need to use GenericController to implement sync protocol
+   * You do not need to use SyncController to implement sync protocol
    * if your needs are more custom, it may be in your interests to duplicate code within this class
    * and implement it yourself.
    * @param input
    */
 
-  async handleGet(input: SyncInput): Promise<SyncListOutput | SyncDataOutput> {
+  async handleSync(input: GenericSyncInput, req:CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
     if (input.sync.mode == SyncMode.List) {
-      return this._handleList(input);
+      return this._handleList(input, req);
     }
 
-    return this._handleData(input.sync);
+    return this._handleData(input.sync, req);
   }
 
   /**
@@ -56,12 +56,12 @@ export class GenericController<T> {
    * or whichever are out of date.
    * @param input
    */
-  private async _handleList(input: SyncInput): Promise<SyncListOutput> {
-    let resultIds = await this.handleList(input);
+  private async _handleList(input: GenericSyncInput, req:CoreRequest): Promise<SyncListOutput> {
+    let resultIds = await this.handleList(input,req);
     return { hashes: resultIds, validation: await this.authorize(resultIds) };
   }
 
-  protected async handleList(input: SyncInput): Promise<SyncHash[]> {
+  protected async handleList(input: GenericSyncInput, req:CoreRequest): Promise<SyncHash[]> {
     return null;
   }
 
@@ -72,16 +72,16 @@ export class GenericController<T> {
    * syncHash result.
    * @param sync
    */
-  private async _handleData(sync: Sync): Promise<SyncDataOutput> {
+  private async _handleData(sync: Sync, req:CoreRequest): Promise<SyncDataOutput> {
     await this.validate(sync.ids, sync.validation);
 
-    let resultData = await this.handleData(sync.ids);
+    let resultData = await this.handleData(sync.ids, req);
     let mappedData = IndexSet(resultData, v => v.id);
     let indexedData = mapToIndexedData(mappedData);
     return { data: indexedData };
   }
 
-  protected async handleData(ids: number[]): Promise<GenericEntity[]> {
+  protected async handleData(ids: number[], req:CoreRequest): Promise<GenericEntity[]> {
     return null;
   }
 

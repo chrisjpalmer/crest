@@ -5,7 +5,7 @@
  */
 import {
   AuthController,
-  GenericController,
+  SyncController,
   InjectRepo,
   PrivilegeHas,
   CoreRequest,
@@ -13,15 +13,15 @@ import {
   PatchRelationApply,
   SyncListOutput,
   SyncDataOutput,
-  GenericGetMode,
+  GenericSyncMode,
   SyncHash,
   ConfigService,
 } from 'core';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
 import {
-  GetInput,
-  GetOutput,
+  SyncInput,
+  SyncOutput,
   PatchInput,
   PostInput,
   PostOutput,
@@ -42,7 +42,7 @@ class UserPwdWrapper {
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 @AuthController('user/sync') /* http://localhost:3000/authenticated/user/sync */
-export class UserSyncController extends GenericController<User> {
+export class UserSyncController extends SyncController<User> {
   constructor(
     configService: ConfigService,
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
@@ -58,20 +58,20 @@ export class UserSyncController extends GenericController<User> {
    */
   @Post()
   @PrivilegeHas(`user.sync`)
-  async Get(
-    @Body() input: GetInput,
+  async Sync(
+    @Body() input: SyncInput,
     @Request() req: CoreRequest,
   ): Promise<SyncListOutput | SyncDataOutput> {
-    //This class inherits GenericController. We call handleGet() on this controller
+    //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
-    return await this.handleGet(input);
+    return await this.handleSync(input);
   }
 
   /**
    * handleList - User -> return array of hashes for the result set.
    * @param input parameters for the request
    */
-  async handleList(input: GetInput) {
+  async handleList(input: SyncInput) {
     let query = this.userService
       .createQueryBuilder()
       .select(this.userService.transformColumns(['id', 'updatedAt']));
@@ -80,15 +80,15 @@ export class UserSyncController extends GenericController<User> {
      * Apply Conditions to the query
      */
     switch (input.mode) {
-      case GenericGetMode.All:
-        //GenericGetMode.All -> get all rows, apply no condition
+      case GenericSyncMode.All:
+        //GenericSyncMode.All -> get all rows, apply no condition
         break;
-      case GenericGetMode.Discrete:
-        //GenericGetMode.Discrete -> get only specific ids
+      case GenericSyncMode.Discrete:
+        //GenericSyncMode.Discrete -> get only specific ids
         query = query.whereInIds(input.ids);
         break;
-      case GenericGetMode.ParameterSearch:
-        //GenericGetMode.ParameterSearch -> get rows which match the search parameters
+      case GenericSyncMode.ParameterSearch:
+        //GenericSyncMode.ParameterSearch -> get rows which match the search parameters
         query = query.where(input.parameterSearch);
         break;
     }
@@ -118,7 +118,7 @@ export class UserSyncController extends GenericController<User> {
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
+  async handleData(ids: number[]): Promise<Partial<SyncOutput>[]> {
     let query: SelectQueryBuilder<User>;
     query = this.userService.createQueryBuilder();
     //query = query.select(this.userService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
