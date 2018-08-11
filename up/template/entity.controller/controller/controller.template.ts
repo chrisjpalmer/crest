@@ -115,7 +115,7 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
     query = query.whereInIds(ids);
     return await query.getMany();
   }
@@ -149,9 +149,9 @@ export class ${entity.upper}Controller {
     let entities = input.entries.map(v => {
         let o: ${entity.upper} = this.${entity.lower}Repository.create();
 
-        ///ref:{"mode":"childField.normal", "templateFile":"controller/post/field.template"}
+        ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/post/field.template"}
 
-        ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/post/relation.template"}
+        ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/post/relation.template"}
         return o;
       });
 
@@ -159,7 +159,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.save(entities);
 
     //3) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/ping.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/ping.template"}
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -187,7 +187,7 @@ export class ${entity.upper}Controller {
     let toApply: ${entity.upper}[] = await promiseArray(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
-          ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
+          ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
           return query;
         })
       }),
@@ -201,9 +201,9 @@ export class ${entity.upper}Controller {
       //Update the updatedAt column of the entry
       o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
 
-      ///ref:{"mode":"childField.normal", "templateFile":"controller/patch/field.template"}
+      ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/patch/field.template"}
 
-      ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/patch/relation.template"}
+      ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/patch/relation.template"}
 
       return o;
     });
@@ -212,7 +212,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.save(toSave);
 
     //5) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/ping.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/ping.template"}
 
     //Return result
     return { result: toSave.map(v => v.id) };
@@ -236,7 +236,7 @@ export class ${entity.upper}Controller {
     let toDelete: ${entity.upper}[] = await promiseArray(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
-          ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
+          ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
           return query;
         })
       }),
@@ -249,7 +249,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.delete(deleteIDs);
 
     //5) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/delete/ping.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/delete/ping.template"}
 
     //Return result
     return { result: deleteIDs };
