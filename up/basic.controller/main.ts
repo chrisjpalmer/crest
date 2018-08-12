@@ -22,28 +22,30 @@ export async function createController(entityName:string, destinationPath?:strin
 
   //Deterine controller path
   let controllerPath = '';
+  let controllerSystemPath = '';
   if(destinationPath) {
-    let controllerPath = `${appRoutesPath}/${destinationPath}`;
+    controllerPath = `${destinationPath}`;
   } else{
     let directoryStructure = replaceAll(entityFilename, '.', '/');
-    let controllerPath = `${appRoutesPath}/authenticated/${directoryStructure}`;
+    controllerPath = `authenticated/${directoryStructure}`;
   }
+  controllerSystemPath = `${appRoutesPath}/${controllerPath}`;
 
   //Create the code...
   let controllerCode = await buildController(controllerPath, entity);
   let classCode = await buildClass(controllerPath, entity);
 
   //Save the code
-  mkdirRecursive(controllerPath);
+  mkdirRecursive(controllerSystemPath);
 
   await writeFilePromise(
-    `${controllerPath}/${entityFilename}.controller.ts`,
+    `${controllerSystemPath}/${entityFilename}.controller.ts`,
     controllerCode,
   );
-  await writeFilePromise(`${controllerPath}/${entityFilename}.class.ts`, classCode);
+  await writeFilePromise(`${controllerSystemPath}/${entityFilename}.class.ts`, classCode);
 
   AddToModule(controllerPath, entityFilename, entity);
 
-  RunFormatterDir(controllerPath);
+  RunFormatterDir(controllerSystemPath);
   RunFormatterFile(`src/app/app.module.ts`);
 }

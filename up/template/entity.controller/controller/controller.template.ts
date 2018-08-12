@@ -59,14 +59,14 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
   async Sync(@Body() input: SyncInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
     //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
-    return await this.handleSync(input);
+    return await this.handleSync(input, req);
   }
 
   /**
    * handleList - ${entity.upper} -> return array of hashes for the result set.
    * @param input parameters for the request
    */
-  async handleList(input:SyncInput) {
+  async handleList(input:SyncInput, req: CoreRequest) {
     let query = this.${entity.lower}Service
         .createQueryBuilder()
         .select(this.${entity.lower}Service.transformColumns(['id', 'updatedAt']));
@@ -113,7 +113,7 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids:number[]) : Promise<Partial<SyncOutput>[]> {
+  async handleData(ids:number[], req: CoreRequest) : Promise<Partial<SyncOutput>[]> {
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.

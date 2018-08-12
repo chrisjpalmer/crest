@@ -127,6 +127,10 @@ export function genericReplaceControllerDecoratorTemplate(
     compositeControllerPath = controllerPath;
   }
 
+  if(!!ref.suffix) {
+    compositeControllerPath += ref.suffix;
+  }
+
   let result = replaceByObject(template, {
     '${controllerPath}': compositeControllerPath,
   });

@@ -59,14 +59,14 @@ export class RoleSyncController extends SyncController<Role> {
   ): Promise<SyncListOutput | SyncDataOutput> {
     //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
-    return await this.handleSync(input);
+    return await this.handleSync(input, req);
   }
 
   /**
    * handleList - Role -> return array of hashes for the result set.
    * @param input parameters for the request
    */
-  async handleList(input: SyncInput) {
+  async handleList(input: SyncInput, req: CoreRequest) {
     let query = this.roleService
       .createQueryBuilder()
       .select(this.roleService.transformColumns(['id', 'updatedAt']));
@@ -113,7 +113,7 @@ export class RoleSyncController extends SyncController<Role> {
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids: number[]): Promise<Partial<SyncOutput>[]> {
+  async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncOutput>[]> {
     let query: SelectQueryBuilder<Role>;
     query = this.roleService.createQueryBuilder();
     //query = query.select(this.roleService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
