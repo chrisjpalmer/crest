@@ -5,6 +5,8 @@
  */
 import {
   AuthController,
+  PrivilegeHas,
+  CoreRequest
 } from 'core';
 import { Get, Body, Post, Patch, Request, Delete, Controller } from '@nestjs/common';
 import {
@@ -40,7 +42,7 @@ export class ${api.upper}Controller {
     @Body() input: GetInput,
     @Request() req: CoreRequest,
   ): Promise<GetOutput> {
-    
+    return null;
   }
 
   /**
@@ -54,7 +56,7 @@ export class ${api.upper}Controller {
     @Body() input: PostInput,
     @Request() req: CoreRequest,
   ): Promise<PostOutput> {
-    
+    return null;
   }
 
   /**
@@ -68,7 +70,7 @@ export class ${api.upper}Controller {
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
   ): Promise<PatchOutput> {
-    
+    return null;
   }
 
   /**
@@ -82,6 +84,6 @@ export class ${api.upper}Controller {
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
-    
+    return null;
   }
 }

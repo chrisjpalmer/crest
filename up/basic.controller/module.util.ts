@@ -9,7 +9,7 @@ export async function AddToModule(
   let project = new Project();
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
   moduleFile.addImportDeclaration({
-    namedImports: [`${apiUpper}Controller`, `${apiUpper}SyncController`],
+    namedImports: [`${apiUpper}Controller`],
     moduleSpecifier: `./routes/${path}/${apiDot}.controller`,
   });
 

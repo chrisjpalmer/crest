@@ -78,6 +78,8 @@ class Up extends Command {
 }
 
 Up.run(null, null)
-.catch(require('@oclif/errors/handle'));
+.catch((e) => {
+  console.log('\n\n\nERR: ', e)
+});
 
 //TODO: support the new api.authenticated decorator template
