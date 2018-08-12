@@ -154,20 +154,20 @@ export class Genre extends GenericEntity {
 ## GET / Read
 **Input Signature**
 ```ts
-export class GetInput {
+export class SyncInput {
   //Query Mode
-  mode: GenericGetMode;
+  mode: GenericSyncMode;
   //Discrete Mode
   ids: number[];
   //ParameterSearch Mode
-  parameterSearch: GetParameterSearch;
+  parameterSearch: SyncParameterSearch;
 
   //Pagination
   page: number;
   pageSize: number;
 }
 
-export interface GetParameterSearch {
+export interface SyncParameterSearch {
   id: number;
   updatedAt: Date;
   createdAt: Date;
@@ -300,7 +300,7 @@ If you understand a bit about [Nest](https://nestjs.com) already, the controller
 ```ts
 @Get()
   @PrivilegeHas(`genre.get`)
-  async Get(@Body() input: GetInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
+  async Sync(@Body() input: SyncInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
 
   }
 
@@ -326,7 +326,7 @@ If you understand a bit about [Nest](https://nestjs.com) already, the controller
 **PrivilegeHas()**
 
 - You will notice the use of the `@PrivilegeHas()` decorator which is part of Crest's *users, roles and privileges* system. 
-- `@PrivilegesHas()` ensures that this method can only be called by a privileged user.
+- `@PrivilegeHas()` ensures that this method can only be called by a privileged user.
 In other words to call the GET method, the user must have the `"genre.get"` privilege.
 - `"root"` is a special privilege which accesses anything.
 - If you need to validate more privileges, specify them as additional arguments to the decorator.
@@ -492,7 +492,7 @@ You may we wondering how the path of your controller is set. This is down to the
 
 ```ts
 @AuthController('genre')
-export class GenreController extends GenericController<Genre> {
+export class GenreController extends SyncController<Genre> {
 ```
 - In this example, the controller path is `/authenticated/genre`.
 - Any routes under `/authenticated` require a JWT token to be present in the `Authorization` header.
@@ -518,7 +518,7 @@ To do this first bit, your API client has to make a GET request for the books an
 
 Crest handles your request by querying the `Books` table for the `id` and `updatedAt` columns. It then converts the result set to an array of `SyncHash` objects:
 ```ts
-async handleList(input: GetInput) {
+async handleList(input: SyncInput) {
     let query = this.genreService
       .createQueryBuilder()
       .select(this.genreService.transformColumns(['id', 'updatedAt']));
@@ -565,7 +565,7 @@ Your API Client will decide what objects it needs to download and make another G
 
 The server validates the JWT token and checks that the ids are valid. It then queries the database for those ids, this time downloading the full set of columns including any *stems*:
 ```ts
-async handleData(ids: number[]): Promise<Partial<GetOutput>[]> {
+async handleData(ids: number[]): Promise<Partial<SyncOutput>[]> {
     let query: SelectQueryBuilder<Genre>;
     query = this.genreService.createQueryBuilder();
     query = this.genreService.applyStemsBooks(query);

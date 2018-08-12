@@ -11,11 +11,11 @@ import {
 } from '../util/util';
 import Project from 'ts-simple-ast';
 
-export async function createEntity(params: Params) {
+export async function createEntity(entityName:string) {
   const entityIndexPath = `src/database/index.ts`;
 
-  let entityDot = dotCase(params.entityName);
-  let entityUpper = toUpperTitleCase(params.entityName);
+  let entityDot = dotCase(entityName);
+  let entityUpper = toUpperTitleCase(entityName);
 
   //Create the entity class file and save it
   let entityTemplate = await readFilePromise(

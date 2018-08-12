@@ -10,43 +10,44 @@ import {
   IsBoolean,
   IsString,
   IsOptional,
+  IsDate
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { GetRelation, PostRelation, PatchRelation, PatchRelationSingle, SyncInput, GenericGetMode } from 'core';
+import { SyncRelation, PostRelation, PatchRelation, PatchRelationSingle, GenericSyncInput, GenericSyncMode } from 'core';
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
 //------------------------------------------------
 
-//-----------Get-----------\\
-export class GetInput extends SyncInput {
+//-----------Sync-----------\\
+export class SyncInput extends GenericSyncInput {
   //Query Mode
-  @IsOptional() mode: GenericGetMode;
+  @IsOptional() mode: GenericSyncMode;
   //Discrete Mode
   @IsOptional() ids: number[];
   //ParameterSearch Mode
-  @IsOptional() parameterSearch: GetParameterSearch;
+  @IsOptional() parameterSearch: SyncParameterSearch;
 
   //Pagination
   @IsOptional() page: number;
   @IsOptional() pageSize: number;
 }
 
-export interface GetParameterSearch {
+export interface SyncParameterSearch {
   id?:number;
   updatedAt?:Date;
   createdAt?:Date;
-  ///ref:{"mode":"childField.normal", "templateFile":"class/get/parameter.field.template"}
+  ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/class/sync/parameter.field.template"}
 }
 
-export interface GetOutput {
+export interface SyncOutput {
   id:number;
   updatedAt:Date;
   createdAt:Date;
-  ///ref:{"mode":"childField.normal", "templateFile":"class/get/field.template"}
+  ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/class/sync/field.template"}
 
   //---------Relationships--------\\
-  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"class/get/relation.template"}
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/class/sync/relation.template"}
 }
 
 //-----------Post----------\\
@@ -60,10 +61,10 @@ export class PostInput {
 }
 
 export class PostInput${entity.upper} {
-  ///ref:{"mode":"childField.normal", "templateFile":"class/post/field.template"}
+  ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/class/post/field.template"}
 
   //---------Relationships--------\\
-  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"class/post/relation.template"}
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/class/post/relation.template"}
 }
 
 //Output
@@ -84,10 +85,10 @@ export class PatchInput {
 export class PatchInput${entity.upper} {
   @IsNumber() id: number;
 
-  ///ref:{"mode":"childField.normal", "templateFile":"class/patch/field.template"}
+  ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/class/patch/field.template"}
 
   //---------Relationships--------\\
-  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"class/patch/relation.template"}
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/class/patch/relation.template"}
 }
 
 //Output

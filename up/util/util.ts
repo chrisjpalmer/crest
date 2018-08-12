@@ -118,6 +118,8 @@ export function fieldTypeToString(fieldType: FieldType) {
       return 'boolean';
     case FieldType.String:
       return 'string';
+    case FieldType.Date:
+      return 'Date';
   }
 
   return null;
@@ -131,6 +133,8 @@ export function fieldTypeToValidator(fieldType: FieldType) {
       return '@IsBoolean()';
     case FieldType.String:
       return '@IsString()';
+    case FieldType.Date:
+      return '@IsDate()';
   }
 
   return null;

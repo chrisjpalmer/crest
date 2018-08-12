@@ -15,7 +15,7 @@ import {
 ///cust:importChildEntitiesAndTokens
 
 export interface ${entity.upper}Entry {
-  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/entry.interface/template"}
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/service/entry.interface/template"}
 }
 
 @Injectable()
@@ -23,9 +23,9 @@ export class ${entity.upper}Service extends GenericEntityService<${entity.upper}
   constructor(
     @InjectRepo(${entity.upper}Token)
     private readonly ${entity.lower}Repository: Repository<${entity.upper}>,
-    ///ref:{"mode":"childEntity.normal", "templateFile":"service/repository/template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/service/repository/template"}
   ) {
-    ///ref:{"mode":"entity.uniqueNonUnique", "templateFile":"service/super.call/template"}
+    ///ref:{"mode":"entity.uniqueNonUnique", "templateFile":"entity.controller/service/super.call/template"}
   }
 
   /**
@@ -39,15 +39,15 @@ export class ${entity.upper}Service extends GenericEntityService<${entity.upper}
   /**
    * Fill with methods  
    */  
-  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/fill.with/template"}
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/service/fill.with/template"}
 
   /**
    * Apply Stems methods  
    */  
-  ///ref:{"mode":"childEntity.normal", "templateFile":"service/apply.stems/template"}
+  ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/service/apply.stems/template"}
 
   /**
    * Ping Stems methods  
    */  
-  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"service/ping.stems/template"}
+  ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/service/ping.stems/template"}
 }

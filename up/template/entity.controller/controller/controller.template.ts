@@ -5,7 +5,7 @@
  */
 import {
   AuthController,
-  GenericController,
+  SyncController,
   InjectRepo,
   PrivilegeHas,
   CoreRequest,
@@ -13,15 +13,15 @@ import {
   PatchRelationApply,
   SyncListOutput,
   SyncDataOutput,
-  GenericGetMode,
+  GenericSyncMode,
   SyncHash,
   ConfigService,
 } from 'core';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
+import { Get, Body, Post, Patch, Request, Delete, Controller } from '@nestjs/common';
 import {
-  GetInput,
-  GetOutput,
+  SyncInput,
+  SyncOutput,
   PatchInput,
   PostInput,
   PostOutput,
@@ -36,8 +36,10 @@ import { ${entity.upper}Service } from './${entity.filename}.service';
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('${controllerPath}/sync') /* http://localhost:3000/authenticated/${controllerPath}/sync */
-export class ${entity.upper}SyncController extends GenericController<${entity.upper}> {
+
+/* http://localhost:3000/${controllerPath}/sync */
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":"/sync"}
+export class ${entity.upper}SyncController extends SyncController<${entity.upper}> {
   constructor(
     configService: ConfigService,
     @InjectRepo(${entity.upper}Token)
@@ -53,18 +55,18 @@ export class ${entity.upper}SyncController extends GenericController<${entity.up
    * @param req the expressjs request object
    */
   @Post()
-  @PrivilegeHas(`${entity.dot}.sync`)
-  async Get(@Body() input: GetInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
-    //This class inherits GenericController. We call handleGet() on this controller
+  ///ref:{"mode":"api.has.privileges", "suffix":".sync"}
+  async Sync(@Body() input: SyncInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
+    //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
-    return await this.handleGet(input);
+    return await this.handleSync(input, req);
   }
 
   /**
    * handleList - ${entity.upper} -> return array of hashes for the result set.
    * @param input parameters for the request
    */
-  async handleList(input:GetInput) {
+  async handleList(input:SyncInput, req: CoreRequest) {
     let query = this.${entity.lower}Service
         .createQueryBuilder()
         .select(this.${entity.lower}Service.transformColumns(['id', 'updatedAt']));
@@ -73,15 +75,15 @@ export class ${entity.upper}SyncController extends GenericController<${entity.up
      * Apply Conditions to the query
      */
     switch (input.mode) {
-      case GenericGetMode.All:
-        //GenericGetMode.All -> get all rows, apply no condition
+      case GenericSyncMode.All:
+        //GenericSyncMode.All -> get all rows, apply no condition
         break;
-      case GenericGetMode.Discrete:
-        //GenericGetMode.Discrete -> get only specific ids
+      case GenericSyncMode.Discrete:
+        //GenericSyncMode.Discrete -> get only specific ids
         query = query.whereInIds(input.ids);
         break;
-      case GenericGetMode.ParameterSearch:
-        //GenericGetMode.ParameterSearch -> get rows which match the search parameters
+      case GenericSyncMode.ParameterSearch:
+        //GenericSyncMode.ParameterSearch -> get rows which match the search parameters
         query = query.where(input.parameterSearch);
         break;
     }
@@ -111,11 +113,11 @@ export class ${entity.upper}SyncController extends GenericController<${entity.up
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids:number[]) : Promise<Partial<GetOutput>[]> {
+  async handleData(ids:number[], req: CoreRequest) : Promise<Partial<SyncOutput>[]> {
     let query:SelectQueryBuilder<${entity.upper}>;
     query = this.${entity.lower}Service.createQueryBuilder();
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
     query = query.whereInIds(ids);
     return await query.getMany();
   }
@@ -124,7 +126,8 @@ export class ${entity.upper}SyncController extends GenericController<${entity.up
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('${controllerPath}') /* http://localhost:3000/authenticated/${controllerPath} */
+/* http://localhost:3000/${controllerPath} */
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":""}
 export class ${entity.upper}Controller {
   constructor(
     configService: ConfigService,
@@ -140,7 +143,7 @@ export class ${entity.upper}Controller {
    * @param req the expressjs request object
    */
   @Post()
-  @PrivilegeHas(`${entity.dot}.post`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".post"}
   async Post(
     @Body() input: PostInput,
     @Request() req: CoreRequest,
@@ -149,9 +152,9 @@ export class ${entity.upper}Controller {
     let entities = input.entries.map(v => {
         let o: ${entity.upper} = this.${entity.lower}Repository.create();
 
-        ///ref:{"mode":"childField.normal", "templateFile":"controller/post/field.template"}
+        ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/post/field.template"}
 
-        ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/post/relation.template"}
+        ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/post/relation.template"}
         return o;
       });
 
@@ -159,7 +162,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.save(entities);
 
     //3) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/ping.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/ping.template"}
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -175,7 +178,7 @@ export class ${entity.upper}Controller {
    * @param req the expressjs request object
    */
   @Patch()
-  @PrivilegeHas(`${entity.dot}.patch`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".patch"}
   async Patch(
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
@@ -187,7 +190,7 @@ export class ${entity.upper}Controller {
     let toApply: ${entity.upper}[] = await promiseArray(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
-          ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
+          ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
           return query;
         })
       }),
@@ -201,9 +204,9 @@ export class ${entity.upper}Controller {
       //Update the updatedAt column of the entry
       o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
 
-      ///ref:{"mode":"childField.normal", "templateFile":"controller/patch/field.template"}
+      ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/patch/field.template"}
 
-      ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"controller/patch/relation.template"}
+      ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/patch/relation.template"}
 
       return o;
     });
@@ -212,7 +215,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.save(toSave);
 
     //5) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/ping.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/ping.template"}
 
     //Return result
     return { result: toSave.map(v => v.id) };
@@ -224,7 +227,7 @@ export class ${entity.upper}Controller {
    * @param req the expressjs request object
    */
   @Delete()
-  @PrivilegeHas(`${entity.dot}.delete`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".delete"}
   async Delete(
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
@@ -236,7 +239,7 @@ export class ${entity.upper}Controller {
     let toDelete: ${entity.upper}[] = await promiseArray(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
-          ///ref:{"mode":"childEntity.normal", "templateFile":"controller/stems.template"}
+          ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
           return query;
         })
       }),
@@ -249,7 +252,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.delete(deleteIDs);
 
     //5) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"controller/delete/ping.template"}
+    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/delete/ping.template"}
 
     //Return result
     return { result: deleteIDs };

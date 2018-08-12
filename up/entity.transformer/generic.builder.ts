@@ -51,19 +51,25 @@ export enum TemplateReferenceMode {
   ChildEntityNormal,
   EntityUniqueNonUnique,
   ChildFieldNormal,
+  ControllerDecorator,
+  HasPrivileges
 }
 
 export type TemplateMultipleSingle = { multiple: string; single: string };
 export type TemplateUniqueNonUnique = { unique: string; nonUnique: string };
+export type TemplateControllerDecorator = { authenticated:string, nonAuthenticated:string };
 export type TemplateNormal = string;
 
 export class TemplateReference {
   mode: string; //childEntity.multipleSingle, childEntity.normal, childField.normal, entity.uniqueNonUnique
   templateFile: string;
 
+  suffix?:string;
+
   compositeMode: TemplateReferenceMode;
   compositeTemplate:
     | TemplateNormal
+    | TemplateControllerDecorator
     | TemplateMultipleSingle
     | TemplateUniqueNonUnique;
 }
@@ -98,6 +104,10 @@ export async function handleTemplateReferences(
       ref.compositeMode = TemplateReferenceMode.EntityUniqueNonUnique;
     } else if (ref.mode === 'childField.normal') {
       ref.compositeMode = TemplateReferenceMode.ChildFieldNormal;
+    } else if (ref.mode === 'api.authenticated') {
+      ref.compositeMode = TemplateReferenceMode.ControllerDecorator;
+    } else if (ref.mode === 'api.has.privileges') {
+      ref.compositeMode = TemplateReferenceMode.HasPrivileges;
     } else {
       throw 'unknown template reference type';
     }
@@ -133,6 +143,19 @@ export async function handleTemplateReferences(
           ref.templateFile + '.ts',
         );
         break;
+      case TemplateReferenceMode.ControllerDecorator:
+        let authenticated = await readTemplateFilePromise(
+          ref.templateFile + '.authenticated.ts',
+        );
+        let nonAuthenticated = await readTemplateFilePromise(
+          ref.templateFile + '.non.authenticated.ts',
+        );
+        
+        ref.compositeTemplate = <TemplateControllerDecorator>{
+          authenticated,
+          nonAuthenticated
+        };
+        break;
     }
 
     let generatedTemplateCode = '';
@@ -159,6 +182,14 @@ export async function handleTemplateReferences(
           entity,
         );
         break;
+      case TemplateReferenceMode.ControllerDecorator:
+        generatedTemplateCode = genericReplaceControllerDecoratorTemplate(ref, controllerPath);
+        break;
+      case TemplateReferenceMode.HasPrivileges:
+        if(controllerPath.indexOf('authenticated') !== -1) {
+          generatedTemplateCode = `@PrivilegeHas('${dotCase(entity.upper)}${ref.suffix ? ref.suffix : ''}')`;
+        }
+        break;
     }
     restOfSection = generatedTemplateCode + restOfSection;
 
@@ -166,6 +197,30 @@ export async function handleTemplateReferences(
   }
   let fullyGeneratedCode = compositeSections.join(' ');
   return fullyGeneratedCode;
+}
+
+export function genericReplaceControllerDecoratorTemplate(
+  ref: TemplateReference,
+  controllerPath: string,
+) {
+  let template: string;
+  let compositeControllerPath:string;
+  if(controllerPath.indexOf('authenticated') !== -1) {
+    template = (<TemplateControllerDecorator>ref.compositeTemplate).authenticated;
+    compositeControllerPath = controllerPath.split('authenticated/')[1];
+  } else {
+    template = (<TemplateControllerDecorator>ref.compositeTemplate).nonAuthenticated;
+    compositeControllerPath = controllerPath;
+  }
+
+  if(!!ref.suffix) {
+    compositeControllerPath += ref.suffix;
+  }
+
+  let result = replaceByObject(template, {
+    '${controllerPath}': compositeControllerPath,
+  });
+  return result;
 }
 
 export function genericReplaceChildEntityTemplate(

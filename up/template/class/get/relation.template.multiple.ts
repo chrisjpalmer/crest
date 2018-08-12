@@ -1,1 +1,0 @@
-${childEntity.fieldName}: Partial<GetRelation>[];

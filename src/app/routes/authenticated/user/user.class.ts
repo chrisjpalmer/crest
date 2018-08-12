@@ -13,33 +13,33 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
-  GetRelation,
+  SyncRelation,
   PostRelation,
   PatchRelation,
   PatchRelationSingle,
-  SyncInput,
-  GenericGetMode,
+  GenericSyncInput,
+  GenericSyncMode,
 } from 'core';
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
 //------------------------------------------------
 
-//-----------Get-----------\\
-export class GetInput extends SyncInput {
+//-----------Sync-----------\\
+export class SyncInput extends GenericSyncInput {
   //Query Mode
-  @IsOptional() mode: GenericGetMode;
+  @IsOptional() mode: GenericSyncMode;
   //Discrete Mode
   @IsOptional() ids: number[];
   //ParameterSearch Mode
-  @IsOptional() parameterSearch: GetParameterSearch;
+  @IsOptional() parameterSearch: SyncParameterSearch;
 
   //Pagination
   @IsOptional() page: number;
   @IsOptional() pageSize: number;
 }
 
-export interface GetParameterSearch {
+export interface SyncParameterSearch {
   id?: number;
   updatedAt?: Date;
   createdAt?: Date;
@@ -49,7 +49,7 @@ export interface GetParameterSearch {
   emailAddress?: string;
 }
 
-export interface GetOutput {
+export interface SyncOutput {
   id: number;
   updatedAt: Date;
   createdAt: Date;
@@ -62,7 +62,7 @@ export interface GetOutput {
   emailAddress: string;
 
   //---------Relationships--------\\
-  role: Partial<GetRelation>;
+  role: Partial<SyncRelation>;
 }
 
 //-----------Post----------\\

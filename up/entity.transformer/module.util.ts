@@ -2,7 +2,7 @@ import Project, { ObjectLiteralExpression } from 'ts-simple-ast';
 import { Entity } from '../util/entity.class';
 
 export async function AddToModule(
-  controllerPath: string,
+  path: string,
   entityFilename: string,
   entity: Entity,
 ) {
@@ -10,11 +10,11 @@ export async function AddToModule(
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
   moduleFile.addImportDeclaration({
     namedImports: [`${entity.upper}Controller`, `${entity.upper}SyncController`],
-    moduleSpecifier: `./routes/authenticated/${controllerPath}/${entityFilename}.controller`,
+    moduleSpecifier: `./routes/${path}/${entityFilename}.controller`,
   });
   moduleFile.addImportDeclaration({
     namedImports: [`${entity.upper}Service`],
-    moduleSpecifier: `./routes/authenticated/${controllerPath}/${entityFilename}.service`,
+    moduleSpecifier: `./routes/${path}/${entityFilename}.service`,
   });
 
   let appModuleClass = moduleFile.getClassOrThrow('AppModule');
@@ -22,7 +22,7 @@ export async function AddToModule(
   let args = appModuleDecorator.getArguments();
   let moduleConfig = <ObjectLiteralExpression>args[0];
 
-  addToControllersArray(moduleConfig, entity, controllerPath, entityFilename);
+  addToControllersArray(moduleConfig, entity, path, entityFilename);
   addToComponentsArray(moduleConfig, entity);
 
   await project.save();
@@ -31,7 +31,7 @@ export async function AddToModule(
 export function addToControllersArray(
   moduleConfig: ObjectLiteralExpression,
   entity: Entity,
-  controllerPath: string,
+  path: string,
   entityFilename: string,
 ) {
   let controllersConfig = moduleConfig.getPropertyOrThrow('controllers');
@@ -44,7 +44,7 @@ export function addToControllersArray(
   );
   let newStatement =
     topArrayExpression +
-    `\n    // /authenticated/${controllerPath}\n    ${
+    `\n    // /${path}\n    ${
       entity.upper
     }Controller,
     ${
