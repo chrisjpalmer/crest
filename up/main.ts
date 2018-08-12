@@ -4,6 +4,7 @@ import { createEntity } from './entity.builder/main';
 
 import {Command, flags} from '@oclif/command'
 import { replaceAll } from './util/string.util';
+import { createController } from './basic.controller/main';
 
 class Up extends Command {
   static flags = {
@@ -14,7 +15,9 @@ class Up extends Command {
     entity: flags.string({
       required:false
     }),
-    api: flags.boolean()
+    api: flags.string({
+      required:false
+    }),
   }
 
   static args = [
@@ -50,7 +53,7 @@ class Up extends Command {
 
         if(flags.api) {
           //Create a blank api
-          
+          await createController(flags.api, flags.destination);
         } else if(flags.entity) {
           //create a new entity
           await createEntity(flags.entity);
