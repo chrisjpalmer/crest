@@ -18,11 +18,12 @@ import { buildGeneric } from './generic.builder';
 
 export async function buildClass(
   controllerPath: string,
-  entity: Entity,
+  apiUpper:string,
+  apiDot:string
 ): Promise<string> {
   //Open the service template
   let classTemplate = await readTemplateFilePromise(`basic.controller/class/class.template.ts`);
 
-  let code = await buildGeneric(classTemplate, controllerPath, entity);
+  let code = await buildGeneric(classTemplate, controllerPath, apiUpper, apiDot);
   return code;
 }

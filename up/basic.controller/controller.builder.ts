@@ -8,7 +8,8 @@ import { buildGeneric } from './generic.builder';
 
 export async function buildController(
   controllerPath: string,
-  entity: Entity,
+  apiUpper:string,
+  apiDot:string
 ): Promise<string> {
   //Open the service template
   let controllerTemplate = await readTemplateFilePromise(
@@ -18,7 +19,8 @@ export async function buildController(
   let controller = await buildGeneric(
     controllerTemplate,
     controllerPath,
-    entity,
+    apiUpper,
+    apiDot
   );
 
   return controller;

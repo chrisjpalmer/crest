@@ -34,6 +34,12 @@ class Up extends Command {
       }
     }
 
+    if(flags.api) {
+      if(flags.api[0].toUpperCase() !== flags.api[0]) {
+        throw 'when specifying an api, it should be specified in pascal case: ie. "Book", "BookCategory"';
+      }
+    }
+
     if(flags.destination) {
       //@ is a placeholder for authenticated
       flags.destination = replaceAll(flags.destination, '@', 'authenticated');

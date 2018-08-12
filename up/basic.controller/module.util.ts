@@ -2,15 +2,15 @@ import Project, { ObjectLiteralExpression } from 'ts-simple-ast';
 import { Entity } from '../util/entity.class';
 
 export async function AddToModule(
-  path: string,
-  entityFilename: string,
-  entity: Entity,
+  path: string,  
+  apiUpper:string,
+  apiDot:string
 ) {
   let project = new Project();
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
   moduleFile.addImportDeclaration({
-    namedImports: [`${entity.upper}Controller`, `${entity.upper}SyncController`],
-    moduleSpecifier: `./routes/${path}/${entityFilename}.controller`,
+    namedImports: [`${apiUpper}Controller`, `${apiUpper}SyncController`],
+    moduleSpecifier: `./routes/${path}/${apiDot}.controller`,
   });
 
   let appModuleClass = moduleFile.getClassOrThrow('AppModule');
@@ -18,16 +18,15 @@ export async function AddToModule(
   let args = appModuleDecorator.getArguments();
   let moduleConfig = <ObjectLiteralExpression>args[0];
 
-  addToControllersArray(moduleConfig, entity, path, entityFilename);
+  addToControllersArray(moduleConfig, path, apiUpper);
 
   await project.save();
 }
 
 export function addToControllersArray(
   moduleConfig: ObjectLiteralExpression,
-  entity: Entity,
   path: string,
-  entityFilename: string,
+  apiUpper:string
 ) {
   let controllersConfig = moduleConfig.getPropertyOrThrow('controllers');
   let originalStatement = controllersConfig.getText();
@@ -40,7 +39,7 @@ export function addToControllersArray(
   let newStatement =
     topArrayExpression +
     `\n    // /${path}\n    ${
-      entity.upper
+      apiUpper
     }Controller,\n` +
     bottomArrayExpression;
   controllersConfig.replaceWithText(newStatement);

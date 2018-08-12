@@ -17,13 +17,13 @@ import {
 export async function buildGeneric(
   template: string,
   controllerPath: string,
-  entity: Entity,
+  apiUpper:string,
+  apiDot:string,
 ): Promise<string> {
-  let codeIteration1 = genericReplace(template, controllerPath, entity);
+  let codeIteration1 = genericReplace(template, controllerPath, apiUpper, apiDot);
   let codeIteration2 = await handleTemplateReferences(
     codeIteration1,
-    controllerPath,
-    entity,
+    controllerPath
   );
   return codeIteration2;
 }
@@ -31,10 +31,13 @@ export async function buildGeneric(
 export function genericReplace(
   template: string,
   controllerPath: string,
-  entity: Entity,
+  apiUpper:string,
+  apiDot:string,
 ) {
   return replaceByObject(template, {
     '${controllerPath}': controllerPath,
+    '${api.upper}':apiUpper,
+    '${api.dot}' : apiDot,
   });
 }
 
@@ -56,8 +59,7 @@ export class TemplateReference {
 
 export async function handleTemplateReferences(
   mainTemplate: string,
-  controllerPath: string,
-  entity: Entity,
+  controllerPath: string
 ): Promise<string> {
   //Should be able to handle whether it is entity OR field mode -> and then multiple or single mode.
   let sections = mainTemplate.split('///ref:');

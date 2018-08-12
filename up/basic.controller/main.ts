@@ -10,15 +10,12 @@ import {
 } from '../util/util';
 import { buildController } from './controller.builder';
 import { buildClass } from './class.builder';
-import { buildService } from './service.builder';
-import { readEntityClass } from './entity.reader';
 import { AddToModule } from './module.util';
 import { replaceAll } from '../util/string.util';
 
-export async function createController(entityName:string, destinationPath?:string) {
+export async function createController(apiUpper:string, destinationPath?:string) {
   //Get the entity class
-  let entityFilename = dotCase(entityName);
-  let entity = readEntityClass(entityName, entityFilename);
+  let apiDot = dotCase(apiUpper);
 
   //Deterine controller path
   let controllerPath = '';
@@ -26,25 +23,25 @@ export async function createController(entityName:string, destinationPath?:strin
   if(destinationPath) {
     controllerPath = `${destinationPath}`;
   } else{
-    let directoryStructure = replaceAll(entityFilename, '.', '/');
+    let directoryStructure = replaceAll(apiDot, '.', '/');
     controllerPath = `authenticated/${directoryStructure}`;
   }
   controllerSystemPath = `${appRoutesPath}/${controllerPath}`;
 
   //Create the code...
-  let controllerCode = await buildController(controllerPath, entity);
-  let classCode = await buildClass(controllerPath, entity);
+  let controllerCode = await buildController(controllerPath, apiUpper, apiDot);
+  let classCode = await buildClass(controllerPath, apiUpper, apiDot);
 
   //Save the code
   mkdirRecursive(controllerSystemPath);
 
   await writeFilePromise(
-    `${controllerSystemPath}/${entityFilename}.controller.ts`,
+    `${controllerSystemPath}/${apiDot}.controller.ts`,
     controllerCode,
   );
-  await writeFilePromise(`${controllerSystemPath}/${entityFilename}.class.ts`, classCode);
+  await writeFilePromise(`${controllerSystemPath}/${apiDot}.class.ts`, classCode);
 
-  AddToModule(controllerPath, entityFilename, entity);
+  AddToModule(controllerPath, apiUpper, apiDot);
 
   RunFormatterDir(controllerSystemPath);
   RunFormatterFile(`src/app/app.module.ts`);
