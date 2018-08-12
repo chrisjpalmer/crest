@@ -18,7 +18,7 @@ import {
   ConfigService,
 } from 'core';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
+import { Get, Body, Post, Patch, Request, Delete, Controller } from '@nestjs/common';
 import {
   SyncInput,
   SyncOutput,
@@ -36,7 +36,8 @@ import { ${entity.upper}Service } from './${entity.filename}.service';
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('${controllerPath}/sync') /* http://localhost:3000/authenticated/${controllerPath}/sync */
+
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":"/sync"} /* http://localhost:3000/${controllerPath}/sync */
 export class ${entity.upper}SyncController extends SyncController<${entity.upper}> {
   constructor(
     configService: ConfigService,
@@ -124,7 +125,7 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-@AuthController('${controllerPath}') /* http://localhost:3000/authenticated/${controllerPath} */
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":""} /* http://localhost:3000/${controllerPath} */
 export class ${entity.upper}Controller {
   constructor(
     configService: ConfigService,

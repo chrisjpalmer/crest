@@ -4,7 +4,7 @@ import {
   templatePath,
   readTemplateFilePromise,
 } from '../util/util';
-import { buildGeneric } from '../util/generic.builder';
+import { buildGeneric } from './generic.builder';
 
 export async function buildController(
   controllerPath: string,

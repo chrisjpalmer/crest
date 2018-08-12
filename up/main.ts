@@ -50,6 +50,7 @@ class Up extends Command {
 
         if(flags.api) {
           //Create a blank api
+          
         } else if(flags.entity) {
           //create a new entity
           await createEntity(flags.entity);
@@ -69,3 +70,5 @@ class Up extends Command {
 
 Up.run()
 .catch(require('@oclif/errors/handle'));
+
+//TODO: support the new api.authenticated decorator template
