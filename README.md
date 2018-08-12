@@ -326,7 +326,7 @@ If you understand a bit about [Nest](https://nestjs.com) already, the controller
 **PrivilegeHas()**
 
 - You will notice the use of the `@PrivilegeHas()` decorator which is part of Crest's *users, roles and privileges* system. 
-- `@PrivilegesHas()` ensures that this method can only be called by a privileged user.
+- `@PrivilegeHas()` ensures that this method can only be called by a privileged user.
 In other words to call the GET method, the user must have the `"genre.get"` privilege.
 - `"root"` is a special privilege which accesses anything.
 - If you need to validate more privileges, specify them as additional arguments to the decorator.

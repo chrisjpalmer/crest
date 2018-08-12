@@ -37,7 +37,7 @@ export class ${api.upper}Controller {
    * @param req the expressjs request object
    */
   @Get()
-  @PrivilegeHas(`${api.dot}.get`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".get"}
   async Get(
     @Body() input: GetInput,
     @Request() req: CoreRequest,
@@ -51,7 +51,7 @@ export class ${api.upper}Controller {
    * @param req the expressjs request object
    */
   @Post()
-  @PrivilegeHas(`${api.dot}.post`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".post"}
   async Post(
     @Body() input: PostInput,
     @Request() req: CoreRequest,
@@ -65,7 +65,7 @@ export class ${api.upper}Controller {
    * @param req the expressjs request object
    */
   @Patch()
-  @PrivilegeHas(`${api.dot}.patch`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".patch"}
   async Patch(
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
@@ -79,7 +79,7 @@ export class ${api.upper}Controller {
    * @param req the expressjs request object
    */
   @Delete()
-  @PrivilegeHas(`${api.dot}.delete`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".delete"}
   async Delete(
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,

@@ -55,7 +55,7 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
    * @param req the expressjs request object
    */
   @Post()
-  @PrivilegeHas(`${entity.dot}.sync`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".sync"}
   async Sync(@Body() input: SyncInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
     //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
@@ -143,7 +143,7 @@ export class ${entity.upper}Controller {
    * @param req the expressjs request object
    */
   @Post()
-  @PrivilegeHas(`${entity.dot}.post`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".post"}
   async Post(
     @Body() input: PostInput,
     @Request() req: CoreRequest,
@@ -178,7 +178,7 @@ export class ${entity.upper}Controller {
    * @param req the expressjs request object
    */
   @Patch()
-  @PrivilegeHas(`${entity.dot}.patch`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".patch"}
   async Patch(
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
@@ -227,7 +227,7 @@ export class ${entity.upper}Controller {
    * @param req the expressjs request object
    */
   @Delete()
-  @PrivilegeHas(`${entity.dot}.delete`)
+  ///ref:{"mode":"api.has.privileges", "suffix":".delete"}
   async Delete(
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,

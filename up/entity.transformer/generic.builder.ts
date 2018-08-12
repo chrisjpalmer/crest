@@ -51,7 +51,8 @@ export enum TemplateReferenceMode {
   ChildEntityNormal,
   EntityUniqueNonUnique,
   ChildFieldNormal,
-  ControllerDecorator
+  ControllerDecorator,
+  HasPrivileges
 }
 
 export type TemplateMultipleSingle = { multiple: string; single: string };
@@ -105,6 +106,8 @@ export async function handleTemplateReferences(
       ref.compositeMode = TemplateReferenceMode.ChildFieldNormal;
     } else if (ref.mode === 'api.authenticated') {
       ref.compositeMode = TemplateReferenceMode.ControllerDecorator;
+    } else if (ref.mode === 'api.has.privileges') {
+      ref.compositeMode = TemplateReferenceMode.HasPrivileges;
     } else {
       throw 'unknown template reference type';
     }
@@ -180,7 +183,12 @@ export async function handleTemplateReferences(
         );
         break;
       case TemplateReferenceMode.ControllerDecorator:
-        generatedTemplateCode= genericReplaceControllerDecoratorTemplate(ref, controllerPath);
+        generatedTemplateCode = genericReplaceControllerDecoratorTemplate(ref, controllerPath);
+        break;
+      case TemplateReferenceMode.HasPrivileges:
+        if(controllerPath.indexOf('authenticated') !== -1) {
+          generatedTemplateCode = `@PrivilegeHas('${dotCase(entity.upper)}${ref.suffix ? ref.suffix : ''}')`;
+        }
         break;
     }
     restOfSection = generatedTemplateCode + restOfSection;

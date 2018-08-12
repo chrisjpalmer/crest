@@ -23,7 +23,8 @@ export async function buildGeneric(
   let codeIteration1 = genericReplace(template, controllerPath, apiUpper, apiDot);
   let codeIteration2 = await handleTemplateReferences(
     codeIteration1,
-    controllerPath
+    controllerPath,
+    apiDot
   );
   return codeIteration2;
 }
@@ -42,7 +43,8 @@ export function genericReplace(
 }
 
 export enum TemplateReferenceMode {
-  ControllerDecorator
+  ControllerDecorator,
+  HasPrivileges
 }
 
 export type TemplateControllerDecorator = { authenticated:string, nonAuthenticated:string };
@@ -59,7 +61,8 @@ export class TemplateReference {
 
 export async function handleTemplateReferences(
   mainTemplate: string,
-  controllerPath: string
+  controllerPath: string,
+  apiDot:string,
 ): Promise<string> {
   //Should be able to handle whether it is entity OR field mode -> and then multiple or single mode.
   let sections = mainTemplate.split('///ref:');
@@ -81,6 +84,8 @@ export async function handleTemplateReferences(
     
     if (ref.mode === 'api.authenticated') {
       ref.compositeMode = TemplateReferenceMode.ControllerDecorator;
+    } else if (ref.mode === 'api.has.privileges') {
+      ref.compositeMode = TemplateReferenceMode.HasPrivileges;
     } else {
       throw 'unknown template reference type';
     }
@@ -105,6 +110,11 @@ export async function handleTemplateReferences(
     switch (ref.compositeMode) {
       case TemplateReferenceMode.ControllerDecorator:
         generatedTemplateCode= genericReplaceControllerDecoratorTemplate(ref, controllerPath);
+        break;
+      case TemplateReferenceMode.HasPrivileges:
+        if(controllerPath.indexOf('authenticated') !== -1) {
+          generatedTemplateCode = `@PrivilegeHas('${dotCase(apiDot)}${ref.suffix}')`;
+        }
         break;
     }
     restOfSection = generatedTemplateCode + restOfSection;
