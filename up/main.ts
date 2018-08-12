@@ -71,7 +71,7 @@ class Up extends Command {
   }
 }
 
-Up.run()
+Up.run(null, null)
 .catch(require('@oclif/errors/handle'));
 
 //TODO: support the new api.authenticated decorator template
