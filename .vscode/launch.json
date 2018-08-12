@@ -35,7 +35,8 @@
                 "-r",
                 "tsconfig-paths/register",
                 "up/main.ts",
-                "book"
+                "transform",
+                "--entity=TeamMember"
             ],
             "cwd": "${workspaceFolder}",
             "protocol": "inspector"

@@ -22,7 +22,8 @@ import {
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":""} /* http://localhost:3000/${controllerPath} */
+/* http://localhost:3000/${controllerPath} */
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":""}
 export class ${api.upper}Controller {
   constructor(
   

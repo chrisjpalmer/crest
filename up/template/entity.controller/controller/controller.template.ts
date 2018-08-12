@@ -37,7 +37,8 @@ import { ${entity.upper}Service } from './${entity.filename}.service';
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 
-///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":"/sync"} /* http://localhost:3000/${controllerPath}/sync */
+/* http://localhost:3000/${controllerPath}/sync */
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":"/sync"}
 export class ${entity.upper}SyncController extends SyncController<${entity.upper}> {
   constructor(
     configService: ConfigService,
@@ -125,7 +126,8 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":""} /* http://localhost:3000/${controllerPath} */
+/* http://localhost:3000/${controllerPath} */
+///ref:{"mode":"api.authenticated", "templateFile":"common/controller.dec.template", "suffix":""}
 export class ${entity.upper}Controller {
   constructor(
     configService: ConfigService,
