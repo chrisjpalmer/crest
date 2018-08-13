@@ -1,2 +1,0 @@
-await this.${entity.lower}Service.pingStems${childEntity.fieldNameUpper}(toApply); //Comment out at your leisure.
-await this.${entity.lower}Service.pingStems${childEntity.fieldNameUpper}(toSave); //Comment out at your leisure.

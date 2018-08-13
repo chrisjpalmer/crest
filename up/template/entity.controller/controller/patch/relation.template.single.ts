@@ -1,6 +1,10 @@
 //Apply update to relationship
-if (!!input.entries[i].${childEntity.fieldName}) {
-  let c = new  ${childEntity.upper}();
-  c.id = input.entries[i].${childEntity.fieldName}.id;
-  o.${childEntity.fieldName} = c;
+if (v.${childEntity.fieldName} !== undefined) {
+  if(v.${childEntity.fieldName} === null) {
+      o.${childEntity.fieldName} = null;
+  } else {
+      let c = new ${childEntity.upper}();
+      c.id = v.${childEntity.fieldName}.id;
+      o.${childEntity.fieldName} = c;
+  }
 }

@@ -162,7 +162,8 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.save(entities);
 
     //3) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/post/ping.template"}
+    //Here we ping the related entities who relations have changed. We do this so that they get invalidated and resynced
+    ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/post/ping.template"}
 
     //Return result
     return { result: entities.map(v => v.id) };
@@ -215,10 +216,8 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.save(toSave);
 
     //5) Ping stems
-    //Here we ping the stems of the toApply and toSave arrays which 
-    //represent entries before and after relational changes have applied
-    //doing so enables us to succesfully ping all related entries about changess
-    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/patch/ping.template"}
+    //Here we ping the related entities who relations have changed. We do this so that they get invalidated and resynced
+    ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/patch/ping.template"}
 
     //Return result
     return { result: toSave.map(v => v.id) };
@@ -255,7 +254,7 @@ export class ${entity.upper}Controller {
     await this.${entity.lower}Repository.delete(deleteIDs);
 
     //5) Ping stems
-    ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/delete/ping.template"}
+    ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/delete/ping.template"}
 
     //Return result
     return { result: deleteIDs };
