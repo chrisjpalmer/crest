@@ -8,7 +8,7 @@ import {
   PrivilegeHas,
   CoreRequest
 } from 'core';
-import { Get, Body, Post, Patch, Request, Delete, Controller, Param } from '@nestjs/common';
+import { Get, Body, Post, Patch, Request, Delete, Controller, Query } from '@nestjs/common';
 import {
   GetInput,
   GetOutput,
@@ -37,10 +37,10 @@ export class ${api.upper}Controller {
    * @param input parameters for the request
    * @param req the expressjs request object
    */
-  @Get(':input')
+  @Get()
   ///ref:{"mode":"api.has.privileges", "suffix":".get"}
   async Get(
-    @Param('input') _input: string,
+    @Query('input') _input: string,
     @Request() req: CoreRequest,
   ): Promise<GetOutput> {
     let input:GetInput = JSON.parse(_input);
