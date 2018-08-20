@@ -128,7 +128,25 @@ export class UserSyncController extends SyncController<User> {
     //query = this.userService.applyStemsRequestLogs(query); //Comment out at your leisure.
 
     query = query.whereInIds(ids);
-    return await query.getMany();
+    
+    let result = await query.getMany();
+    let output = result.map((entry):Partial<SyncOutput> => {
+      let outputEntry:Partial<SyncOutput> = {
+        id: entry.id,
+        updatedAt: entry.updatedAt.toISOString(),
+        createdAt: entry.createdAt.toISOString(),
+
+        username: entry.username,
+        firstName: entry.firstName,
+        lastName: entry.lastName,
+        emailAddress: entry.emailAddress,
+
+        role: entry.role,
+      };
+      return outputEntry;
+    });
+
+    return output;
   }
 }
 

@@ -120,7 +120,22 @@ export class PrivilegeSyncController extends SyncController<Privilege> {
     //query = query.select(this.privilegeService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
     query = query.whereInIds(ids);
-    return await query.getMany();
+    
+    let result = await query.getMany();
+    let output = result.map((entry):Partial<SyncOutput> => {
+      let outputEntry:Partial<SyncOutput> = {
+        id: entry.id,
+        updatedAt: entry.updatedAt.toISOString(),
+        createdAt: entry.createdAt.toISOString(),
+
+        name: entry.name,
+
+        roles: entry.roles,
+      };
+      return outputEntry;
+    });
+
+    return output;
   }
 }
 

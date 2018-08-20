@@ -121,7 +121,23 @@ export class RoleSyncController extends SyncController<Role> {
     //query = this.roleService.applyStemsUsers(query); //Comment out at your leisure.
 
     query = query.whereInIds(ids);
-    return await query.getMany();
+
+    let result = await query.getMany();
+    let output = result.map((entry):Partial<SyncOutput> => {
+      let outputEntry:Partial<SyncOutput> = {
+        id: entry.id,
+        updatedAt: entry.updatedAt.toISOString(),
+        createdAt: entry.createdAt.toISOString(),
+
+        name: entry.name,
+        description: entry.description,
+        
+        privileges: entry.privileges,
+      };
+      return outputEntry;
+    });
+
+    return output;
   }
 }
 

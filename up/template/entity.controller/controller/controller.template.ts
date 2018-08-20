@@ -126,7 +126,10 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
         id: entry.id,
         updatedAt: entry.updatedAt.toISOString(),
         createdAt: entry.createdAt.toISOString(),
+
         ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/sync/field.template"}
+        
+        ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/sync/relation.template"}
       };
       return outputEntry;
     });

@@ -41,15 +41,15 @@ export class SyncInput extends GenericSyncInput {
 
 export interface SyncParameterSearch {
   id?: number;
-  updatedAt?: Date;
-  createdAt?: Date;
+  updatedAt?: string;
+  createdAt?: string;
   name?: string;
 }
 
 export interface SyncOutput {
   id: number;
-  updatedAt: Date;
-  createdAt: Date;
+  updatedAt: string;
+  createdAt: string;
   name: string;
 
   //---------Relationships--------\\

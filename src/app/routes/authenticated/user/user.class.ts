@@ -41,8 +41,8 @@ export class SyncInput extends GenericSyncInput {
 
 export interface SyncParameterSearch {
   id?: number;
-  updatedAt?: Date;
-  createdAt?: Date;
+  updatedAt?: string;
+  createdAt?: string;
   username?: string;
   firstName?: string;
   lastName?: string;
@@ -51,8 +51,8 @@ export interface SyncParameterSearch {
 
 export interface SyncOutput {
   id: number;
-  updatedAt: Date;
-  createdAt: Date;
+  updatedAt: string;
+  createdAt: string;
   username: string;
 
   firstName: string;
