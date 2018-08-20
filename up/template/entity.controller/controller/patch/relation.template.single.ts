@@ -4,7 +4,7 @@ if (input.entries[i].${childEntity.fieldName} !== undefined) {
       o.${childEntity.fieldName} = null;
   } else {
       let c = new ${childEntity.upper}();
-      c.id = v.${childEntity.fieldName}.id;
+      c.id = input.entries[i].${childEntity.fieldName}.id;
       o.${childEntity.fieldName} = c;
   }
 }
