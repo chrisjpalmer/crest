@@ -8,7 +8,7 @@ import {
 } from './sync';
 import { IndexSet } from '../core/core.database.util';
 import { mapToIndexedData, CoreRequest } from '../core/core.util';
-import { GenericEntity } from 'database';
+import { GenericOutput } from 'database';
 import { ConfigService } from '../service/config.service';
 const jwt = require('jsonwebtoken');
 
@@ -81,7 +81,7 @@ export class SyncController<T> {
     return { data: indexedData };
   }
 
-  protected async handleData(ids: number[], req:CoreRequest): Promise<GenericEntity[]> {
+  protected async handleData(ids: number[], req:CoreRequest): Promise<GenericOutput[]> {
     return null;
   }
 

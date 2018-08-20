@@ -14,3 +14,9 @@ export class GenericEntity {
   @CreateDateColumn({type:'timestamp'}) createdAt?: Date;
   @Column('timestamp', {precision:6, default: () => 'CURRENT_TIMESTAMP(6)'}) updatedAt?: Date;
 }
+
+export class GenericOutput {
+  id?:number;
+  createdAt?:string;
+  updatedAt?:string;
+}

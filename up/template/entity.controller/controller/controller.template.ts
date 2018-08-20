@@ -119,7 +119,19 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
     //query = query.select(this.${entity.lower}Service.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
     ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
     query = query.whereInIds(ids);
-    return await query.getMany();
+
+    let result = await query.getMany();
+    let output = result.map((entry):Partial<SyncOutput> => {
+      let outputEntry:Partial<SyncOutput> = {
+        id: entry.id,
+        updatedAt: entry.updatedAt.toISOString(),
+        createdAt: entry.createdAt.toISOString(),
+        ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/sync/field.template"}
+      };
+      return outputEntry;
+    });
+
+    return output;
   }
 }
 

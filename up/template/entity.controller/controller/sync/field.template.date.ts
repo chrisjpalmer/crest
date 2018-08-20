@@ -1,0 +1,1 @@
+${childField.fieldName}: entry.${childField.fieldName}.toISOString(),

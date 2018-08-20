@@ -3,6 +3,7 @@ import {
   ChildEntity,
   ChildField,
   ChildEntityMode,
+  FieldType,
 } from '../util/entity.class';
 import {
   dotCase,
@@ -57,6 +58,7 @@ export enum TemplateReferenceMode {
 
 export type TemplateMultipleSingle = { multiple: string; single: string };
 export type TemplateUniqueNonUnique = { unique: string; nonUnique: string };
+export type TemplateDateNonDate = { date: string; nonDate: string };
 export type TemplateControllerDecorator = { authenticated:string, nonAuthenticated:string };
 export type TemplateNormal = string;
 
@@ -69,6 +71,7 @@ export class TemplateReference {
   compositeMode: TemplateReferenceMode;
   compositeTemplate:
     | TemplateNormal
+    | TemplateDateNonDate
     | TemplateControllerDecorator
     | TemplateMultipleSingle
     | TemplateUniqueNonUnique;
@@ -138,6 +141,17 @@ export async function handleTemplateReferences(
         };
         break;
       case TemplateReferenceMode.ChildFieldNormal:
+        let nonDate = await readTemplateFilePromise(
+          ref.templateFile + '.ts',
+        );
+        let date = await readTemplateFilePromise(
+          ref.templateFile + '.date.ts',
+        );
+        ref.compositeTemplate = <TemplateDateNonDate>{
+          nonDate,
+          date,
+        };
+        break;
       case TemplateReferenceMode.ChildEntityNormal:
         ref.compositeTemplate = <TemplateNormal>await readTemplateFilePromise(
           ref.templateFile + '.ts',
@@ -256,7 +270,12 @@ export function genericReplaceChildFieldTemplate(
   entity: Entity,
   childField: ChildField,
 ) {
-  let template: string = <TemplateNormal>ref.compositeTemplate;
+  let template:string;
+  if (childField.fieldType === FieldType.Date) {
+    template = (<TemplateDateNonDate>ref.compositeTemplate).date;
+  } else {
+    template = (<TemplateDateNonDate>ref.compositeTemplate).nonDate;
+  }
 
   let result = genericReplace(template, controllerPath, entity);
   result = replaceByObject(result, {

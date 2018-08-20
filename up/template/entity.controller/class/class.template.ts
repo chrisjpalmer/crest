@@ -10,7 +10,7 @@ import {
   IsBoolean,
   IsString,
   IsOptional,
-  IsDate
+  IsDateString
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SyncRelation, PostRelation, PatchRelation, PatchRelationSingle, GenericSyncInput, GenericSyncMode } from 'core';
@@ -35,15 +35,15 @@ export class SyncInput extends GenericSyncInput {
 
 export interface SyncParameterSearch {
   id?:number;
-  updatedAt?:Date;
-  createdAt?:Date;
+  updatedAt?:string;
+  createdAt?:string;
   ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/class/sync/parameter.field.template"}
 }
 
 export interface SyncOutput {
   id:number;
-  updatedAt:Date;
-  createdAt:Date;
+  updatedAt:string;
+  createdAt:string;
   ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/class/sync/field.template"}
 
   //---------Relationships--------\\

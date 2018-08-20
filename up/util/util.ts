@@ -119,7 +119,7 @@ export function fieldTypeToString(fieldType: FieldType) {
     case FieldType.String:
       return 'string';
     case FieldType.Date:
-      return 'Date';
+      return 'string'; //However typically overriten by templates
   }
 
   return null;
@@ -134,7 +134,7 @@ export function fieldTypeToValidator(fieldType: FieldType) {
     case FieldType.String:
       return '@IsString()';
     case FieldType.Date:
-      return '@IsDate()';
+      return '@IsDateString()';
   }
 
   return null;
