@@ -1,0 +1,1 @@
+${childEntity.fieldName}: entry.${childEntity.fieldName} || null,

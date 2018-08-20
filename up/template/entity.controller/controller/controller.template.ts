@@ -18,7 +18,7 @@ import {
   ConfigService,
 } from 'core';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Get, Body, Post, Patch, Request, Delete, Controller } from '@nestjs/common';
+import { Get, Body, Post, Patch, Request, Delete, Controller, NotAcceptableException } from '@nestjs/common';
 import {
   SyncInput,
   SyncOutput,
@@ -80,10 +80,16 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
         break;
       case GenericSyncMode.Discrete:
         //GenericSyncMode.Discrete -> get only specific ids
+        if(!input.ids || input.ids.length === 0) {
+          throw new NotAcceptableException('ids must not be empty in discrete mode.');
+        }
         query = query.whereInIds(input.ids);
         break;
       case GenericSyncMode.ParameterSearch:
         //GenericSyncMode.ParameterSearch -> get rows which match the search parameters
+        if(!input.parameterSearch) {
+          throw new NotAcceptableException('parameterSearch must not be empty in ParameterSearch mode.');
+        }
         query = query.where(input.parameterSearch);
         break;
     }
@@ -129,7 +135,7 @@ export class ${entity.upper}SyncController extends SyncController<${entity.upper
 
         ///ref:{"mode":"childField.normal", "templateFile":"entity.controller/controller/sync/field.template"}
         
-        ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/sync/relation.template"}
+        ///ref:{"mode":"childEntity.multipleSingle", "templateFile":"entity.controller/controller/sync/relation.template"}
       };
       return outputEntry;
     });
