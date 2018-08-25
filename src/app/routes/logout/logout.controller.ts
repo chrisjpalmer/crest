@@ -20,16 +20,14 @@ import { PostInput, PostOutput } from './logout.class';
 //------------------------------------------------
 @Controller('login')
 export class LogoutController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post()
   async Post(
     @Body() input: PostInput,
     @Request() req: CoreRequest,
   ): Promise<PostOutput> {
-    let user = await this.authService.deleteUserSession(
-      req.user.currentSession,
-    );
-    return { sessionId: req.user.currentSession.id };
+    await this.authService.deleteUserSession(req.user.sessionId)
+    return { sessionId: req.user.sessionId };
   }
 }

@@ -8,15 +8,13 @@ import { PrivilegeService } from '../entity.service/privilege.service';
 import { RoleService } from '../entity.service/role.service';
 import { CoreRequest } from '../core/core.util';
 import { ConfigService } from '../service/config.service';
+import { AuthUserServiceOutput } from './auth.class';
 
 @Injectable()
 export class AuthStrategy extends Strategy {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly privilegeService: PrivilegeService,
-    private readonly roleService: RoleService,
-    private readonly configService: ConfigService,
   ) {
     super(
       {
@@ -36,10 +34,15 @@ export class AuthStrategy extends Strategy {
       await this.authService.validateSession(payload);
 
       //Get the UserServiceOutput
-      let user = await this.userService.getUserData(payload.userId);
+      let userData = await this.userService.getUserData(payload.userId);
+
+      let authUserServiceOutput:AuthUserServiceOutput = {
+        sessionId: payload.sessionId,
+        userData: userData
+      }
 
       //Call done, pass the user. Now the user is embeded in the request object.
-      done(null, user);
+      done(null, authUserServiceOutput);
     } catch (e) {
       done(e, false);
     }

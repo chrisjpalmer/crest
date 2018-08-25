@@ -181,7 +181,16 @@ export class UserController {
     for (let i = 0; i < input.entries.length; i++) {
       let userToCreate = input.entries[i];
       let result: Promise<number>;
-      if (!userToCreate.role) {
+      if (!!userToCreate.role) {
+        result = this.userService.createUserFull({
+          username: userToCreate.username,
+          firstName: userToCreate.firstName,
+          lastName: userToCreate.lastName,
+          emailAddress: userToCreate.emailAddress,
+          password: userToCreate.password,
+          roleId: userToCreate.role.id,
+        });
+      } else {
         result = this.userService.createUserNoRelations({
           username: userToCreate.username,
           firstName: userToCreate.firstName,
@@ -189,18 +198,8 @@ export class UserController {
           emailAddress: userToCreate.emailAddress,
           password: userToCreate.password,
         });
-      } else {
-        result = this.userService.createUserFull({
-          username: userToCreate.username,
-          firstName: userToCreate.firstName,
-          lastName: userToCreate.lastName,
-          emailAddress: userToCreate.emailAddress,
-          roleId: userToCreate.role.id,
-          password: userToCreate.password,
-        });
-
-        createOperations.push(result);
       }
+      createOperations.push(result);
     }
 
     let results = await awaitPromiseArray(createOperations);

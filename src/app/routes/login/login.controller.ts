@@ -22,11 +22,11 @@ export class LoginController {
 
   @Post()
   async Post(@Body() input: PostInput): Promise<PostOutput> {
-    let user = await this.authService.authenticatedUserCred(
+    let userId = await this.authService.validatePassword(
       input.username,
       input.password,
     );
-    let token = await this.authService.createUserToken(user.id);
-    return { token: token.access_token };
+    let token = await this.authService.createUserSession(userId);
+    return { token };
   }
 }

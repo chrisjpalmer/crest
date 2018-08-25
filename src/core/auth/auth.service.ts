@@ -38,7 +38,7 @@ export class AuthService {
    * database as a record of the user's activity
    * @param userId
    */
-  async createUserSession(userId: number) {
+  async createUserSession(userId: number) : Promise<string> {
     let sessionModel: SessionModel = SessionModel.createNew(this.sessionRepository);
     sessionModel.setUserId(userId, this.userRepository);
     let sessionId = await sessionModel.save();
@@ -57,8 +57,9 @@ export class AuthService {
    * deletes the user's session to effectively logout the user.
    * @param sessionId should be the sessionId that was provided in the JWT token
    */
-  async deleteUserSession(session: Session) {
-    await this.sessionRepository.delete(session.id);
+  async deleteUserSession(sessionId:number) {
+    let sessionModel: SessionModel = await SessionModel.forSessionId(sessionId, this.sessionRepository);
+    await sessionModel.delete();
   }
 
   /**
@@ -72,7 +73,7 @@ export class AuthService {
   async validatePassword(
     username: string,
     password: string,
-  ): Promise<void> {
+  ): Promise<number> {
     let userModel: UserModel;
     try {
       userModel = await UserModel.forUsername(username, this.userRepository);
@@ -94,22 +95,26 @@ export class AuthService {
     } catch (e) {
       throw new UnauthorizedException(`the user's password is incorrect`);
     }
+
+    return userId;
   }
 
   /**
    * authenticateUserToken is called by passport
    * exceptions here do not need to be 'NestExceptions'
    * every exception is translated to an authentication error
+   * 
+   * returns the userId
    * @param authPayload
    */
-  async validateSession(sessionPayLoad: SessionJwtPayload) {
+  async validateSession(sessionPayload: SessionJwtPayload) {
     let sessionModel: SessionModel;
     try {
-      sessionModel = await SessionModel.forSessionId(sessionPayLoad.sessionId, this.sessionRepository);
+      sessionModel = await SessionModel.forSessionId(sessionPayload.sessionId, this.sessionRepository);
     } catch (e) {
       throw new ForbiddenException('the user session does not exist');
     }
-    if (sessionModel.getUserId() !== sessionPayLoad.userId) {
+    if (sessionModel.getUserId() !== sessionPayload.userId) {
       throw new ForbiddenException('the session id does not match the user id of the jwt token');
     }
     if (sessionModel.isExpired(this.configService.auth.expiry)) {
@@ -119,6 +124,8 @@ export class AuthService {
     sessionModel.updateLastUsed();
 
     await sessionModel.save();
+
+    return sessionPayload.userId;
   }
 }
 
