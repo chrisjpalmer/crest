@@ -9,7 +9,7 @@ import {
   InjectRepo,
   PrivilegeHas,
   CoreRequest,
-  promiseArray,
+  awaitPromiseArrayAndThrow,
   PatchRelationApply,
   SyncListOutput,
   SyncDataOutput,
@@ -209,7 +209,7 @@ export class ${entity.upper}Controller {
     let toFind = input.entries.map(v => <${entity.upper}>{ id: v.id });
 
     //2) For each entry, find the row it pertains to.
-    let toApply: ${entity.upper}[] = await promiseArray(
+    let toApply: ${entity.upper}[] = await awaitPromiseArrayAndThrow(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
           ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}
@@ -259,7 +259,7 @@ export class ${entity.upper}Controller {
     let toFind = input.entries.map(v => <${entity.upper}>{ id: v.id });
 
     //2) For each entry, find the row it pertains to.
-    let toDelete: ${entity.upper}[] = await promiseArray(
+    let toDelete: ${entity.upper}[] = await awaitPromiseArrayAndThrow(
       toFind.map(v => {
         return this.${entity.lower}Service.findById(v.id, query => {
           ///ref:{"mode":"childEntity.normal", "templateFile":"entity.controller/controller/stems.template"}

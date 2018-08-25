@@ -27,6 +27,25 @@ export async function awaitPromiseArray<T>(promises: Promise<T>[]): Promise<{val
   return results;
 }
 
+export async function awaitPromiseArrayThrowAny<T>(promises: Promise<T>[]): Promise<T[]> {
+  let result: T[] = [];
+  let errors = [];
+  for (var i = 0; i < promises.length; i++) {
+    try {
+      result.push(await promises[i]);
+    } catch (e) {
+      errors.push(e);
+    }
+  }
+
+  if (errors.length > 0) {
+    throw errors;
+  }
+
+  return result;
+}
+
+
 export type IndexedData = Object;
 
 export function mapToIndexedData<T, Q>(map: Map<T, Q>): IndexedData {
