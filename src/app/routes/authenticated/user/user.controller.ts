@@ -9,13 +9,15 @@ import {
   InjectRepo,
   PrivilegeHas,
   CoreRequest,
-  promiseArray,
+  awaitPromiseArray,
   PatchRelationApply,
   SyncListOutput,
   SyncDataOutput,
   GenericSyncMode,
   SyncHash,
   ConfigService,
+  UserServiceOutput,
+  UserServiceInputFull,
 } from 'core';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
@@ -28,6 +30,9 @@ import {
   PatchOutput,
   DeleteInput,
   DeleteOutput,
+  PostOutputResult,
+  PatchOutputResult,
+  DeleteOutputResult,
 } from './user.class';
 import { User, UserToken } from 'database';
 import { UserService } from 'core';
@@ -119,19 +124,15 @@ export class UserSyncController extends SyncController<User> {
    * @param ids the ids of objects which the client needs to download
    */
   async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncOutput>[]> {
-    let query: SelectQueryBuilder<User>;
-    query = this.userService.createQueryBuilder();
-    //query = query.select(this.userService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
-    query = this.userService.applyStemsRole(query); //Comment out at your leisure.
-    //query = this.userService.applyStemsSessions(query); //Comment out at your leisure.
-    //query = this.userService.applyStemsUserPassword(query); //Comment out at your leisure.
-    //query = this.userService.applyStemsRequestLogs(query); //Comment out at your leisure.
 
-    query = query.whereInIds(ids);
-    
-    let result = await query.getMany();
-    let output = result.map((entry):Partial<SyncOutput> => {
-      let outputEntry:Partial<SyncOutput> = {
+    let results: UserServiceOutput[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      let result = await this.userService.getUserData(ids[i]);
+      results.push(result);
+    }
+
+    let output = results.map((entry): Partial<SyncOutput> => {
+      let outputEntry: Partial<SyncOutput> = {
         id: entry.id,
         updatedAt: entry.updatedAt.toISOString(),
         createdAt: entry.createdAt.toISOString(),
@@ -141,7 +142,7 @@ export class UserSyncController extends SyncController<User> {
         lastName: entry.lastName,
         emailAddress: entry.emailAddress,
 
-        role: entry.role,
+        role: { id: entry.roleId },
       };
       return outputEntry;
     });
@@ -159,7 +160,7 @@ export class UserController {
     configService: ConfigService,
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
     private readonly userService: UserService,
-  ) {}
+  ) { }
   /**
    * Post() - User -> creates new user(s)
    * 1) convert - convert entries to entities that contain all the data they require
@@ -174,45 +175,57 @@ export class UserController {
     @Body() input: PostInput,
     @Request() req: CoreRequest,
   ): Promise<PostOutput> {
-    //Unlike traditional table logic, we use the userService object to manipulate
-    //user data. This is because there is more under the hood which is required
 
     //1) Prepare to create new users by converting entries => entities
-    let entities = input.entries.map(v => {
-      let o: User = this.userRepository.create();
+    let createOperations: Promise<number>[] = [];
+    for (let i = 0; i < input.entries.length; i++) {
+      let userToCreate = input.entries[i];
+      let result: Promise<number>;
+      if (!userToCreate.role) {
+        result = this.userService.createUserNoRelations({
+          username: userToCreate.username,
+          firstName: userToCreate.firstName,
+          lastName: userToCreate.lastName,
+          emailAddress: userToCreate.emailAddress,
+          password: userToCreate.password,
+        });
+      } else {
+        result = this.userService.createUserFull({
+          username: userToCreate.username,
+          firstName: userToCreate.firstName,
+          lastName: userToCreate.lastName,
+          emailAddress: userToCreate.emailAddress,
+          roleId: userToCreate.role.id,
+          password: userToCreate.password,
+        });
 
-      o.username = v.username;
-
-      o.firstName = v.firstName;
-
-      o.lastName = v.lastName;
-
-      o.emailAddress = v.emailAddress;
-
-      if (!!v.role) {
-        let c = new Role();
-        c.id = v.role.id;
-        o.role = c;
+        createOperations.push(result);
       }
-      return o;
-    });
+    }
 
-    //2) Convert to an object which contains the user and the user password, in prep to call the service create method
-    let wrapperEntities = entities.map((v, i) => {
-      let uc: UserPwdWrapper = {
-        user: v,
-        password: input.entries[i].password,
-      };
-      return uc;
-    });
+    let results = await awaitPromiseArray(createOperations);
 
-    //3) Create all users
-    let result = await promiseArray(
-      wrapperEntities.map(u => this.userService.create(u.user, u.password)),
-    );
+    let mappedResults: PostOutputResult[] = results.map((r, i) => {
+      let username = input.entries[i].username;
+      let id = r.value || null;
+      if (!!r.error) {
+        return {
+          username,
+          id,
+          success: true
+        }
+      }
+
+      return {
+        username,
+        id,
+        success: false,
+        error: r.error.toString()
+      }
+    })
 
     //Return result
-    return { result: result };
+    return { result: mappedResults };
   }
 
   /**
@@ -229,59 +242,55 @@ export class UserController {
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
   ): Promise<PatchOutput> {
-    //Unlike traditional table logic, we use the userService object to manipulate
-    //user data. This is because there is more under the hood which is required
-
-    //1) convert entries to entities
-    let toUpdate = input.entries.map((v, i) => {
-      //duplicate the input value v to o. o stands for output
-      let o: User = {};
-
-      //Update the updatedAt column of the entry
-      o.updatedAt = <any> (() => 'CURRENT_TIMESTAMP(6)');
-
-      //Apply update to the property
-      if (!!v.username) {
-        o.username = v.username;
+    //1) Prepare to create new users by converting entries => entities
+    let updateOperations: Promise<number>[] = [];
+    for (let i = 0; i < input.entries.length; i++) {
+      let userToUpdate = input.entries[i];
+      let result: Promise<number>;
+      let userServiceInput: Partial<UserServiceInputFull> = {};
+      if (!!userToUpdate.username) {
+        userServiceInput.username = userToUpdate.username;
       }
-      //Apply update to the property
-      if (!!v.firstName) {
-        o.firstName = v.firstName;
+      if (!!userToUpdate.firstName) {
+        userServiceInput.firstName = userToUpdate.firstName;
       }
-      //Apply update to the property
-      if (!!v.lastName) {
-        o.lastName = v.lastName;
+      if (!!userToUpdate.lastName) {
+        userServiceInput.lastName = userToUpdate.lastName;
       }
-      //Apply update to the property
-      if (!!v.emailAddress) {
-        o.emailAddress = v.emailAddress;
+      if (!!userToUpdate.emailAddress) {
+        userServiceInput.emailAddress = userToUpdate.emailAddress;
+      }
+      if (!!userToUpdate.password) {
+        userServiceInput.password = userToUpdate.password;
+      }
+      if (!!userToUpdate.role) {
+        userServiceInput.roleId = userToUpdate.role.id;
       }
 
-      //Apply update to relationship
-      if (!!v.role) {
-        let c = new Role();
-        c.id = v.role.id;
-        o.role = c;
+      result = this.userService.updateUser(input.entries[i].id, userToUpdate);
+      updateOperations.push(result);
+    }
+
+    let results = await awaitPromiseArray(updateOperations);
+
+    let mappedResults: PatchOutputResult[] = results.map((r, i) => {
+      let id = r.value;
+      if (!!r.error) {
+        return {
+          id,
+          success: true
+        }
       }
 
-      return o;
-    });
-
-    //2) convert to an object which contains the user and the user password
-    let wrapperEntities: UserPwdWrapper[] = toUpdate.map((v, i) => {
       return {
-        user: v,
-        password: input.entries[i].password,
-      };
+        id,
+        success: false,
+        error: r.error.toString()
+      }
     });
-
-    //3) Update all users
-    let result = await promiseArray(
-      wrapperEntities.map(u => this.userService.update(u.user, u.password)),
-    );
 
     //Return result
-    return { result: result };
+    return { result: mappedResults };
   }
 
   /**
@@ -295,21 +304,34 @@ export class UserController {
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,
   ): Promise<DeleteOutput> {
-    //1) Prepare to find all rows in specified table by converting entries => entities
-    let toFind = input.entries.map(v => <User>{ id: v.id });
+    let deleteOperations: Promise<number>[] = [];
+    for (let i = 0; i < input.entries.length; i++) {
+      let userToDelete = input.entries[i];
+      let result: Promise<number>;
 
-    //2) For each entry, find the row it pertains to.
-    let toDelete: User[] = await promiseArray(
-      toFind.map(v => this.userRepository.findOne(v)),
-    );
+      result = this.userService.deleteUser(userToDelete.id);
+      deleteOperations.push(result)
+    }
 
-    //3) All entries found... convert to an easier format for deletion
-    let deleteIDs = toDelete.map(v => v.id);
+    let results = await awaitPromiseArray(deleteOperations);
 
-    //4) Delete all entries at once
-    await this.userRepository.delete(deleteIDs);
+    let mappedResults: DeleteOutputResult[] = results.map((r, i) => {
+      let id = r.value;
+      if (!!r.error) {
+        return {
+          id,
+          success: true
+        }
+      }
+
+      return {
+        id,
+        success: false,
+        error: r.error.toString()
+      }
+    });
 
     //Return result
-    return { result: deleteIDs };
+    return { result: mappedResults };
   }
 }

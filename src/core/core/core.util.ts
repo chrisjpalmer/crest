@@ -1,11 +1,10 @@
 /** BOILERPLATE - don't touch unless you are brave */
 
-import { User } from 'database';
-import { Request } from 'express';
 import { IncomingMessage } from 'http';
+import { UserServiceOutput } from '../entity.service/service.output';
 
 export class CoreRequest extends IncomingMessage {
-  user: User;
+  user: UserServiceOutput;
 }
 
 /**
@@ -15,22 +14,17 @@ export class CoreRequest extends IncomingMessage {
  * If no errors occurred the function returns an array of return values (as a Promise).
  * @param promises the promises to await on
  */
-export async function promiseArray<T>(promises: Promise<T>[]): Promise<T[]> {
-  let result: T[] = [];
-  let errors = [];
+export async function awaitPromiseArray<T>(promises: Promise<T>[]): Promise<{value:T, error:Error}[]> {
+  let results: {value:T, error:Error}[] = [];
   for (var i = 0; i < promises.length; i++) {
     try {
-      result.push(await promises[i]);
+      results.push({value: await promises[i], error:null});
     } catch (e) {
-      errors.push(e);
+      results.push({value: null, error: e});
     }
   }
 
-  if (errors.length > 0) {
-    throw errors;
-  }
-
-  return result;
+  return results;
 }
 
 export type IndexedData = Object;

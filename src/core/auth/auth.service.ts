@@ -7,45 +7,50 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Repository, Timestamp } from 'typeorm';
-import { Session, SessionToken, User, UserToken } from 'database';
-import { AuthPayload, AuthOptions } from './auth.class';
+import { Session, SessionToken, User, UserToken, SessionModel, UserModel, UserPassword, UserPasswordModel, UserPasswordToken } from 'database';
 import { ConfigService } from '../service/config.service';
 import { UserService } from '../entity.service/user.service';
 import { InjectRepo } from '../core/core.database.provider';
-import { CryptoService } from './crypto.service';
+
+
+export class SessionJwtPayload {
+  userId: number;
+  sessionId: number;
+}
+
+export class SessionJwtOptions {
+  expiresIn?: number;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly userService: UserService,
-    private readonly cryptoService: CryptoService,
     @InjectRepo(SessionToken)
     private readonly sessionRepository: Repository<Session>,
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
-  ) {}
+    @InjectRepo(UserPasswordToken) private readonly userPasswordRespository:  Repository<UserPassword>,
+  ) { }
 
   /**
    * create a new token/session key for the user and store the session key id in the
    * database as a record of the user's activity
    * @param userId
    */
-  async createUserToken(userId: number) {
-    //Save the new session in the database against the user
-    let session = this.sessionRepository.create();
-    session.user = new User();
-    session.user.id = userId;
-    session.lastUsed = new Date();
-    await this.sessionRepository.save(session);
+  async createUserSession(userId: number) {
+    let sessionModel: SessionModel = SessionModel.createNew(this.sessionRepository);
+    sessionModel.setUserId(userId, this.userRepository);
+    let sessionId = await sessionModel.save();
+
+
 
     //Get the expiry time of the token
-    let payload: AuthPayload = { userId: userId, sessionId: session.id };
-    let jwtoptions: AuthOptions = {};
+    let payload: SessionJwtPayload = { userId: userId, sessionId: sessionId };
+    let jwtoptions: SessionJwtOptions = {};
     let token = jwt.sign(payload, this.configService.auth.key, jwtoptions);
 
-    return {
-      access_token: token,
-    };
+    return token;
   }
 
   /**
@@ -64,40 +69,31 @@ export class AuthService {
    * @param username
    * @param password
    */
-  async authenticatedUserCred(
+  async validatePassword(
     username: string,
     password: string,
-  ): Promise<User> {
-    let user: User = null;
+  ): Promise<void> {
+    let userModel: UserModel;
     try {
-      //TODO: Consider whether this could be done more succintly with just
-      // userPasswordRepository
-      user = await this.userRepository
-        .createQueryBuilder('user')
-        .select('user.id')
-        .innerJoinAndSelect('user.userPassword', 'userPassword')
-        .where('user.username = :username', {
-          username: username,
-        })
-        .getOne();
-      //Why does this query work? Because innerJoinAndSelect 'adds' the selection to the previous selection,
-      //the equivalent of innerJoinAndSelect is innerJoin().addSelect()
-      if (!user) {
-        throw new NotFoundException('user does not exist');
-      }
+      userModel = await UserModel.forUsername(username, this.userRepository);
     } catch (e) {
       throw new NotFoundException('user does not exist');
     }
 
-    let result = await this.cryptoService.validatePassword(
-      user.userPassword.hash,
-      password,
-    );
-    if (!result) {
-      throw new UnauthorizedException('the password provided is invalid');
+    let userId = userModel.getId();
+
+    let userPasswordModel: UserPasswordModel;
+    try {
+      userPasswordModel = await UserPasswordModel.forUserId(userId, this.userPasswordRespository, this.configService.auth.saltRounds);
+    } catch (e) {
+      throw new ForbiddenException(`user's password is not set`);
     }
 
-    return user;
+    try {
+      await userPasswordModel.validatePassword(password);
+    } catch (e) {
+      throw new UnauthorizedException(`the user's password is incorrect`);
+    }
   }
 
   /**
@@ -106,45 +102,23 @@ export class AuthService {
    * every exception is translated to an authentication error
    * @param authPayload
    */
-  async authenticateUserToken(authPayload: AuthPayload): Promise<User> {
-    //Lookup the session object which gets us details about
-    //the user's session
-    let session = await this.sessionRepository
-      .createQueryBuilder('session')
-      .where('session.id = :sessionId AND session.user_id = :userId', {
-        sessionId: authPayload.sessionId,
-        userId: authPayload.userId,
-      })
-      .getOne();
-
-    if (!session) {
-      throw new ForbiddenException('the user session did not exist');
+  async validateSession(sessionPayLoad: SessionJwtPayload) {
+    let sessionModel: SessionModel;
+    try {
+      sessionModel = await SessionModel.forSessionId(sessionPayLoad.sessionId, this.sessionRepository);
+    } catch (e) {
+      throw new ForbiddenException('the user session does not exist');
     }
-
-    //Has this session expired?
-    let expired =
-      session.lastUsed.getTime() + this.configService.auth.expiry * 1000 <
-      new Date().getTime();
-    if (expired) {
+    if (sessionModel.getUserId() !== sessionPayLoad.userId) {
+      throw new ForbiddenException('the session id does not match the user id of the jwt token');
+    }
+    if (sessionModel.isExpired(this.configService.auth.expiry)) {
       throw new ForbiddenException('the session has expired');
     }
 
-    //--------------------------
-    //The session is valid..
-    //--------------------------
+    sessionModel.updateLastUsed();
 
-    //This causes the updatedAt key to be increased
-    //Calling the save method won't work even if you force the timestamp to update
-    //This is because typeORM detects that you have not changed any content and will not updated the updatedAt timestamp
-    session.lastUsed = new Date();
-    await this.sessionRepository.save(session);
-
-    let userToReturn = await this.userService.findById(
-      authPayload.userId,
-      query => this.userService.applyStemsRole(query),
-    );
-    userToReturn.currentSession = session;
-
-    return userToReturn;
+    await sessionModel.save();
   }
 }
+

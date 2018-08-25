@@ -94,11 +94,24 @@ export class PostInputUser {
 }
 
 //Output
+export class PostOutputResult {
+  id:number;
+  username:string;
+  success:boolean;
+  error?:string;
+}
+
 export class PostOutput {
-  result: number[];
+  result: PostOutputResult[];
 }
 
 //-----------Patch----------\\
+
+export class PatchOutputResult {
+  id:number;
+  success:boolean;
+  error?:string;
+}
 
 //Input
 export class PatchInput {
@@ -140,7 +153,7 @@ export class PatchInputUser {
 
 //Output
 export class PatchOutput {
-  result: number[];
+  result: PatchOutputResult[];
 }
 
 //-----------Delete----------\\
@@ -158,6 +171,12 @@ export class DeleteInputUser {
 }
 
 //Output
+export class DeleteOutputResult {
+  id:number;
+  success:boolean;
+  error?:string;
+}
+
 export class DeleteOutput {
-  result: number[];
+  result: DeleteOutputResult[];
 }

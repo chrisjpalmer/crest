@@ -25,6 +25,12 @@ export * from './app/genre.entity';
 export * from './app/book.entity';
 /// < export entity >
 
+export * from './core/generic.model';
+export * from './core/user.model';
+export * from './core/user.password.model';
+export * from './core/session.model';
+/// < export model >
+
 /**
  * Whenever you create a new database entity, ensure that you follow the pattern below.
  * This allows the new entity to be exported correctly into the parent module which uses this

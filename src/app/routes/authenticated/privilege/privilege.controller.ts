@@ -9,7 +9,7 @@ import {
   InjectRepo,
   PrivilegeHas,
   CoreRequest,
-  promiseArray,
+  awaitPromiseArray,
   PatchRelationApply,
   SyncListOutput,
   SyncDataOutput,
@@ -204,7 +204,7 @@ export class PrivilegeController {
     let toFind = input.entries.map(v => <Privilege>{ id: v.id });
 
     //2) For each entry, find the row it pertains to.
-    let toApply: Privilege[] = await promiseArray(
+    let toApply: Privilege[] = await awaitPromiseArray(
       toFind.map(v => {
         return this.privilegeService.findById(v.id, query => {
           query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
@@ -261,7 +261,7 @@ export class PrivilegeController {
     let toFind = input.entries.map(v => <Privilege>{ id: v.id });
 
     //2) For each entry, find the row it pertains to.
-    let toDelete: Privilege[] = await promiseArray(
+    let toDelete: Privilege[] = await awaitPromiseArray(
       toFind.map(v => {
         return this.privilegeService.findById(v.id, query => {
           query = this.privilegeService.applyStemsRoles(query); //Comment out at your leisure.
