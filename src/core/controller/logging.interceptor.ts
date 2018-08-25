@@ -4,21 +4,33 @@ import {
   Injectable,
   HttpException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { shareReplay } from 'rxjs/operators'
-import { ConfigService } from '../service/config.service';
+import { Observable, of } from 'rxjs';
+import { shareReplay, map, catchError } from 'rxjs/operators'
 import { CoreRequest } from '../core/core.util';
-import { RequestLog, RequestLogToken } from 'database';
+import { RequestLog, RequestLogToken, UserToken, User } from 'database';
 import { Repository } from 'typeorm';
 import { InjectRepo } from '../core/core.database.provider';
+import { RequestLogModel } from 'database/core/request.log.model';
+
+export class RequestDetails {
+  uri: string;
+  ipAddress: string;
+  userId?: number;
+  sessionId?: number;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+  error?:string;
+}
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(
-    private configService: ConfigService,
     @InjectRepo(RequestLogToken)
     private requestLogRepository: Repository<RequestLog>,
-  ) {}
+    @InjectRepo(UserToken)
+    private userRepository: Repository<User>,
+  ) { }
 
   /**
    * intercept is called by Nest. Nest passes the request object, exection context and an observable.
@@ -36,75 +48,100 @@ export class LoggingInterceptor implements NestInterceptor {
     context: ExecutionContext,
     stream$: Observable<any>,
   ): Promise<Observable<any>> {
-    const request = context.switchToHttp().getRequest();
-    /**
-     * Get requestLog object
-     * Registers a log in the database
-     */
-    let requestLog = await this.preLog(request, context);
+    const request: CoreRequest = context.switchToHttp().getRequest();
 
+    let hasUser = !!request.user;
+
+    //Acquire the pre request data
+    let requestLogModel = RequestLogModel.createNew(this.requestLogRepository);
+    let requestDetails: RequestDetails = {
+      uri: request['originalUrl'],
+      ipAddress: request.connection.remoteAddress,
+      startTime: new Date(),
+      endTime: null,
+      duration: null,
+      error:null,
+    };
+    if (hasUser) {
+      requestDetails.userId = request.user.userData.id,
+      requestDetails.sessionId = request.user.sessionId
+    }
+
+    //Commit the pre request data to the database
+    if (hasUser) {
+      requestLogModel.setPreRequestWithUser(requestDetails.startTime, requestDetails.ipAddress, requestDetails.uri, requestDetails.userId, this.userRepository);
+    } else {
+      requestLogModel.setPreRequest(requestDetails.startTime, requestDetails.ipAddress, requestDetails.uri);
+    }
+    await requestLogModel.save();
+
+    //Log it to the output
+    await this.logPreRequestDetails(requestDetails);
+
+
+    /**
+     * Post request
+     */
     stream$ = stream$.pipe(shareReplay());
+    stream$
+    .pipe(
+      map(() => {
+        return { error: null };
+      }),
+      catchError((error) => {
+        return of({ error })
+      })
+    )
+    .subscribe(
+      async (state) => {
+        requestDetails.endTime = new Date();
+        requestDetails.duration = requestDetails.endTime.getTime() - requestDetails.startTime.getTime();
 
-    /**
-     * Perform logging
-     */
-    stream$.subscribe(
-      async () => {
-        await this.postLog(requestLog);
+        //Did we encounter an error
+        if (!!state.error) {
+          if (state.error instanceof HttpException) {
+            requestDetails.error = JSON.stringify(state.error.getResponse());
+          } else {
+            requestDetails.error = state.error.toString();
+          }
+        }
+
+        //Commit post data request to the database
+        if (!!requestDetails.error) {
+          requestLogModel.setPostRequestException(requestDetails.endTime, requestDetails.duration, requestDetails.error);
+        } else {
+          requestLogModel.setPostRequest(requestDetails.endTime, requestDetails.duration);
+        }
+
+        await requestLogModel.save();
+
+        //Log it to the output
+        await this.logPostRequestDetails(requestDetails);
       },
-      async err => {
-        await this.postLog(requestLog, err);
-      },
-    );
+  );
 
     return stream$;
   }
 
-  async preLog(
-    request: CoreRequest,
-    executionContext: ExecutionContext,
-  ): Promise<RequestLog> {
-    let requestLog = new RequestLog();
-    requestLog.startTime = new Date();
-    requestLog.uri = request['originalUrl'];
-    requestLog.ipAddress = request.connection.remoteAddress;
-    if (!!request.user) {
-      requestLog.user = request.user;
-    }
+  async logPreRequestDetails(requestDetails: RequestDetails) {
 
-    //SAVE AND LOG
-    await this.requestLogRepository.save(requestLog);
+    //LOG
     console.log(
-      `REQUEST ${requestLog.ipAddress} => START: ${
-        requestLog.uri
-      } - TIME: ${requestLog.startTime.toISOString()}`,
+      `REQUEST ${requestDetails.ipAddress} => START: ${
+      requestDetails.uri
+      } - TIME: ${requestDetails.startTime.toISOString()}`,
     );
-
-    return requestLog;
   }
 
-  async postLog(requestLog: RequestLog, exception?: any) {
-    requestLog.endTime = new Date();
-    requestLog.duration =
-      requestLog.endTime.getTime() - requestLog.startTime.getTime();
+  async logPostRequestDetails(requestDetails: RequestDetails) {
 
-      let errStr = null;
-      if(!!exception) {
-        if(exception instanceof HttpException) {
-          errStr = JSON.stringify(exception.getResponse());
-        } else {
-          errStr = exception.toString();
-        }
-      }
-
-    //SAVE AND LOG
-    await this.requestLogRepository.save(requestLog);
+    //LOG
     console.log(
-      `REQUEST ${requestLog.ipAddress} => END: ${
-        requestLog.uri
-      } - TIME: ${requestLog.endTime.toISOString()} - DURATION: ${
-        requestLog.duration
-      }ms` + (errStr ? ` - ERROR: ${errStr}` : ''),
+      `REQUEST ${requestDetails.ipAddress} => END: ${
+      requestDetails.uri
+      } - TIME: ${requestDetails.endTime.toISOString()} - DURATION: ${
+      requestDetails.duration
+      }ms` + (requestDetails.error ? ` - ERROR: ${requestDetails.error}` : ''),
     );
   }
 }

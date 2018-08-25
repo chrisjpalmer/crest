@@ -47,6 +47,9 @@ export class RequestLog extends GenericEntity {
   @Column({ default: null })
   duration: number; //milliseconds
 
+  @Column({ length:200, default: null })
+  error:string;
+
   //-------------------------------------
   //-------------Relationships-----------
   //-------------------------------------
