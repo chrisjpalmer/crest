@@ -12,7 +12,6 @@ import {
   MakeDatabaseProvider,
   MakeRepositoryProviders,
 } from './core/core.database.provider';
-import { CryptoService } from './auth/crypto.service';
 import { LoggingInterceptor } from './controller/logging.interceptor';
 import { HttpExceptionFilter } from './controller/exception.filter';
 import { FactoryProvider } from '@nestjs/common/interfaces';
@@ -24,14 +23,13 @@ import { APP_FILTER } from '@nestjs/core';
     ConfigService,
 
     //Entity Services
+    AuthService,
     UserService,
     RoleService,
     PrivilegeService,
 
     //Auth Middleware
-    CryptoService,
     AuthStrategy,
-    AuthService,
 
     //Guards
     PrivilegeGuard,
@@ -51,13 +49,10 @@ import { APP_FILTER } from '@nestjs/core';
     ConfigService,
 
     //Entity Services
+    AuthService,
     UserService,
     RoleService,
     PrivilegeService,
-
-    //Auth Middleware
-    CryptoService,
-    AuthService,
 
     //Guards
     PrivilegeGuard,

@@ -4,8 +4,6 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { Injectable } from '@nestjs/common';
 import { AuthService, SessionJwtPayload } from './auth.service';
 import { UserService } from '../entity.service/user.service';
-import { PrivilegeService } from '../entity.service/privilege.service';
-import { RoleService } from '../entity.service/role.service';
 import { CoreRequest } from '../core/core.util';
 import { ConfigService } from '../service/config.service';
 import { AuthUserServiceOutput } from './auth.class';
@@ -15,6 +13,7 @@ export class AuthStrategy extends Strategy {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {
     super(
       {

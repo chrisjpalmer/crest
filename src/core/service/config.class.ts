@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class Database {
+export class Database {
   @IsString()
   @IsNotEmpty()
   username: string;
@@ -27,7 +27,7 @@ class Database {
   schema: string;
 }
 
-class Auth {
+export class Auth {
   @IsString()
   @IsNotEmpty()
   keyPath: string;
@@ -39,7 +39,7 @@ class Auth {
   @IsNumber() saltRounds: number;
 }
 
-class App {
+export class App {
   @IsBoolean()
   @IsNotEmpty()
   debug: boolean;

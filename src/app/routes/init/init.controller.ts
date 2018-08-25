@@ -4,7 +4,7 @@
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
 import { Get, Controller, Param, Post } from '@nestjs/common';
-import { AuthController, AuthService, InjectRepo, UserService } from 'core';
+import { AuthController, AuthService, InjectRepo, UserService, UserServiceInputFull } from 'core';
 import { Repository } from 'typeorm';
 import {
   User,
@@ -22,10 +22,10 @@ import {
 //-----------POST----------\\
 
 //Input
-class PostInput {}
+export class PostInput {}
 
 //Output
-class PostOutput {
+export class PostOutput {
   status: string;
 }
 
@@ -75,12 +75,16 @@ export class InitController {
       await this.roleRepository.save(rootRole);
     }
 
-    let rootUser = new User();
-    rootUser.username = 'root@root.com';
-    rootUser.firstName = 'root';
-    rootUser.lastName = 'root';
-    rootUser.role = rootRole;
-    await this.userService.create(rootUser, 'root');
+    let rootUser:UserServiceInputFull = {
+      username: 'root@root.com',
+      firstName: 'root',
+      lastName: 'root',
+      emailAddress: 'root@root.com',
+      password: 'root',
+      roleId: rootRole.id,
+    };
+    
+    await this.userService.createUserFull(rootUser);
 
     return {
       status: "server was initialized. user 'root@root.com' was created",

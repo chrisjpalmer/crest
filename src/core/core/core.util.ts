@@ -1,10 +1,10 @@
 /** BOILERPLATE - don't touch unless you are brave */
 
 import { IncomingMessage } from 'http';
-import { UserServiceOutput } from '../entity.service/service.output';
+import { AuthUserServiceOutput } from '../auth';
 
 export class CoreRequest extends IncomingMessage {
-  user: UserServiceOutput;
+  user: AuthUserServiceOutput;
 }
 
 /**

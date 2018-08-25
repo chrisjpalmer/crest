@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { CoreRequest } from '../core/core.util';
 import { Reflector } from '@nestjs/core';
-import { Role, Privilege } from 'database';
+import { RoleServiceOutput, PrivilegeServiceOutput } from '../entity.service';
 
 export const PrivilegeHas = (...privileges: string[]) =>
   ReflectMetadata('privileges', privileges);
@@ -26,9 +26,9 @@ export class PrivilegeGuard implements CanActivate {
 
     //Get the user data out of the request and get the user privileges.
     let user = request.user;
-    let userRole: Role = null;
-    let userPrivileges: Privilege[] = [];
-    if (user) userRole = user.role;
+    let userRole: RoleServiceOutput = null;
+    let userPrivileges: PrivilegeServiceOutput[] = [];
+    if (user) userRole = user.userData.role;
     if (userRole) userPrivileges = userRole.privileges;
 
     //Ask whether some privileges are not satisfied.
