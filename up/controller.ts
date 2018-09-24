@@ -1,18 +1,20 @@
 import { buildGeneric, genericReplace } from "./util/generic.builder";
 import { AddToModule } from "./module";
-import { Name, Route, writeFilePromise, RunFormatterDir, RunFormatterFile, readFilePromise, replaceByObject } from "./util/util";
+import { Name, Route, writeFilePromise, RunFormatterDir, RunFormatterFile, readFilePromise, replaceByObject, makeDirectoryPromise, makeDirectoryRecursive } from "./util/util";
 import { TemplateReferenceHandler, addTemplateReference } from "./util/template.reference";
 
 export async function buildController(name: Name, route: Route) {
     
-    let destination = 'src/app/routes/' + route.full();
+    let destination = 'src/app/routes/' + route.long();
 
     let controller = await buildGeneric('up/template/controller/controller.template.ts', name, route, destination);
     let cls = await buildGeneric('up/template/controller/class.template.ts', name, route, destination);
 
+    makeDirectoryRecursive(destination);
 
     await writeFilePromise(`${destination}/${name.dot()}.class.ts`, cls);
     await writeFilePromise(`${destination}/${name.dot()}.controller.ts`, controller);
+
 
     AddToModule(name, route, destination);
     RunFormatterDir(destination);
@@ -65,13 +67,17 @@ export class ControllerDecoratorTH extends TemplateReferenceHandler<ControllerDe
             );
         }
 
-        output = replaceByObject(output, {
-            '${route}': this.route.short()
-        });
-
+        let shortroute = this.route.short();
+        let longroute = this.route.long();
         if(!!this.params.suffix) {
-            output + this.params.suffix;
+            shortroute += this.params.suffix;
+            longroute += this.params.suffix;
         }
+
+        output = replaceByObject(output, {
+            '${shortroute}': shortroute,
+            '${longroute}': longroute
+        });
 
         return output;
     }

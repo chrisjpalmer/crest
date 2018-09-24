@@ -13,6 +13,7 @@ import {
   IsDate
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { GenericSyncInput } from 'core';
 
 
 //------------------------------------------------

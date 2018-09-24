@@ -2,6 +2,7 @@ import {
   replaceByObject,
   Name,
   Route,
+  readFilePromise,
 } from './util';
 import { handleTemplateReferences } from './template.reference';
 
@@ -13,7 +14,7 @@ export async function buildGeneric(
   additionalKeys?:any
 ): Promise<string> {
 
-  let output = templateFile;
+  let output = await readFilePromise(templateFile);
 
   output = genericReplace(output, name, additionalKeys);
 

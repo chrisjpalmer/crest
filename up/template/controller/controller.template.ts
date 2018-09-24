@@ -3,11 +3,7 @@
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
-import {
-  AuthController,
-  PrivilegeHas,
-  CoreRequest
-} from 'core';
+import { AuthController, PrivilegeHas, CoreRequest, SyncController, ConfigService, SyncListOutput, SyncDataOutput, SyncHash } from 'core';
 import { Get, Body, Post, Patch, Request, Delete, Controller, Query } from '@nestjs/common';
 import {
   SyncInput,
@@ -26,7 +22,6 @@ import { transformAndValidate } from "class-transformer-validator";
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-/* http://localhost:3000/${controllerPath}/sync */
 ///ref:{"mode":"controller.decorator", "params": { "suffix":"/sync" } }
 export class ${upper}SyncController extends SyncController<SyncEntryOutput> {
   constructor(
@@ -60,6 +55,7 @@ export class ${upper}SyncController extends SyncController<SyncEntryOutput> {
 
     //Convert the result set to hashes and return the hashes
     let result = rows.map(v => new SyncHash(v.id, v.updatedAt));
+    return result;
   }
 
   /**
@@ -67,7 +63,7 @@ export class ${upper}SyncController extends SyncController<SyncEntryOutput> {
    * @param ids the ids of objects which the client needs to download
    */
   async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncEntryOutput>[]> {
-    let output: SyncEntryOutput[] = ids.map(id => {});
+    let output: SyncEntryOutput[] = ids.map(id => { return {} });
     return output;
   }
 }
@@ -75,8 +71,7 @@ export class ${upper}SyncController extends SyncController<SyncEntryOutput> {
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-/* http://localhost:3000/${controllerPath} */
-///ref:{"mode":"controller.decorator", "params" : { "suffix":"" }
+///ref:{"mode":"controller.decorator", "params" : { "suffix":"" } }
 export class ${upper}Controller {
   constructor(
   
@@ -88,7 +83,7 @@ export class ${upper}Controller {
    * @param req the expressjs request object
    */
   @Get()
-  ///ref:{"mode":"controller.privilege", "suffix":".get"}
+  ///ref:{"mode":"controller.privilege", "params" : { "suffix":".get" } }
   async Get(
     @Query('input') _input: string,
     @Request() req: CoreRequest,

@@ -1,4 +1,4 @@
-import { GenericModel, GenericModelActions, RelationPingList } from "./generic.model";
+import { GenericModel, GenericModelActions, RelationPingList } from "../core/generic.model";
 import { ${upper} } from "./${dot}.entity";
 import { Repository } from "typeorm";
 
@@ -14,8 +14,8 @@ export class ${upper}Model extends GenericModel<${upper}> implements GenericMode
      */
 
     static createNew(${lower}Repository: Repository<${upper}>) {
-        let requestLog: ${upper} = ${lower}Repository.create();
-        return new ${upper}Model(requestLog, ${lower}Repository);
+        let ${lower}: ${upper} = ${lower}Repository.create();
+        return new ${upper}Model(${lower}, ${lower}Repository);
     }
 
     static async for${upper}Id(${lower}Id: number, ${lower}Repository: Repository<${upper}>) {

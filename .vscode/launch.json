@@ -35,27 +35,10 @@
                 "-r",
                 "tsconfig-paths/register",
                 "up/main.ts",
-                "transform",
-                "--entity=TeamMember"
-            ],
-            "cwd": "${workspaceFolder}",
-            "protocol": "inspector"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug Up 2",
-            "runtimeArgs": [
-                "--no-lazy"
-            ],
-            "args": [
-                "-r",
-                "ts-node/register",
-                "-r",
-                "tsconfig-paths/register",
-                "up/main.ts",
                 "create",
-                "--api=UserIdentity"
+                "controller",
+                "HappyTree",
+                "--route=@/happy/tree"
             ],
             "cwd": "${workspaceFolder}",
             "protocol": "inspector"

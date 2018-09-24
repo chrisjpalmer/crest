@@ -9,8 +9,8 @@ export async function AddToModule(
   let project = new Project();
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
   moduleFile.addImportDeclaration({
-    namedImports: [`${name.upper()}Controller`],
-    moduleSpecifier: `${destination}/${name.dot()}.controller`,
+    namedImports: [`${name.upper()}Controller`, `${name.upper()}SyncController`],
+    moduleSpecifier: `./routes/${route.long()}/${name.dot()}.controller`,
   });
 
   let appModuleClass = moduleFile.getClassOrThrow('AppModule');
@@ -40,9 +40,9 @@ export function addToControllersArray(
   //Form the new statement
   let newStatement =
 `${topArrayExpression}
-  // /${route.full()}
-${name.upper}Controller,
-${name.upper}SyncController
+\t\t// /${route.long()}
+\t\t${name.upper()}Controller,
+\t\t${name.upper()}SyncController,
 ${bottomArrayExpression}`;
   controllersConfig.replaceWithText(newStatement);
 }

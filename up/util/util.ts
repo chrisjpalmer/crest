@@ -18,8 +18,12 @@ export class Name {
     return toLowerTitleCase(this.name);
   }
 
-  dot() {
+  snake() {
     return snakeCase(this.name);
+  }
+
+  dot() {
+    return dotCase(this.name);
   }
 }
 
@@ -42,7 +46,7 @@ export class Route {
   /**
    * May be prefixed by authenticated/
    */
-  full() {
+  long() {
       if(this.authenticated) {
           return `authenticated/${this.value}`
       }
@@ -123,7 +127,7 @@ export function makeDirectoryPromise(directoryLocation: string): Promise<void> {
   return makeDirectoryPromise;
 }
 
-export function mkdirRecursive(directoryLocation) {
+export function makeDirectoryRecursive(directoryLocation) {
   shell.mkdir('-p', directoryLocation);
 }
 
