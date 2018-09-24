@@ -1,8 +1,8 @@
 import { GenericEntity } from "./generic.entity";
 
 export interface GenericModelActions {
-    save() : Promise<number>;
-    delete(): Promise<void>;
+    save(...args:any[]) : Promise<number>;
+    delete(...args:any[]): Promise<void>;
 }
 
 export class GenericModel<T extends GenericEntity> {
