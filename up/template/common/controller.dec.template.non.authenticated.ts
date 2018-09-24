@@ -1,1 +1,1 @@
-@Controller('${controllerPath}')
+@Controller('${route}')

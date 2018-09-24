@@ -1,80 +1,63 @@
-import { UpMode, Params } from './util/util.class';
-import { transformEntity } from './entity.transformer/main';
-import { createEntity } from './entity.builder/main';
-
 import {Command, flags} from '@oclif/command'
 import { replaceAll } from './util/string.util';
-import { createController } from './basic.controller/main';
+import { Route, Name } from './util/util';
+import { buildController } from './controller';
+import { buildEntity } from './entity';
+import { buildModel } from './model';
 
 class Up extends Command {
   static flags = {
-    destination: flags.string({
-      required:false
-    }),
-    // run with --dir= or -d=
-    entity: flags.string({
-      required:false
-    }),
-    api: flags.string({
-      required:false
+    route: flags.string({
+      required:false,
+      description: 'applies only to controller create mode... for authenticated routes "@/my/api" OR "authenticated/my/api"... for unauthenticated use "my/api"'
     }),
   }
 
   static args = [
-    {name: 'mode'}
+    {name: 'mode', options:['create']},
+    {name: 'type', options:['entity', 'model', 'controller']},
+    {name: 'name', description: 'the name of the type of code block you are going to create'}
   ]
+
+  nameParse(name:any) {
+      if(!name) {
+        throw 'you must supply the name argument to this command'
+      }
+
+      if(name[0].toUpperCase() !== name[0]) {
+        throw 'when specifying a name, it should be specified in pascal case: ie. "Book", "BookCategory"';
+      }
+
+      if(name.indexOf('.') !== -1) {
+        throw 'the name argument cannot contain \'.\' characters';
+      }
+  }
 
   async run() {
     const {flags, args} = this.parse(Up);
 
-    //Global parsing
-    if(flags.entity) {
-      if(flags.entity[0].toUpperCase() !== flags.entity[0]) {
-        throw 'when specifying an entity, it should be specified in pascal case: ie. "Book", "BookCategory"';
-      }
-    }
 
-    if(flags.api) {
-      if(flags.api[0].toUpperCase() !== flags.api[0]) {
-        throw 'when specifying an api, it should be specified in pascal case: ie. "Book", "BookCategory"';
-      }
-    }
+    //Check for the destination
+    this.nameParse(args.name);
+    let name:Name = new Name(args.name);
 
-    if(flags.destination) {
-      //@ is a placeholder for authenticated
-      flags.destination = replaceAll(flags.destination, '@', 'authenticated');
-    }
+    switch(args.type) {
+      case 'controller':
+        if(!flags.route) {
+          throw 'when specifying the controller option, you must supply the --destination flag'
+        }
+        let route = new Route(flags.route);        
+        await buildController(name, route);
 
-    switch(args.mode) {
-      case 'create':
-        if(flags.entity && flags.api) {
-          throw '--api flag is not supported with --entity flag';
-        }
-        if(!flags.entity && !flags.api) {
-          throw 'expected --api OR --entity flag';
-        }
-        if(flags.api && !flags.destination) {
-          throw '--destination flag expected when in api mode';
-        }
-
-        if(flags.api) {
-          //Create a blank api
-          await createController(flags.api, flags.destination);
-        } else if(flags.entity) {
-          //create a new entity
-          await createEntity(flags.entity);
-        }
         break;
-      case 'transform':
-        if(flags.api) {
-          throw '--api flag is not valid in transform mode';
-        }
-        await transformEntity(flags.entity, flags.destination);
-        break;
+
+      case 'entity':
+        await buildEntity(name);
+      case 'model':
+        await buildModel(name);
       default:
-        throw 'requires mode of "create" OR "transform"';
+        break;
     }
-  }
 }
 
 Up.run(null, null)

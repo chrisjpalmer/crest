@@ -1,1 +1,1 @@
-@AuthController('${controllerPath}')
+@AuthController('${route}')

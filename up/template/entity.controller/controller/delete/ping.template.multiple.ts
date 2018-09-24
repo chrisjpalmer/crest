@@ -1,2 +1,0 @@
-let ${childEntity.fieldName}Relations = toDelete.map(v => v.${childEntity.fieldName});
-await this.${entity.lower}Service.pingStemsDelete${childEntity.fieldNameUpper}(${childEntity.fieldName}Relations); //Comment out at your leisure.

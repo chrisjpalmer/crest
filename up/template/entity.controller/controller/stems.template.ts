@@ -1,1 +1,0 @@
-query = this.${entity.lower}Service.applyStems${childEntity.fieldNameUpper}(query); //Comment out at your leisure.

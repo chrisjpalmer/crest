@@ -1,2 +1,0 @@
-let ${childEntity.fieldName}Relations = input.entries.map(v => v.${childEntity.fieldName});
-await this.${entity.lower}Service.pingStemsPost${childEntity.fieldNameUpper}(${childEntity.fieldName}Relations); //Comment out at your leisure.

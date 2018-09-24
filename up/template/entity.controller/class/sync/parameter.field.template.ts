@@ -1,1 +1,0 @@
-${childField.fieldName}?: ${childField.fieldType};

@@ -26,10 +26,10 @@ import {
    */
   
   /**
-   * ${entity.upper} table. If you added without 'up', make sure this is added to index.ts
+   * ${upper} table. If you added without 'up', make sure this is added to index.ts
    */
   @Entity()
-  export class ${entity.upper} extends GenericEntity {
+  export class ${upper} extends GenericEntity {
     @Index({ unique: true })
     @Column({ length: 200 })
     name: string;

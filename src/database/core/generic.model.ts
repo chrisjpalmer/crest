@@ -54,3 +54,23 @@ export class GenericModel<T extends GenericEntity> {
         return false;
     }
 }
+
+export class RelationPingList {
+    list = new Map<number, boolean>();
+
+    add(id:number | null | undefined) {
+        if(!!id) {
+            this.list.set(id, true);
+        }
+    }
+
+    getIds() {
+        let ids:number[] = [];
+        this.list.forEach((v, k) => ids.push(k));
+        return ids;
+    }
+
+    hasIds() {
+        return this.list.size > 0;
+    }
+}
