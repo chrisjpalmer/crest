@@ -1,31 +1,28 @@
 # Crest
 ## Getting Started
-**Crest = CRUD + REST + [Nest](https://nestjs.com)**
+**Crest = Classy REST + [Nest](https://nestjs.com)**
 
-Build your first web server in 20 minutes!
+## RESTful APIs done right
+Making RESTful APIs is essential for enterprise software. Even more essential, when considering scalablity, is the properness of the underlying architecture. We are through with the days of scrolling through badly named code files just to modify one part of the application! Why not have Dont-Repeat-Yourself, Single-Rule-Principle code with well defined multi-layer architecture?
 
-[![Build a web server in 20 minutes](https://img.youtube.com/vi/iLbd17jzQjE/0.jpg)](https://www.youtube.com/watch?v=iLbd17jzQjE)
+Crest will help you adhere to these good practices. Under the hood Crest leverages NestJS and includes a thin boilerplate for authentication, privileges & roles and users. Crest ships with its code generation tool `up` which generates hackable templates so that you can build the components of your API. Whats more? It even has a brother project called [crest-client](https://github.com/chrisjpalmer/crest-client), which auto generates a client library for interfacing with your API and supports direct integration with AngularJS.
 
-Tutorial Page - https://github.com/chrisjpalmer/book-shelf-app-starter
-
-## Oh CRUD!
-In web applications, CRUD is the implementation of **C**reate, **R**ead, **U**pdate and **D**elete operations to manipulate database tables / entities. Applications these days scale fast and CRUD will require you to repeat a lot of code... CRUD!
-
-A solution may be to create a *general CRUD API* for all tables in your application BUT doing so creates unhealthy abstraction from the base framework. For anything requiring custom logic, extra features have to built into your generic layer.
-
-A hybrid approach is required to balance code generalization and duplication. Crest is a starter project which will help you do this. Crest provides ***"up"*** a dev tool which transforms your database definitions into standard CRUD classes which you can then hack. That way you can always work with the frameworks you love.
-
-Crest creates standard CRUD APIs with the following features:
-* Syncing & Pagination _(for the 'R' in CRUD)_
+Crest has some features you would expect:
 * Roles & Privileges Auth
 * JWT Auth
-* Input Validation
+* Input Validation via class-validator
 * Logging
-* Config File
-* [API Client Generator](https://github.com/chrisjpalmer/crest-client)
-* Dockerization
-* Debug Support (VSCode at the moment)
-* Tests (coming soon)
+* Configuration file *read on boot*
+* Debug Support through VSCode
+
+Crest also has some experimental features which are open for community critique:
+* Crest Sync
+
+Crest encourages you to write your APIs with the 4 layer pie:
+* Entities - the dumb structs which hold your data
+* Models - classes which map one to one ontop of your entities, providing a thin layer of business logic
+* Services - service classes which handle the models layer and provide additional business logic
+* Controllers - the bridge between the transport layer (HTTP) and your services, applying roles authentication and serialization of the API's input and output.
 
 # Crest Commands
 
@@ -34,23 +31,31 @@ Crest creates standard CRUD APIs with the following features:
 2. Node 8.9 or Higher
 3. Python 2.7 - required to install bcrypt node dependency
 
-### Init
+### Gettting Started
 ```bash
 npm install
 npm run init
 #set config/config.json with your database settings
 ```
 
-### Create a table
+### Create an entity
 ```
-npm run up create Book
-npm run up create Genre
+npm run up -- create entity Book
 ```
 
-### Build an API
-```bash
-npm run up Book
-npm run up Genre
+### Create an model
+```
+npm run up -- create model Book
+```
+
+### Create an service
+```
+npm run up -- create service Book
+```
+
+### Create an controller
+```
+npm run up -- create controller Book --route=@/book
 ```
 
 ### Run
