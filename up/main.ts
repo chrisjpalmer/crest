@@ -3,6 +3,7 @@ import { Route, Name } from './util/util';
 import { buildController } from './controller';
 import { buildEntity } from './entity';
 import { buildModel } from './model';
+import { buildService } from './service';
 
 class Up extends Command {
   static flags = {
@@ -14,7 +15,7 @@ class Up extends Command {
 
   static args = [
     { name: 'mode', options: ['create'] },
-    { name: 'type', options: ['entity', 'model', 'controller'] },
+    { name: 'type', options: ['entity', 'model', 'service', 'controller'] },
     { name: 'name', description: 'the name of the type of code block you are going to create' }
   ]
 
@@ -48,6 +49,10 @@ class Up extends Command {
         let route = new Route(flags.route);
         await buildController(name, route);
 
+        break;
+
+      case 'service':
+        await buildService(name);
         break;
 
       case 'entity':

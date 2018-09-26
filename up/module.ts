@@ -1,10 +1,9 @@
 import Project, { ObjectLiteralExpression } from 'ts-simple-ast';
 import { Name, Route } from './util/util';
 
-export async function AddToModule(
+export async function AddControllerToModule(
   name:Name,
   route:Route,
-  destination:string,
 ) {
   let project = new Project();
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
@@ -45,4 +44,50 @@ export function addToControllersArray(
 \t\t${name.upper()}SyncController,
 ${bottomArrayExpression}`;
   controllersConfig.replaceWithText(newStatement);
+}
+
+export async function AddServiceToModule(
+  name:Name,
+) {
+  let project = new Project();
+  let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
+  moduleFile.addImportDeclaration({
+    namedImports: [`${name.upper()}Service`],
+    moduleSpecifier: `./services/${name.dot()}.service`,
+  });
+
+  let appModuleClass = moduleFile.getClassOrThrow('AppModule');
+  let appModuleDecorator = appModuleClass.getDecoratorOrThrow('Module');
+  let args = appModuleDecorator.getArguments();
+  let moduleConfig = <ObjectLiteralExpression>args[0];
+
+  addToProvidersArray(moduleConfig, name);
+
+  await project.save();
+}
+
+export function addToProvidersArray(
+  moduleConfig: ObjectLiteralExpression,
+  name: Name,
+) {
+  let providersConfig = moduleConfig.getPropertyOrThrow('providers');
+  let originalStatement = providersConfig.getText();
+  let comma = '';
+
+  if (originalStatement.indexOf('[]') === -1) {
+    comma = ',';
+  }
+
+  let closingArrayBracket = originalStatement.indexOf(']');
+  let topArrayExpression = originalStatement.substr(0, closingArrayBracket);
+  let bottomArrayExpression = originalStatement.substr(
+    closingArrayBracket,
+    originalStatement.length - closingArrayBracket,
+  );
+  let newStatement =
+    topArrayExpression +
+    comma +
+    `${name.upper()}Service` +
+    bottomArrayExpression;
+  providersConfig.replaceWithText(newStatement);
 }

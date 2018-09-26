@@ -1,26 +1,22 @@
 import { buildGeneric, genericReplace } from "./util/generic.builder";
-import { AddControllerToModule } from "./module";
+import { AddServiceToModule } from "./module";
 import { Name, Route, writeFilePromise, RunFormatterDir, RunFormatterFile, readFilePromise, replaceByObject, makeDirectoryPromise, makeDirectoryRecursive } from "./util/util";
 import { TemplateReferenceHandler, addTemplateReference } from "./util/template.reference";
 
-export async function buildController(name: Name, route: Route) {
+export async function buildService(name: Name) {
     
-    let destination = 'src/app/routes/' + route.long();
+    let destination = 'src/app/services/';
 
-    let controller = await buildGeneric('up/template/controller/controller.template.ts', name, route, destination);
-    let cls = await buildGeneric('up/template/controller/class.template.ts', name, route, destination);
+    let service = await buildGeneric('up/template/service/service.template.ts', name, null, destination);
 
     makeDirectoryRecursive(destination);
 
-    await writeFilePromise(`${destination}/${name.dot()}.class.ts`, cls);
-    await writeFilePromise(`${destination}/${name.dot()}.controller.ts`, controller);
+    await writeFilePromise(`${destination}/${name.dot()}.service.ts`, service);
 
-
-    AddControllerToModule(name, route);
-
+    AddServiceToModule(name);
+    
     //Formatting
-    RunFormatterFile(`${destination}/${name.dot()}.class.ts`);
-    RunFormatterFile(`${destination}/${name.dot()}.controller.ts`);
+    RunFormatterFile(`${destination}/${name.dot()}.service.ts`);
     RunFormatterFile(`src/app/app.module.ts`);
 }
 
