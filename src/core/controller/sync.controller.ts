@@ -14,8 +14,8 @@ import { STRINGIFY } from './stringify';
 const jwt = require('jsonwebtoken');
 const farmhash = require('farmhash');
 
-export class SyncJWT<T> {
-  ids: T[];
+export class SyncJWT<IDTYPE> {
+  ids: IDTYPE[];
 }
 
 /**
@@ -26,7 +26,7 @@ export class SyncJWT<T> {
  * pagination, various methods of query etc. SyncController's handleSync method
  * accepts an input of type GenericSyncInput which supports a protocol for doing this
  */
-export class SyncController<T> {
+export class SyncController<IDType> {
   constructor(private configService: ConfigService) {}
 
   /**
@@ -41,7 +41,7 @@ export class SyncController<T> {
    * @param input
    */
 
-  async handleSync(input: GenericSyncInput<T>, req:CoreRequest): Promise<SyncListOutput<T> | SyncDataOutput> {
+  async handleSync(input: GenericSyncInput<IDType>, req:CoreRequest): Promise<SyncListOutput<IDType> | SyncDataOutput> {
     if (input.sync.mode == SyncMode.List) {
       return this._handleList(input, req);
     }
@@ -57,12 +57,12 @@ export class SyncController<T> {
    * or whichever are out of date.
    * @param input
    */
-  private async _handleList(input: GenericSyncInput<T>, req:CoreRequest): Promise<SyncListOutput<T>> {
+  private async _handleList(input: GenericSyncInput<IDType>, req:CoreRequest): Promise<SyncListOutput<IDType>> {
     let resultIds = await this.handleList(input,req);
     return { hashes: resultIds, validation: await this.authorize(resultIds) };
   }
 
-  protected async handleList(input: GenericSyncInput<T>, req:CoreRequest): Promise<SyncHash<T>[]> {
+  protected async handleList(input: GenericSyncInput<IDType>, req:CoreRequest): Promise<SyncHash<IDType>[]> {
     return null;
   }
 
@@ -73,7 +73,7 @@ export class SyncController<T> {
    * syncHash result.
    * @param sync
    */
-  private async _handleData(sync: Sync<T>, req:CoreRequest): Promise<SyncDataOutput> {
+  private async _handleData(sync: Sync<IDType>, req:CoreRequest): Promise<SyncDataOutput> {
     await this.validate(sync.ids, sync.validation);
 
     let resultData = await this.handleData(sync.ids, req);
@@ -82,7 +82,7 @@ export class SyncController<T> {
     return { data: indexedData };
   }
 
-  protected async handleData(ids: T[], req:CoreRequest): Promise<GenericOutput[]> {
+  protected async handleData(ids: IDType[], req:CoreRequest): Promise<GenericOutput[]> {
     return null;
   }
 
@@ -90,9 +90,9 @@ export class SyncController<T> {
    * validation/authorization todo:
    */
 
-  authorize(ids: SyncHash<T>[]): Promise<string> {
+  authorize(ids: SyncHash<IDType>[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      let payload: SyncJWT<T> = { ids: ids.map(v => v.id) };
+      let payload: SyncJWT<IDType> = { ids: ids.map(v => v.id) };
       jwt.sign(
         payload,
         this.configService.auth.key,
@@ -107,12 +107,12 @@ export class SyncController<T> {
     });
   }
 
-  validate(ids: T[], token: string): Promise<void> {
+  validate(ids: IDType[], token: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       jwt.verify(
         token,
         this.configService.auth.key,
-        (err, payload: SyncJWT<T>) => {
+        (err, payload: SyncJWT<IDType>) => {
           if (!!err) {
             reject(err);
             return;

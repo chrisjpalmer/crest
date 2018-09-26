@@ -17,11 +17,11 @@ export enum GenericSyncMode {
  * These are all response level objects
  */
 
-export class SyncHash<T> {
-  id: T;
+export class SyncHash<IDType> {
+  id: IDType;
   hash: string;
 
-  constructor(id: T, updatedAt: Date, ...hashFodder: any[]) {
+  constructor(id: IDType, updatedAt: Date, ...hashFodder: any[]) {
     this.id = id;
     let hashMaterial = '';
     hashMaterial += STRINGIFY(id);
@@ -43,8 +43,8 @@ export class SyncHash<T> {
   }
 }
 
-export class SyncListOutput<T> {
-  hashes: SyncHash<T>[];
+export class SyncListOutput<IDType> {
+  hashes: SyncHash<IDType>[];
   validation: string;
 }
 
@@ -62,12 +62,12 @@ export enum SyncMode {
   Data,
 }
 
-export class Sync<T> {
-  ids: T[];
+export class Sync<IDType> {
+  ids: IDType[];
   mode: SyncMode;
   validation: string;
 }
 
-export class GenericSyncInput<T> {
-  sync: Sync<T>;
+export class GenericSyncInput<IDType> {
+  sync: Sync<IDType>;
 }
