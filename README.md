@@ -1,5 +1,4 @@
 # Crest
-## Getting Started
 **Crest = Classy REST + [Nest](https://nestjs.com)**
 
 ## RESTful APIs done right
@@ -17,6 +16,7 @@ Crest has some features you would expect:
 
 Crest also has some experimental features which are open for community critique:
 * Crest Sync
+* Stem Model
 
 Crest encourages you to write your APIs with the 4 layer pie:
 * Entities - the dumb structs which hold your data
@@ -24,7 +24,7 @@ Crest encourages you to write your APIs with the 4 layer pie:
 * Services - service classes which handle the models layer and provide additional business logic
 * Controllers - the bridge between the transport layer (HTTP) and your services, applying roles authentication and serialization of the API's input and output.
 
-# Crest Commands
+# Getting Started
 
 ### Prerequisites
 1. Git
@@ -55,7 +55,9 @@ npm run up -- create service Book
 
 ### Create an controller
 ```
-npm run up -- create controller Book --route=@/book
+npm run up -- create controller Book --route=@/book               #Create an authenticated route
+npm run up -- create controller Book --route=authenticated/book   #Create an authenticated route
+npm run up -- create controller Book --route=book                 #Create an unauthenticated route
 ```
 
 ### Run
@@ -87,350 +89,39 @@ npm run down "path/on/my/drive/to/crest"
 ```
 *For more information see the [crest-client](https://github.com/chrisjpalmer/crest-client) page*
 
-# Use 'Up'
-`up` has two functions.
-1. help create [TypeORM](https://github.com/typeorm/typeorm) entities / tables
-2. convert those [TypeORM](https://github.com/typeorm/typeorm) entities / tables into APIs.
+# Boilerplate
 
-### Create Tables
-To create a table, specify *create* after the `up` command:
-```bash
-npm run up create Genre
-```
-
-This creates `genre.entity.ts` inside the `src/database/app/` directory. The file will contain a new [TypeORM](https://github.com/typeorm/typeorm) entity which represents the `genre` MySQL table. You can now customize it with fields and relationships.
-```ts
-@Entity()
-export class Genre extends GenericEntity {
-  @Index({ unique: true })
-  @Column({ length: 200 })
-  name: string;
-
-  //-------------------------------------
-  //-------------Relationships-----------
-  //-------------------------------------
-
-  //Add your relationships here...
-}
-```
-
-It is important that you always specify the name of the table in PascalCase. `up` namespaces your APIs using PascalCase:
-```
-Genre => /genre
-BookGenre => /book/genre
-```
-
-
-### Create APIs
-To generate an API we simply run `up` and pass the table name.
-```bash
-npm run up Genre
-```
-
-This should generate two new folders under the `src/routes/authenticated` folders:
-```
-genre/
-        genre.controller.ts
-        genre.service.ts
-        genre.class.ts
-```
-
-# Generated API
-Imagine we ran `up` on an entity like this:
-```ts
-@Entity()
-export class Genre extends GenericEntity {
-  @Index({ unique: true })
-  @Column({ length: 200 })
-  name: string;
-
-  //-------------------------------------
-  //-------------Relationships-----------
-  //-------------------------------------
-
-  @ManyToMany(type => Book, book => book.genres)
-  books:Book[];
-}
-```
-...what would our API look like?
-
-`up` generates *GET*, *POST*, *PATCH* and *DELETE* methods for *READ*, *CREATE*, *UPDATE* and *DELETE* operations:
-
-## GET / Read
-**Input Signature**
-```ts
-export class SyncInput {
-  //Query Mode
-  mode: GenericSyncMode;
-  //Discrete Mode
-  ids: number[];
-  //ParameterSearch Mode
-  parameterSearch: SyncParameterSearch;
-
-  //Pagination
-  page: number;
-  pageSize: number;
-}
-
-export interface SyncParameterSearch {
-  id: number;
-  updatedAt: Date;
-  createdAt: Date;
-  name: string;
-}
-```
-
-**Sample call:**
-
-Get all genres:
-```json
-{
-  "mode":0, //Select All
-}
-```
-
-Get specific genres:
-```json
-{
-  "mode":1, //Select Discrete
-  "ids":[1, 3, 10]
-}
-```
-
-Get all genres with pagination:
-```json
-{
-  "mode":0, //Select All
-  "page":2,
-  "pageSize":20
-}
-```
-
-## POST / Create
-**Input Signature**
-```ts
-export class PostInput {
-  entries: PostInputGenre[];
-}
-
-export class PostInputGenre {
-  name: string;
-  books: PostRelation[];
-}
-```
-
-**Sample call:**
-
-Create two genres. Put some books in the second genre.
-```json
-{
-  "entries": [
-    {"name":"Non-fiction"},
-    {"name":"Fiction", "books": [{"id":1, "id": 7}]}
-  ]
-}
-```
-
-## PATCH / Update
-**Input Signature**
-```ts
-export class PatchInput {
-  entries: PatchInputGenre[];
-}
-
-export class PatchInputGenre {
-  id: number;
-  name: string;
-  books: PatchRelation[];
-}
-```
-
-**Sample call:**
-
-Update the `"non-fiction"` genre and change its name. Add a book to it, remove a book from it.
-```json
-{
-  "entries": [
-    {
-      "id":1, 
-      "name":"Serious Books", 
-      "books": [
-        {
-          "mode": 0, //Create relationship
-          "id" : 5,
-        },
-        {
-          "mode": 1, //Break relationship
-          "id" : 7,
-        }
-      ]
-    }
-  ]
-}
-```
-
-## DELETE / Delete
-**Input Signature**
-```ts
-export class DeleteInput {
-  entries: DeleteInputGenre[];
-}
-
-export class DeleteInputGenre {
-  id: number;
-}
-```
-
-**Sample call:**
-
-Delete genres which have ids 2 and 3.
-```json
-{
-  "entries": [
-    {"id": 2},
-    {"id": 3},
-  ]
-}
-```
-
-# Generated Code
-Under the hood, `up` generates:
-- [Nest](https://nestjs.com) Controller => genre.controller.ts
-- Input / Output Signatures => genre.class.ts
-- Service Class with Convenience Methods => genre.service.ts
-
-If you understand a bit about [Nest](https://nestjs.com) already, the controller contains most of the logic for handling requests.
-`up` generates GET, POST, PATCH and DELETE handlers inside the controller:
+### Routing
+You may we wondering how the path of your controller is set. This is down to the `@AuthController()` and `@Controller()` decorators.
 
 ```ts
-@Get()
-  @PrivilegeHas(`genre.get`)
-  async Sync(@Body() input: SyncInput, @Request() req: CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
-
-  }
-
-  @Post()
-  @PrivilegeHas(`genre.post`)
-  async Post(@Body() input: PostInput, @Request() req: CoreRequest): Promise<PostOutput> {
-
-  }
-
-  @Patch()
-  @PrivilegeHas(`genre.patch`)
-  async Patch(@Body() input: PatchInput, @Request() req: CoreRequest): Promise<PatchOutput> {
-
-  }
-
-  @Delete()
-  @PrivilegeHas(`genre.delete`)
-  async Delete(@Body() input: DeleteInput, @Request() req: CoreRequest): Promise<DeleteOutput> {
-
-  }
+@AuthController('genre')
+export class GenreController {
 ```
+- In this example, the controller path is `/authenticated/genre`.
+- Any routes under `/authenticated` require a JWT token to be present in the `Authorization` header.
 
-**PrivilegeHas()**
+### PrivilegeHas()
 
 - You will notice the use of the `@PrivilegeHas()` decorator which is part of Crest's *users, roles and privileges* system. 
 - `@PrivilegeHas()` ensures that this method can only be called by a privileged user.
-In other words to call the GET method, the user must have the `"genre.get"` privilege.
+- By default Crest generated a `@PrivilegeHas()` decorator for each of you controller methods. You are free to change these if you wish.
 - `"root"` is a special privilege which accesses anything.
-- If you need to validate more privileges, specify them as additional arguments to the decorator.
+- `@PrivilegeHas()` decorator takes an array of string arguments. Each of these arguments is a privilege that the user must have to access the method.
 
-**Input / Output**
+### Input / Output
 
 - By default [Nest](https://nestjs.com) expects JSON input and returns JSON output.
 - The input is validated and deserialized into the `input` parameter, through [Nest's](https://nestjs.com) `@Body()` decorator. 
 - The output signatures for each response are located in `genre.class.ts`.
 
-**Request Object**
+### Request Object
 
 - The `req` parameter is the Express JS request object. 
 - [passport](http://www.passportjs.org/) is used to authenticate the user's jwt token and populates  `req.user` with the accessing user
 
-**Get is special**
 
-Crest implements a syncing protocol for GET. This syncing protocol has 2 phases. 
-1. The api client obtains a lightweight signature of the result set, containing only *ids* and *hashes* of the database objects. 
-2. The api client can selectively downloads objects whose hashes its never seen or are different to what is already has.
-
-You can see the return type of GET is a union of `SyncListOutput` and `SyncDataOutput`, for phase 1 and 2 respectively.
-
-
-# Generated Service
-`up` generates a service class with convenience methods for handling the entity.
-
-```ts
-@Injectable()
-export class GenreService extends GenericEntityService<Genre> {
-  constructor(
-    @InjectRepo(GenreToken) private readonly genreRepository: Repository<Genre>,
-    @InjectRepo(BookToken) private readonly bookRepository: Repository<Book>,
-  ) {
-    super('genre', 'name');
-  }
-
-  /**
-   * createQueryBuilder - convenience abstraction of repository.createQueryBuilder(tableAlias)
-   */
-  createQueryBuilder() {
-    return this.genreRepository.createQueryBuilder(this.mainTableAlias);
-  }
-
-  /**
-   * Fill with methods
-   */
-
-  fillWithBooks(
-    genre: Genre | Genre[] | Map<number, Genre>,
-    indexedBooks: Map<number, Book>,
-  ) {
-    StitchSet(
-      genre,
-      indexedBooks,
-      p => p.books.map(c => c.id),
-      (p, c) => (p.books = c),
-    );
-  }
-
-  /**
-   * Apply Stems methods
-   */
-
-  applyStemsBooks(query: SelectQueryBuilder<Genre>): SelectQueryBuilder<Genre> {
-    return query
-      .leftJoin(this.mainTableAlias + '.books', 'book')
-      .addSelect('book.id');
-  }
-
-  /**
-   * Ping Stems methods
-   */
-
-  async pingStemsBooks(entries: Entry[]): Promise<void> {
-    let relations: GenericRelation[] = [];
-    entries.map(v => v.books).forEach(r => {
-      if (!!r) {
-        relations.push(...r);
-      }
-    });
-    let pingList = this.relationsToPingIds(relations);
-
-    await this.bookRepository
-      .createQueryBuilder('book')
-      .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
-      .whereInIds(pingList)
-      .execute();
-  }
-}
-```
-
-Lets look at some of these convenience methods:
-- **createQueryBuilder():** an abstraction of the `repository.createQueryBuilder()` method which automatically provides the table alias argument. It passes `this.mainTableAlias` which is initialized in the constructor as `"genre"`
-- **fillWithBooks():** builds on Crest's *stem* model which is explained below. Allows a bunch of hollow `genre` objects to be populated with `book` objects.
-- **applyStemsBooks:** also builds on Crest's *stem* model. Performs an INNER JOIN on a[ TypeORM](https://github.com/typeorm/typeorm) query to fetch the stem columns of the `Book` table.
-- **pingStemsBooks:** this method is used to change the `updatedAt` column of books which are related to any `genres` passed to the function. You may want to do this if the relationships change between some `books` and `genres`.
-
-# Stem model
+# Stem model (Experimental)
 ## Intro
 A table will often have rows which are related to another table's rows. This link is commonly defined through *Join Tables* or *Join Columns*. In [TypeORM](https://github.com/typeorm/typeorm) we are invited to forget about the underlying mechanics of database relationships. [TypeORM](https://github.com/typeorm/typeorm) treats all related entities to a row as sub-objects of that object.
 
@@ -491,28 +182,18 @@ Of course, the client still needs the `Genre` information and it may choose to m
 
 This concept is called `stem` model, because only the `stem` columns of related tables are fetched.
 
-# Controller Concepts
-## Routing
-You may we wondering how the path of your controller is set. This is down to the  `@AuthController()` decorator.
 
-```ts
-@AuthController('genre')
-export class GenreController extends SyncController<Genre> {
-```
-- In this example, the controller path is `/authenticated/genre`.
-- Any routes under `/authenticated` require a JWT token to be present in the `Authorization` header.
-
-## Syncing
+# Crest Sync (Experimental)
 If you use [crest-client](https://github.com/chrisjpalmer/crest), you won't need to implement *Crest Syncing Protocol*. However, if you plan on building your own client, you will need to understand how it works.
 
-Lets imagine you want to get the complete list of `Books` from your Crest server. There may be hundereds of books in the database, many of which your application has seen before. You only want to download the ones that matter. Crest helps you by breaking your GET request into two phases:
+Lets imagine you want to get the complete list of `Books` from your Crest server. There may be hundereds of books in the database, many of which your application has seen before. You only want to download the ones that matter. Crest helps you by breaking your request into two phases:
 1. Get the **LIST** of books as an array of book signatures (called `SyncHashes`)
 2. Download the **DATA** for the books you don't have.
 
 ### Phase 1
-To do this first bit, your API client has to make a GET request for the books and set the sync mode to **LIST**
+To do this first bit, your API client has to make a POST request for the books and set the sync mode to **LIST**
 ```ts
-//GET authenticated/books
+//POST authenticated/books/sync
 {
   "sync": {
     "mode": 0 //Sync mode 1 = LIST
@@ -554,11 +235,12 @@ farmhash(row.updatedAt + row.id)
 ```
 If you update the row at a later time, its hash will be different and your client will know to redownload the row.
 
-You may be wondering what the `validation` property is all about. This is in fact a JWT token, containing the exact same information as the `hashes` object except signed by your server's private key (see crest config: TODO). Your api client will need to send this back to the server in phase 2, as proof that the objects you want to download were authorized to you. 
+You may be wondering what the `validation` property is all about. This is in fact a JWT token, containing the exact same information as the `hashes` object except signed by your server's private key (set in config/config.json of your project). Your api client will need to send this back to the server in phase 2, as proof that the objects you want to download were authorized to you. 
 
 ### Phase 2
-Your API Client will decide what objects it needs to download and make another GET request:
+Your API Client will decide what objects it needs to download and make another POST request:
 ```json
+//POST authenticated/books/sync
 {
   "sync": {
     "mode": 1, //Sync mode 2 = DATA
