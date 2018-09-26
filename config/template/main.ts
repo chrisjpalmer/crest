@@ -99,6 +99,10 @@ async function main() {
     `${cwd}/config/config.json`,
     JSON.stringify(configJSONData, null, " "),
   );
+
+  //building up
+  console.log('building up...');
+  shell.exec(`npm run build-up`);
 }
 
 main();
