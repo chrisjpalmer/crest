@@ -1,5 +1,6 @@
 /** BOILERPLATE - don't touch unless you are brave */
 import { IndexedData } from '../core/core.util';
+import { STRINGIFY } from './stringify';
 
 export const SyncDataValidate = 'SyncDataValidate';
 
@@ -16,14 +17,14 @@ export enum GenericSyncMode {
  * These are all response level objects
  */
 
-export class SyncHash {
-  id: number;
+export class SyncHash<T> {
+  id: T;
   hash: string;
 
-  constructor(id: number, updatedAt: Date, ...hashFodder: any[]) {
+  constructor(id: T, updatedAt: Date, ...hashFodder: any[]) {
     this.id = id;
     let hashMaterial = '';
-    hashMaterial += id;
+    hashMaterial += STRINGIFY(id);
     hashMaterial += updatedAt.toISOString(); //The most precise form of the date which can be retrieved.
 
     hashFodder.forEach(fodder => {
@@ -31,7 +32,7 @@ export class SyncHash {
         hashMaterial += fodder.toString();
       } catch (e) {
         try {
-          hashMaterial += JSON.stringify(fodder);
+          hashMaterial += STRINGIFY(fodder);
         } catch (e) {
           throw 'SyncHash: data cannot be hashed';
         }
@@ -42,8 +43,8 @@ export class SyncHash {
   }
 }
 
-export class SyncListOutput {
-  hashes: SyncHash[];
+export class SyncListOutput<T> {
+  hashes: SyncHash<T>[];
   validation: string;
 }
 
@@ -61,12 +62,12 @@ export enum SyncMode {
   Data,
 }
 
-export class Sync {
-  ids: number[];
+export class Sync<T> {
+  ids: T[];
   mode: SyncMode;
   validation: string;
 }
 
-export class GenericSyncInput {
-  sync: Sync;
+export class GenericSyncInput<T> {
+  sync: Sync<T>;
 }

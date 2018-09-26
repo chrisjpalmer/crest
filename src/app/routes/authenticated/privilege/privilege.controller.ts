@@ -37,7 +37,7 @@ import { Role } from 'database';
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 @AuthController('privilege/sync') /* http://localhost:3000/authenticated/privilege/sync */
-export class PrivilegeSyncController extends SyncController<Privilege> {
+export class PrivilegeSyncController extends SyncController<number> {
   constructor(
     configService: ConfigService,
     @InjectRepo(PrivilegeToken)
@@ -57,7 +57,7 @@ export class PrivilegeSyncController extends SyncController<Privilege> {
   async Sync(
     @Body() input: SyncInput,
     @Request() req: CoreRequest,
-  ): Promise<SyncListOutput | SyncDataOutput> {
+  ): Promise<SyncListOutput<number> | SyncDataOutput> {
     //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
     return await this.handleSync(input, req);

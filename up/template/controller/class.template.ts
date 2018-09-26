@@ -24,7 +24,7 @@ import { GenericSyncInput } from 'core';
 
 //-----------Sync----------\\
 //Input
-export class SyncInput extends GenericSyncInput {
+export class SyncInput extends GenericSyncInput<number> {
   
 }
 

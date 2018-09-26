@@ -23,7 +23,7 @@ import { transformAndValidate } from "class-transformer-validator";
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 ///ref:{"mode":"controller.decorator", "params": { "suffix":"/sync" } }
-export class ${upper}SyncController extends SyncController<SyncEntryOutput> {
+export class ${upper}SyncController extends SyncController<number> {
   constructor(
     configService: ConfigService,
   ) {
@@ -40,7 +40,7 @@ export class ${upper}SyncController extends SyncController<SyncEntryOutput> {
   async Sync(
     @Body() input: SyncInput,
     @Request() req: CoreRequest,
-  ): Promise<SyncListOutput | SyncDataOutput> {
+  ): Promise<SyncListOutput<number> | SyncDataOutput> {
     //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
     return await this.handleSync(input, req);

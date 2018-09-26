@@ -26,7 +26,7 @@ import {
 //------------------------------------------------
 
 //-----------Sync-----------\\
-export class SyncInput extends GenericSyncInput {
+export class SyncInput extends GenericSyncInput<number> {
   //Query Mode
   @IsOptional() mode: GenericSyncMode;
   //Discrete Mode

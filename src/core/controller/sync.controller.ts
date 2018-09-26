@@ -10,16 +10,17 @@ import { IndexSet } from '../core/core.database.util';
 import { mapToIndexedData, CoreRequest } from '../core/core.util';
 import { GenericOutput } from 'database';
 import { ConfigService } from '../service/config.service';
+import { STRINGIFY } from './stringify';
 const jwt = require('jsonwebtoken');
+const farmhash = require('farmhash');
 
-export class SyncJWT {
-  ids: number[];
+export class SyncJWT<T> {
+  ids: T[];
 }
 
 /**
- * Generic class SyncController implements common get web service
- * functionality in a single generic class.
- * Override this class, define the @Post() method AND make a call to this.handleSync()
+ * Generic class SyncController implements Crest Sync
+ * The generic argument T represents the id type to be used for the sync
  *
  * Most get methods to a large dataset require a syncing protocol,
  * pagination, various methods of query etc. SyncController's handleSync method
@@ -40,7 +41,7 @@ export class SyncController<T> {
    * @param input
    */
 
-  async handleSync(input: GenericSyncInput, req:CoreRequest): Promise<SyncListOutput | SyncDataOutput> {
+  async handleSync(input: GenericSyncInput<T>, req:CoreRequest): Promise<SyncListOutput<T> | SyncDataOutput> {
     if (input.sync.mode == SyncMode.List) {
       return this._handleList(input, req);
     }
@@ -56,12 +57,12 @@ export class SyncController<T> {
    * or whichever are out of date.
    * @param input
    */
-  private async _handleList(input: GenericSyncInput, req:CoreRequest): Promise<SyncListOutput> {
+  private async _handleList(input: GenericSyncInput<T>, req:CoreRequest): Promise<SyncListOutput<T>> {
     let resultIds = await this.handleList(input,req);
     return { hashes: resultIds, validation: await this.authorize(resultIds) };
   }
 
-  protected async handleList(input: GenericSyncInput, req:CoreRequest): Promise<SyncHash[]> {
+  protected async handleList(input: GenericSyncInput<T>, req:CoreRequest): Promise<SyncHash<T>[]> {
     return null;
   }
 
@@ -72,7 +73,7 @@ export class SyncController<T> {
    * syncHash result.
    * @param sync
    */
-  private async _handleData(sync: Sync, req:CoreRequest): Promise<SyncDataOutput> {
+  private async _handleData(sync: Sync<T>, req:CoreRequest): Promise<SyncDataOutput> {
     await this.validate(sync.ids, sync.validation);
 
     let resultData = await this.handleData(sync.ids, req);
@@ -81,7 +82,7 @@ export class SyncController<T> {
     return { data: indexedData };
   }
 
-  protected async handleData(ids: number[], req:CoreRequest): Promise<GenericOutput[]> {
+  protected async handleData(ids: T[], req:CoreRequest): Promise<GenericOutput[]> {
     return null;
   }
 
@@ -89,10 +90,10 @@ export class SyncController<T> {
    * validation/authorization todo:
    */
 
-  authorize(ids: SyncHash[]): Promise<string> {
+  authorize(ids: SyncHash<T>[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      let payload: SyncJWT = { ids: ids.map(v => v.id) };
-      let token: string = jwt.sign(
+      let payload: SyncJWT<T> = { ids: ids.map(v => v.id) };
+      jwt.sign(
         payload,
         this.configService.auth.key,
         (err, token) => {
@@ -106,20 +107,24 @@ export class SyncController<T> {
     });
   }
 
-  validate(ids: number[], token: string): Promise<void> {
+  validate(ids: T[], token: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       jwt.verify(
         token,
         this.configService.auth.key,
-        (err, payload: SyncJWT) => {
+        (err, payload: SyncJWT<T>) => {
           if (!!err) {
             reject(err);
             return;
           }
 
+          //Hash the ids as this makes comparison significantly easier
+          let payloadIdHashes:number[] = payload.ids.map(id => STRINGIFY(id)).map(id => farmhash.hash32(id));
+          let requestedIdHashes:number[] = ids.map(id => STRINGIFY(id)).map(id => farmhash.hash32(id));
+
           //some are not in?
-          let someIdsNotIn = ids.some(id => {
-            if (payload.ids.indexOf(id) === -1) {
+          let someIdsNotIn = requestedIdHashes.some(id => {
+            if (payloadIdHashes.indexOf(id) === -1) {
               return true; // This id is not in the payload of authorized ids
             }
           });

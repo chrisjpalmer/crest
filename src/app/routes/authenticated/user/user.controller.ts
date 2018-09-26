@@ -47,7 +47,7 @@ class UserPwdWrapper {
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
 @AuthController('user/sync') /* http://localhost:3000/authenticated/user/sync */
-export class UserSyncController extends SyncController<User> {
+export class UserSyncController extends SyncController<number> {
   constructor(
     configService: ConfigService,
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
@@ -66,7 +66,7 @@ export class UserSyncController extends SyncController<User> {
   async Sync(
     @Body() input: SyncInput,
     @Request() req: CoreRequest,
-  ): Promise<SyncListOutput | SyncDataOutput> {
+  ): Promise<SyncListOutput<number> | SyncDataOutput> {
     //This class inherits SyncController. We call handleSync() on this controller
     //to handle the request. This pattern can be overidden where custom functions are required
     return await this.handleSync(input, req);
