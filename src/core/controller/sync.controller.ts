@@ -77,8 +77,21 @@ export class SyncController<IDType> {
     await this.validate(sync.ids, sync.validation);
 
     let resultData = await this.handleData(sync.ids, req);
-    let mappedData = IndexSet(resultData, v => v.id);
-    let indexedData = mapToIndexedData(mappedData);
+
+    //Take the data and associate it with the ids which were provided
+    let resultDataWithIds = sync.ids.map((id, i) => {
+      return {
+        data: resultData[i],
+        id
+      }
+    })
+    
+    //Put it into a particular format
+    let indexedData = {};
+    resultDataWithIds.forEach(entry => {
+      indexedData[STRINGIFY(entry.id)] = entry.data
+    });
+
     return { data: indexedData };
   }
 
@@ -108,6 +121,9 @@ export class SyncController<IDType> {
   }
 
   validate(ids: IDType[], token: string): Promise<void> {
+    //To make comparison possible we stringify the ids
+    let requestedIds:string[] = ids.map(id => STRINGIFY(id));
+
     return new Promise<void>((resolve, reject) => {
       jwt.verify(
         token,
@@ -118,13 +134,14 @@ export class SyncController<IDType> {
             return;
           }
 
-          //Hash the ids as this makes comparison significantly easier
-          let payloadIdHashes:number[] = payload.ids.map(id => STRINGIFY(id)).map(id => farmhash.hash32(id));
-          let requestedIdHashes:number[] = ids.map(id => STRINGIFY(id)).map(id => farmhash.hash32(id));
+          //To make comparison possible we stringify the ids AND create a payload map
+          let payloadIds:string[] = payload.ids.map(id => STRINGIFY(id));
+          let payloadMap = new Map<string, boolean>();
+          payloadIds.forEach(payloadId => payloadMap.set(payloadId, true));
 
           //some are not in?
-          let someIdsNotIn = requestedIdHashes.some(id => {
-            if (payloadIdHashes.indexOf(id) === -1) {
+          let someIdsNotIn = requestedIds.some(requestedIds => {
+            if (!payloadMap.has(requestedIds)) {
               return true; // This id is not in the payload of authorized ids
             }
           });
