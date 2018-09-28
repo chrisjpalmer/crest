@@ -1,5 +1,5 @@
 # Crest
-**Crest = Classy REST + [Nest](https://nestjs.com)**
+**Crest = Clever REST + [Nest](https://nestjs.com)**
 
 ## RESTful APIs done right
 Making RESTful APIs is essential for enterprise software. Even more essential, when considering scalablity, is the properness of the underlying architecture. We are through with the days of scrolling through badly named code files just to modify one part of the application! Why not have Dont-Repeat-Yourself, Single-Rule-Principle code with well defined multi-layer architecture?
@@ -120,10 +120,103 @@ export class GenreController {
 - The `req` parameter is the Express JS request object. 
 - [passport](http://www.passportjs.org/) is used to authenticate the user's jwt token and populates  `req.user` with the accessing user
 
+# Crest Sync (Experimental)
+If you use [crest-client](https://github.com/chrisjpalmer/crest), you won't need to implement *Crest Syncing Protocol*. However, if you plan on building your own client, you will need to understand how it works.
+
+Lets imagine you want to get the complete list of `Books` from your Crest server. There may be hundereds of books in the database, many of which your application has seen before. You only want to download the ones that matter. Crest helps you by breaking your request into two phases:
+1. Get the **LIST** of books as an array of book signatures (called `SyncHashes`)
+2. Download the **DATA** for the books you don't have.
+
+### Phase 1
+To do this first bit, your API client has to make a POST request for the books and set the sync mode to **LIST**
+```ts
+//POST authenticated/books/sync
+{
+  "sync": {
+    "mode": 0 //Sync mode 1 = LIST
+  }
+}
+```
+
+In the `handleList` callback function for your `SyncController`, you can respond to this request by calling a service method to get the list of books.
+Then the result is transformed into an array of `SyncHashes` which represent the signatures of the books.
+
+To create a sync hash for each book, we need to pass at least two arguments to the `SyncHash` constructor. The first is the `id` parameter which uniquely identifies this book amongst other books. The `id` parameter can be a number, string or an object.
+
+Any arguments passed after the `id` parameter are `version` parameters and distinctify different versions of the same book object. In this example, to simplify things, we take advantage of the `updatedAt` property of the book which will tell us the last time the object was modified and thus is a useful way to determine what version we are up to.
+
+Under the hood, `SyncHash` constructor uses the `farmhash` library to hash all the `version` parameters so that the version can be succinctly represesnted as one value.
+
+```ts
+async handleList(input: SyncInput) {
+    let books = await this.bookService.getBooks({justSignature:true});
+    let syncHashes = books.map(v => new SyncHash(v.id, v.updatedAt));
+    return syncHashes;
+}
+```
+
+The response may look something like this:
+```json
+{
+  "hashes": [
+    {"hash": 2349034334, "id":1},
+    {"hash": 5645645445, "id":3},
+    {"hash": 4589534054, "id":7}
+  ],
+  "validation": "eyJhbGciOiJIU..."
+}
+```
+
+You may be wondering what the `validation` property is all about. This is in fact a JWT token, containing the exact same information as the `hashes` object except signed by your server's private key (which can be set in config/config.json). Your api client will need to send this back to the server in phase 2, as proof that the objects you want to download were authorized to you. 
+
+### Phase 2
+Your API Client will decide what objects it needs to download and make another POST request:
+```json
+//POST authenticated/books/sync
+{
+  "sync": {
+    "mode": 1, //Sync mode 2 = DATA
+    "ids": [1, 7],
+    "validation": "eyJhbGciOiJIU..."
+  }
+}
+```
+
+The server validates the JWT token and checks that the ids are valid. In the `handleData` callback of your SyncController, you are now free to obtain the full objects for the ids which the client requires. It should be noted that the order in which you return the books MUST BE THE SAME as the order of the ids they pertain to.
+```ts
+async handleData(ids: number[]): Promise<Partial<SyncEntryOutput>[]> {
+    let books = await this.bookService.getBooks({ids:ids});
+
+    //Good practice to transform the output of a service class into a seperate format before returning to the client.
+    let outputBooks:SyncEntryOutput[] = books.map(b => {
+      return {
+        id: b.id,
+        title: b.title,
+        author: b.author
+      }
+    });
+    return outputBooks;
+  }
+```
+
+The result set is sent back as a data map for convenient access:
+```json
+{
+  "data": {
+    "1": {"id": 1, "title": "To Kill a Mocking Bird", "author": "Harper Lee"},
+    "7": {"id": 7, "title": "Much to do about nothing", "author": "Shakespeare"}
+    }
+}
+```
+
+To complete the job, your API client will need to aggregate all the returned objects with those it has downloaded in the past. It should then refer back to the server response from Phase 1. The order of the objects is preserved here and should be used to build the output of the API request.
 
 # Stem model (Experimental)
+## Not a feature
+This concept is actually not a feature of Crest, its just an idea that you can use if you like it...
+
 ## Intro
-A table will often have rows which are related to another table's rows. This link is commonly defined through *Join Tables* or *Join Columns*. In [TypeORM](https://github.com/typeorm/typeorm) we are invited to forget about the underlying mechanics of database relationships. [TypeORM](https://github.com/typeorm/typeorm) treats all related entities to a row as sub-objects of that object.
+A table will often have rows which are related to another table's rows. This link is commonly defined through *Join Tables* or *Join Columns*. In [TypeORM](https://github.com/typeorm/typeorm) we are invited to forget about the underlying mechanics of database relationships. [TypeORM](https://github.com/typeorm/typeorm) serializes related entities as sub-objects.
 
 In TypeORM, if we make this query...
 ```ts
@@ -181,97 +274,6 @@ Though an *inner join* still has to be performed, we have minimized the `Genre` 
 Of course, the client still needs the `Genre` information and it may choose to make a seperate request to the application server for the complete list of `Genre`s. Alternatively if the `Genre` dataset is also very large, the request could be made for just a specific set of `Genres` which are relevant.
 
 This concept is called `stem` model, because only the `stem` columns of related tables are fetched.
-
-
-# Crest Sync (Experimental)
-If you use [crest-client](https://github.com/chrisjpalmer/crest), you won't need to implement *Crest Syncing Protocol*. However, if you plan on building your own client, you will need to understand how it works.
-
-Lets imagine you want to get the complete list of `Books` from your Crest server. There may be hundereds of books in the database, many of which your application has seen before. You only want to download the ones that matter. Crest helps you by breaking your request into two phases:
-1. Get the **LIST** of books as an array of book signatures (called `SyncHashes`)
-2. Download the **DATA** for the books you don't have.
-
-### Phase 1
-To do this first bit, your API client has to make a POST request for the books and set the sync mode to **LIST**
-```ts
-//POST authenticated/books/sync
-{
-  "sync": {
-    "mode": 0 //Sync mode 1 = LIST
-  }
-  "mode": 0, //I want all the books
-}
-```
-
-Crest handles your request by querying the `Books` table for the `id` and `updatedAt` columns. It then converts the result set to an array of `SyncHash` objects:
-```ts
-async handleList(input: SyncInput) {
-    let query = this.genreService
-      .createQueryBuilder()
-      .select(this.genreService.transformColumns(['id', 'updatedAt']));
-    
-    ///... apply any other filters
-    
-    let rows = await query.getMany();
-    let result = rows.map(v => new SyncHash(v.id, v.updatedAt));
-    return result;
-}
-```
-
-The response may look something like this:
-```json
-{
-  "hashes": [
-    {"hash": 2349034334, "id":1},
-    {"hash": 5645645445, "id":3},
-    {"hash": 4589534054, "id":7}
-  ],
-  "validation": "eyJhbGciOiJIU..."
-}
-
-```
-The hash is calculated by:
-```
-farmhash(row.updatedAt + row.id)
-```
-If you update the row at a later time, its hash will be different and your client will know to redownload the row.
-
-You may be wondering what the `validation` property is all about. This is in fact a JWT token, containing the exact same information as the `hashes` object except signed by your server's private key (set in config/config.json of your project). Your api client will need to send this back to the server in phase 2, as proof that the objects you want to download were authorized to you. 
-
-### Phase 2
-Your API Client will decide what objects it needs to download and make another POST request:
-```json
-//POST authenticated/books/sync
-{
-  "sync": {
-    "mode": 1, //Sync mode 2 = DATA
-    "ids": [1, 7],
-    "validation": "eyJhbGciOiJIU..."
-  }
-}
-```
-
-The server validates the JWT token and checks that the ids are valid. It then queries the database for those ids, this time downloading the full set of columns including any *stems*:
-```ts
-async handleData(ids: number[]): Promise<Partial<SyncOutput>[]> {
-    let query: SelectQueryBuilder<Genre>;
-    query = this.genreService.createQueryBuilder();
-    query = this.genreService.applyStemsBooks(query);
-    query = query.whereInIds(ids);
-    return await query.getMany();
-  }
-```
-
-The result set is sent back as a data map for convenient access:
-```json
-{
-  "data": {
-    "1": {"id": 1, "name": "Fiction", "books": [{"id":1}, {"id": 4}]},
-    "7": {"id": 7, "name": "Biography", "books": [{"id":22}]}
-    }
-}
-```
-
-To complete the job, your API client will need to aggregate all the returned objects with those it has downloaded in the past. It should then refer back to the server response from Phase 1. The order of the objects is preserved here and should be used to build the output of the API request.
 
 # Crest Config
 TODO -> write nice things here.
