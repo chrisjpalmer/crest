@@ -2,9 +2,9 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigService } from './service/config.service';
 import { PrivilegeGuard } from './controller/privilege.guard';
-import { UserService } from './entity.service/user.service';
-import { RoleService } from './entity.service/role.service';
-import { PrivilegeService } from './entity.service/privilege.service';
+import { UserService } from './services/user.service';
+import { RoleService } from './services/role.service';
+import { PrivilegeService } from './services/privilege.service';
 import { AuthService } from './auth/auth.service';
 import { AuthStrategy } from './auth/auth.jwt.strategy';
 import {
