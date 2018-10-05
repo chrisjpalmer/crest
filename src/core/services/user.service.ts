@@ -9,7 +9,6 @@ import { Repository } from 'typeorm';
 import { User, UserToken, UserModel, UserPasswordModel } from 'database';
 import { GenericEntityService } from './generic.entity.service';
 import { InjectRepo } from '../core/core.database.provider';
-import { GenericRelation } from '../controller/post-patch';
 import {
   Role,
   RoleToken,
@@ -20,10 +19,17 @@ import { UserServiceOutput, RoleServiceOutput, PrivilegeServiceOutput } from './
 import { UserServiceInputDataOnly, UserServiceInputFull, UserServiceInputNoRelations } from './service.input';
 import { ConfigService } from '../service';
 
+export interface UserServiceOutput {
+  id:number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
 
-export interface UserEntry {
-  role: GenericRelation;
+  role: RoleServiceOutput;
+  roleId:number;
 }
+
 
 @Injectable()
 export class UserService extends GenericEntityService<User> {
