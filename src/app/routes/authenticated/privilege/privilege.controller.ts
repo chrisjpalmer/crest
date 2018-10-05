@@ -21,7 +21,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
 import {
   SyncInput,
-  SyncOutput,
+  SyncEntryOutput,
   PatchInput,
   PostInput,
   PostOutput,
@@ -114,7 +114,7 @@ export class PrivilegeSyncController extends SyncController<number> {
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncOutput>[]> {
+  async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncEntryOutput>[]> {
     let query: SelectQueryBuilder<Privilege>;
     query = this.privilegeService.createQueryBuilder();
     //query = query.select(this.privilegeService.transformColumns(['mycolumn1', 'mycolumn2'])); //Override which columns of the table are returned here, otherwise all are returned.
@@ -122,8 +122,8 @@ export class PrivilegeSyncController extends SyncController<number> {
     query = query.whereInIds(ids);
     
     let result = await query.getMany();
-    let output = result.map((entry):Partial<SyncOutput> => {
-      let outputEntry:Partial<SyncOutput> = {
+    let output = result.map((entry):Partial<SyncEntryOutput> => {
+      let outputEntry:Partial<SyncEntryOutput> = {
         id: entry.id,
         updatedAt: entry.updatedAt.toISOString(),
         createdAt: entry.createdAt.toISOString(),

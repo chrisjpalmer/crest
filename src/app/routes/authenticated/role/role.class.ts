@@ -47,7 +47,7 @@ export interface SyncParameterSearch {
   description?: string;
 }
 
-export interface SyncOutput {
+export interface SyncEntryOutput {
   id: number;
   updatedAt: string;
   createdAt: string;

@@ -23,7 +23,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Get, Body, Post, Patch, Request, Delete } from '@nestjs/common';
 import {
   SyncInput,
-  SyncOutput,
+  SyncEntryOutput,
   PatchInput,
   PostInput,
   PostOutput,
@@ -123,7 +123,7 @@ export class UserSyncController extends SyncController<number> {
    * handleData - returns the objects which the client needs to download for the first time or redownload
    * @param ids the ids of objects which the client needs to download
    */
-  async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncOutput>[]> {
+  async handleData(ids: number[], req: CoreRequest): Promise<Partial<SyncEntryOutput>[]> {
 
     let results: UserServiceOutput[] = [];
     for (let i = 0; i < ids.length; i++) {
@@ -131,8 +131,8 @@ export class UserSyncController extends SyncController<number> {
       results.push(result);
     }
 
-    let output = results.map((entry): Partial<SyncOutput> => {
-      let outputEntry: Partial<SyncOutput> = {
+    let output = results.map((entry): Partial<SyncEntryOutput> => {
+      let outputEntry: Partial<SyncEntryOutput> = {
         id: entry.id,
         updatedAt: entry.updatedAt.toISOString(),
         createdAt: entry.createdAt.toISOString(),
