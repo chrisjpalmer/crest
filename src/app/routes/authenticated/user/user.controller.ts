@@ -82,23 +82,6 @@ export class UserSyncController extends SyncController<number> {
       .select(this.userService.transformColumns(['id', 'updatedAt']));
 
     /**
-     * Apply Conditions to the query
-     */
-    switch (input.mode) {
-      case GenericSyncMode.All:
-        //GenericSyncMode.All -> get all rows, apply no condition
-        break;
-      case GenericSyncMode.Discrete:
-        //GenericSyncMode.Discrete -> get only specific ids
-        query = query.whereInIds(input.ids);
-        break;
-      case GenericSyncMode.ParameterSearch:
-        //GenericSyncMode.ParameterSearch -> get rows which match the search parameters
-        query = query.where(input.parameterSearch);
-        break;
-    }
-
-    /**
      * Apply Pagination to the query
      * in some cases where the dataset is so large, you may want to deny access to the service
      * unless pagination parameters are provided.

@@ -72,22 +72,6 @@ export class PrivilegeSyncController extends SyncController<number> {
       .createQueryBuilder()
       .select(this.privilegeService.transformColumns(['id', 'updatedAt']));
 
-    /**
-     * Apply Conditions to the query
-     */
-    switch (input.mode) {
-      case GenericSyncMode.All:
-        //GenericSyncMode.All -> get all rows, apply no condition
-        break;
-      case GenericSyncMode.Discrete:
-        //GenericSyncMode.Discrete -> get only specific ids
-        query = query.whereInIds(input.ids);
-        break;
-      case GenericSyncMode.ParameterSearch:
-        //GenericSyncMode.ParameterSearch -> get rows which match the search parameters
-        query = query.where(input.parameterSearch);
-        break;
-    }
 
     /**
      * Apply Pagination to the query

@@ -27,13 +27,6 @@ import {
 
 //-----------Sync-----------\\
 export class SyncInput extends GenericSyncInput<number> {
-  //Query Mode
-  @IsOptional() mode: GenericSyncMode;
-  //Discrete Mode
-  @IsOptional() ids: number[];
-  //ParameterSearch Mode
-  @IsOptional() parameterSearch: SyncParameterSearch;
-
   //Pagination
   @IsOptional() page: number;
   @IsOptional() pageSize: number;
