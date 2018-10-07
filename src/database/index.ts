@@ -29,6 +29,8 @@ export * from './core/generic.model';
 export * from './core/user.model';
 export * from './core/user.password.model';
 export * from './core/session.model';
+export * from './core/role.model';
+export * from './core/privilege.model';
 /// < export model >
 
 /**

@@ -1,255 +1,145 @@
-/** BOILERPLATE - don't touch unless you are brave */
-/**
- * NEVER import like this - import { MyAwesomeFunction, MyAwesomeClass } from ".."; OR import { MyAwesomeFunction, MyAwesomeClass } from ".";
- * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
- * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
- */
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { UserModel, User, UserToken, RoleToken, Role } from 'database';
 import { Repository } from 'typeorm';
-import { User, UserToken, UserModel, UserPasswordModel } from 'database';
-import { GenericEntityService } from './generic.entity.service';
-import { InjectRepo } from '../core/core.database.provider';
-import {
-  Role,
-  RoleToken,
-  UserPassword,
-  UserPasswordToken,
-} from 'database';
-import { UserServiceOutput, RoleServiceOutput, PrivilegeServiceOutput } from './service.output';
-import { UserServiceInputDataOnly, UserServiceInputFull, UserServiceInputNoRelations } from './service.input';
-import { ConfigService } from '../service';
+import { InjectRepo } from '../core';
 
-export interface UserServiceOutput {
-  id:number;
-  username: string;
-  firstName: string;
-  lastName: string;
-  emailAddress: string;
+export namespace UserService {
 
-  role: RoleServiceOutput;
-  roleId:number;
-}
-
-
-@Injectable()
-export class UserService extends GenericEntityService<User> {
-  constructor(
-    private configService: ConfigService,
-    @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
-    @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
-    @InjectRepo(UserPasswordToken)
-    private readonly userPasswordRepository: Repository<UserPassword>,
-  ) {
-    super('user', 'username');
+  export interface CreateUserInput {
+    username:string;
+    firstName:string;
+    lastName:string;
+    roleId:number;
   }
 
-  /**
-   * Create a new user
-   */
-  async createUserDataOnly(userServiceInput: UserServiceInputDataOnly): Promise<number> {
-    return this._createUser(userServiceInput);
+  export interface UpdateUserInput {
+    username?:string;
+    firstName?:string;
+    lastName?:string;
+    roleId?:number;
   }
 
-  async createUserNoRelations(userServiceInput: UserServiceInputNoRelations): Promise<number> {
-    return this._createUser(userServiceInput);
+  export interface GetUsersFilteredInput {
+    /**
+     * Zero Indexed page to fetch of the data
+     */
+    page:number;
+    /**
+     * The number of entries for each page
+     */
+    pageSize:number;
   }
 
-  async createUserFull(userServiceInput: UserServiceInputFull): Promise<number> {
-    return this._createUser(userServiceInput);
+  export interface GetUsersFilteredOutput {
+    users:GetUsersOutput[];
+    currentPage:number;
+    totalPages:number;
+    totalEntries:number;
   }
 
-  private async _createUser(userServiceInput: UserServiceInputFull | UserServiceInputNoRelations | UserServiceInputDataOnly): Promise<number> {
-
-    //Create a new user
-    let userModel: UserModel = UserModel.createNew(this.userRepository);
-
-    //Check that the user does not already exist
-    try {
-      await userModel.setUsername(userServiceInput.username);
-    } catch (e) {
-      throw new BadRequestException('the user already exists');
-    }
-    //Set properties on the user
-    userModel.setFirstName(userServiceInput.firstName);
-    userModel.setLastName(userServiceInput.lastName);
-    userModel.setEmailAddress(userServiceInput.emailAddress);
-
-    if(!!(<UserServiceInputFull>userServiceInput).roleId) {
-      userModel.setRoleId((<UserServiceInputFull>userServiceInput).roleId, this.roleRepository);
-    }
-
-    //Save the user
-    let userId = await userModel.save();
-
-    //Set the user's password
-    if(!!(<UserServiceInputFull>userServiceInput).password) {
-      let userPasswordModel: UserPasswordModel = UserPasswordModel.createNew(this.userPasswordRepository, this.configService.auth.saltRounds);
-      await userPasswordModel.setPassword((<UserServiceInputFull>userServiceInput).password);
-      userPasswordModel.setUserId(userId, this.userRepository);
-      await userPasswordModel.save();
-    }
-
-    return userId;
+  export interface GetUsersOutput {
+    id:number;
+    createdAt:Date;
+    updatedAt:Date;
+    username:string;
+    firstName:string;
+    lastName:string;
+    roleId:number;
   }
+  
+  @Injectable()
+  export class Service {
+    constructor(@InjectRepo(UserToken) private userRepository:Repository<User>,
+    @InjectRepo(RoleToken) private roleRepository:Repository<Role>) {}
 
-  /**
-   * Update the user
-   * @param id 
-   * @param userServiceInput 
-   */
-  async updateUser(idOrUsername: number | string, userServiceInput: Partial<UserServiceInputFull>): Promise<number> {
-    let userModel: UserModel;
-    if (typeof idOrUsername === 'number') {
-      userModel = await UserModel.forUserId(idOrUsername, this.userRepository);
-    } else {
-      userModel = await UserModel.forUsername(idOrUsername, this.userRepository);
+    async getUsers() {
+      let usersJustIds = await this.userRepository.createQueryBuilder('user').select('id').getMany();
+      let userIds = usersJustIds.map(v => v.id);
+      return await this.getUsersByIds(userIds);
     }
 
-    let userId = userModel.getId();
+    private async getUsersByIds(userIds:number[]) {
+      let output:GetUsersOutput[] = [];
+      for(let i = 0; i < userIds.length; i++) {
+        let userModel = await UserModel.forUserId(userIds[i], this.userRepository);
 
-    if (!!userServiceInput.username) {
-      await userModel.setUsername(userServiceInput.username);
-    }
-    if (!!userServiceInput.firstName) {
-      userModel.setFirstName(userServiceInput.firstName);
-    }
-    if (!!userServiceInput.lastName) {
-      userModel.setLastName(userServiceInput.lastName);
-    }
-    if (!!userServiceInput.emailAddress) {
-      userModel.setEmailAddress(userServiceInput.emailAddress);
-    }
-    if (!!userServiceInput.roleId) {
-      userModel.setRoleId(userServiceInput.roleId, this.roleRepository);
-    }
-
-    await userModel.save();
-
-    if (!!userServiceInput.password) {
-      let userPasswordModel: UserPasswordModel = await UserPasswordModel.forUserId(userId, this.userPasswordRepository, this.configService.auth.saltRounds);
-      await userPasswordModel.setPassword(userServiceInput.password);
-      await userPasswordModel.save();
-    }
-
-    return userId;
-  }
-
-  /**
-   * delete existing user
-   * @param idOrUsername
-   */
-  async deleteUser(idOrUsername: number | string): Promise<number> {
-    let userModel: UserModel;
-    if (typeof idOrUsername === 'number') {
-      userModel = await UserModel.forUserId(idOrUsername, this.userRepository);
-    } else {
-      userModel = await UserModel.forUsername(idOrUsername, this.userRepository);
-    }
-    let userId = userModel.getId();
-
-    //Delete the user password
-    let userPasswordModel = await UserPasswordModel.forUserId(userId, this.userPasswordRepository, this.configService.auth.saltRounds);
-    await userPasswordModel.delete();
-
-    //Delete the user
-    await userModel.delete();
-
-    return userId;
-  }
-
-  /**
-   * returns a UserServiceOutput object which represents the user with all its roles and privileges
-   * @param userId 
-   */
-  async getFullUser(idOrUsername: number | string): Promise<UserServiceOutput> {
-    let userModel: UserModel;
-    if (typeof idOrUsername === 'number') {
-      userModel = await UserModel.forUserId(idOrUsername, this.userRepository);
-    } else {
-      userModel = await UserModel.forUsername(idOrUsername, this.userRepository);
-    }
-
-    let roleServiceOutput: RoleServiceOutput = null;
-    let userServiceOutput: UserServiceOutput = null;
-    let privilegeServiceOutputs: PrivilegeServiceOutput[] = [];
-    let roleId:number = null;
-
-
-    //Try and get the role information if it exists. If it does not, handle the failure in this try block and dont worry too much
-    try {
-      roleId = userModel.getRoleId();
-
-      let role = await this.roleRepository.createQueryBuilder('role')
-        .leftJoin('role.privilege', 'privilege')
-        .addSelect(['privilege.id', 'privilege.updatedAt', 'privilege.createdAt', 'privilege.name'])
-        .where('id = :roleId', { roleId: roleId })
-        .getOne();
-
-      privilegeServiceOutputs = role.privileges.map(privilege => {
-        let privilegeServiceOutput: PrivilegeServiceOutput = {
-          id: privilege.id,
-          updatedAt: privilege.updatedAt,
-          createdAt: privilege.createdAt,
-          name: privilege.name,
-        }
-        return privilegeServiceOutput;
-      })
-
-      roleServiceOutput = {
-        id: role.id,
-        updatedAt: role.updatedAt,
-        createdAt: role.createdAt,
-        name: role.name,
-
-        privileges: privilegeServiceOutputs,
+        //TODO: Ensure this doesnt throw errors on NULL VALUES
+        output.push({
+          id: userModel.getId(),
+          createdAt: userModel.getCreatedAt(),
+          updatedAt: userModel.getUpdatedAt(),
+          username: userModel.getUsername(),
+          firstName: userModel.getFirstName(),
+          lastName: userModel.getLastName(),
+          roleId: userModel.getRoleId(),
+        });
       }
-    } finally { }
 
-    userServiceOutput = {
-      id: userModel.getId(),
-      updatedAt: userModel.getUpdatedAt(),
-      createdAt: userModel.getCreatedAt(),
-
-      username: userModel.getUsername(),
-      firstName: userModel.getFirstName(),
-      lastName: userModel.getLastName(),
-      emailAddress: userModel.getEmailAddress(),
-
-      role: roleServiceOutput,
-      roleId: roleId,
-    };
-
-    return userServiceOutput;
-  }
-
-  async getUserData(idOrUsername: number | string){
-    let userModel: UserModel;
-    if (typeof idOrUsername === 'number') {
-      userModel = await UserModel.forUserId(idOrUsername, this.userRepository);
-    } else {
-      userModel = await UserModel.forUsername(idOrUsername, this.userRepository);
+      return output;
     }
 
-    let roleId:number = null;
-    try {
-      roleId = userModel.getRoleId();
-    } finally {}
+    async getUsersFiltered(params:GetUsersFilteredInput) : Promise<GetUsersFilteredOutput> {
+      let usersJustIds = await this.userRepository.createQueryBuilder('user').select('id').skip(params.page * params.pageSize).take(params.pageSize).getMany();
+      let userIds = usersJustIds.map(v => v.id);
+      let users = await this.getUsersByIds(userIds);
 
-    let userServiceOutput: UserServiceOutput = {
-      id: userModel.getId(),
-      updatedAt: userModel.getUpdatedAt(),
-      createdAt: userModel.getCreatedAt(),
+      let noOfUsers = await this.userRepository.createQueryBuilder('user').getCount();
 
-      username: userModel.getUsername(),
-      firstName: userModel.getFirstName(),
-      lastName: userModel.getLastName(),
-      emailAddress: userModel.getEmailAddress(),
+      return {
+        users,
+        currentPage: params.page,
+        totalEntries:noOfUsers,
+        totalPages: Math.ceil(noOfUsers / params.page)
+      }
+    }
 
-      role: null,
-      roleId: roleId,
-    };
 
-    return userServiceOutput;
+    async createUser(createUser:CreateUserInput) {
+      //Create a new user model
+      let userModel = await UserModel.createNew(this.userRepository);
+
+      //Set the properties of the user model... make sure we await any methods which return a promise
+      await userModel.setUsername(createUser.username);
+      userModel.setFirstName(createUser.firstName);
+      userModel.setLastName(createUser.lastName);
+      await userModel.setRoleId(createUser.roleId, this.roleRepository);
+      
+      //Save the user to the database.
+      await userModel.save();
+      
+    }
+
+    async updateUser(userId:number, updateUser:UpdateUserInput) {
+      //Retrieve the user from the database by its user id...
+      let userModel = await UserModel.forUserId(userId, this.userRepository);
+
+      //Set the properties of the user if they are specified in the updateUser params
+      if(!!updateUser.username) {
+        await userModel.setUsername(updateUser.username); //TODO: handle case where the username is already the same..
+      }
+
+      if(!!updateUser.firstName) {
+        userModel.setFirstName(updateUser.firstName);
+      }
+
+      if(!!updateUser.lastName) {
+        userModel.setLastName(updateUser.lastName);
+      }
+
+      if(!!updateUser.roleId) {
+        await userModel.setRoleId(updateUser.roleId, this.roleRepository);
+      }
+
+      //Save the user to the database
+      await userModel.save();
+    }
+
+    async deleteUser(userId:number) {
+      //Retrieve the user from the database by its user id...
+      let userModel = await UserModel.forUserId(userId, this.userRepository);
+
+      //Delete the user from the database.
+      userModel.delete();
+    }
   }
 }
-

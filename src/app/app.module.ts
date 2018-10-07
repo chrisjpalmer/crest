@@ -43,7 +43,7 @@ import { RoleController, RoleSyncController } from './routes/authenticated/role/
     RoleController,
     RoleSyncController,
   ],
-  providers: [],
+  providers: [RoleService,PrivilegeService,UserService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {

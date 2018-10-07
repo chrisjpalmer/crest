@@ -46,9 +46,6 @@ export class User extends GenericEntity {
   @Column({ length: 200, default: null })
   lastName?: string;
 
-  @Column({ length: 200, default: null })
-  emailAddress?: string;
-
   //-------------------------------------
   //-------------Relationships-----------
   //-------------------------------------

@@ -1,8 +1,8 @@
 /** BOILERPLATE - don't touch unless you are brave */
 import { Module, DynamicModule } from '@nestjs/common';
-import { ConfigService } from './service/config.service';
+import { ConfigService } from './services/config.service';
 import { PrivilegeGuard } from './controller/privilege.guard';
-import { UserService } from './services/user.service';
+import { User } from './services/user.service';
 import { RoleService } from './services/role.service';
 import { PrivilegeService } from './services/privilege.service';
 import { AuthService } from './auth/auth.service';
@@ -19,12 +19,11 @@ import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   providers: [
-    //Config Service
-    ConfigService,
 
-    //Entity Services
+    //Services
+    ConfigService,
     AuthService,
-    UserService,
+    User.Service,
     RoleService,
     PrivilegeService,
 
@@ -45,12 +44,11 @@ import { APP_FILTER } from '@nestjs/core';
     },
   ],
   exports: [
-    //Config Service
+    
+    //Services
     ConfigService,
-
-    //Entity Services
     AuthService,
-    UserService,
+    User.Service,
     RoleService,
     PrivilegeService,
 

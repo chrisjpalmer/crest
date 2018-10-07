@@ -1,4 +1,4 @@
-import { GenericModel, GenericModelActions, RelationPingList } from "../core/generic.model";
+import { GenericModel, GenericModelActions } from "../core/generic.model";
 import { ${upper} } from "./${dot}.entity";
 import { Repository } from "typeorm";
 
@@ -6,8 +6,6 @@ export class ${upper}Model extends GenericModel<${upper}> implements GenericMode
     private constructor(entity: ${upper}, private ${lower}Repository: Repository<${upper}>) {
         super(entity, '${upper}Model');
     }
-
-    someTableRelations:RelationPingList = new RelationPingList();
 
     /**
      * Factories
@@ -40,45 +38,22 @@ export class ${upper}Model extends GenericModel<${upper}> implements GenericMode
      * Actions
      */
 
-    async save(someTableRepository:Repository<SomeTable>) {
+    async save() {
         //Prechecks
         if (!this.entity) {
             this.throwEntityNotSet();
-        }
-        if(!this.entity.someTable) {
-            this.throwObjectNotSet('someTable');
         }
 
         //Update the entity
         this.updateUpdatedAt();
         await this.${lower}Repository.save(this.entity);
 
-        //Ping stems
-        if(this.someTableRelations.hasIds()) {
-            await someTableRepository
-                .createQueryBuilder('someTable')
-                .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
-                .whereInIds(this.someTableRelations.getIds())
-                .execute();
-        }
         return this.entity.id;
     }
 
     async delete() {
         if (!this.entity) {
             this.throwEntityNotSet();
-        }
-
-        //Add all relations to the ping list
-        this.someTableRelations.add(this.entity.someTable.id);
-
-        //Ping stems
-        if(this.someTableRelations.hasIds()) {
-            await someTableRepository
-                .createQueryBuilder('someTable')
-                .update({ updatedAt: () => 'CURRENT_TIMESTAMP(6)' })
-                .whereInIds(this.someTableRelations.getIds())
-                .execute();
         }
 
         await this.${lower}Repository.delete(this.entity);
@@ -96,7 +71,7 @@ export class ${upper}Model extends GenericModel<${upper}> implements GenericMode
         if (this.isNew()) {
             let result = await this.${lower}Repository.findOne({ someField: someField });
             if (!!result) {
-                throw 'user already exists';
+                throw 'the ${lower} already exists';
             }
         }
         this.entity.someField = someField;
@@ -113,15 +88,10 @@ export class ${upper}Model extends GenericModel<${upper}> implements GenericMode
      * Related entities getters and setters
      */
 
+     //Type 1
     setSomeTableId(someTableId:number, someTableRepository:Repository<SomeTable>) {
         if(!this.entity) {
             this.throwEntityNotSet();
-        }
-
-        //Ping Server Stems
-        this.pingServer.add(someTableId);
-        if(!!this.entity.server) {
-            this.pingServer.add(this.entity.server.id);
         }
 
         //Set relationship
@@ -134,9 +104,77 @@ export class ${upper}Model extends GenericModel<${upper}> implements GenericMode
         if(!this.entity) {
             this.throwEntityNotSet();
         }
-        if(!this.entity.someTable) {
-            this.throwObjectNotSet('someTable');
+        if(!this.entity.someTables) {
+            return [];
         }
-        return this.entity.someTable.id;
+        return this.entity.someTables.id;
+    }
+
+    //Type 2
+    setSomeTableIds(
+        someTableIds: number[],
+        someTableRepository: Repository<SomeTable>,
+      ) {
+        if (!this.entity) {
+          this.throwEntityNotSet();
+        }
+    
+        this.entity.someTables = someTableIds.map(id => {
+          let entity = someTableRepository.create()
+          entity.id = id;
+          return entity;
+        });
+      }
+    
+      getSomeTableIds() : number[] {
+        if (!this.entity) {
+          this.throwEntityNotSet();
+        }
+        if (!this.entity.someTables) {
+          return [];
+        }
+        return this.entity.someTables.map(entity => entity.id);
+      }
+
+    //Type 3
+    /**
+     * Adds a someTable to this ${lower}. It throws an error if the someTable does not exist.
+     * If the someTable is already associated with the ${lower}, no error is thrown.
+     * @param someTableId 
+     * @param someTableRepository 
+     */
+    async addSomeTable(someTableId:number, someTableRepository:Repository<SomeTable>) {
+        if (!this.entity) {
+        this.throwEntityNotSet();
+        }
+        if (!this.entity.someTables) {
+        this.entity.someTables = [];
+        }
+
+        let i = this.entity.someTables.findIndex(entity => entity.id === someTableId);
+        if(i !== -1) {
+        return;
+        }
+
+        let someTable = await someTableRepository.findOneOrFail(someTableId);
+        this.entity.someTables.push(someTable);
+    }
+
+    /**
+     * Deletes a someTable from the ${lower}. If the someTable is not associated, no error is thrown.
+     * @param someTableId 
+     */
+    deleteSomeTable(someTableId:number) {
+        if (!this.entity) {
+        this.throwEntityNotSet();
+        }
+        if (!this.entity.someTables) {
+        return;
+        }
+
+        let i = this.entity.someTables.findIndex(entity => entity.id === someTableId);
+        if(i !== -1) {
+        this.entity.someTables.splice(i, 1);
+        }
     }
 }

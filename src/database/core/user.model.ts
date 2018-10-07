@@ -119,18 +119,6 @@ export class UserModel extends GenericModel<User> implements GenericModelActions
         }
         this.entity.lastName = lastName;
     }
-    getEmailAddress() {
-        if (!this.entity) {
-            this.throwEntityNotSet();
-        }
-        return this.entity.emailAddress;
-    }
-    setEmailAddress(emailAddress: string) {
-        if (!this.entity) {
-            this.throwEntityNotSet();
-        }
-        this.entity.emailAddress = emailAddress;
-    }
 
     /**
      * Relationship getters and setters
@@ -140,7 +128,7 @@ export class UserModel extends GenericModel<User> implements GenericModelActions
             this.throwEntityNotSet();
         }
         if (!this.entity.role) {
-            this.throwObjectNotSet('role');
+            return null;
         }
         return this.entity.role.id;
     }
@@ -157,7 +145,7 @@ export class UserModel extends GenericModel<User> implements GenericModelActions
             this.throwEntityNotSet();
         }
         if (!this.entity.userPassword) {
-            this.throwObjectNotSet('userPassword');
+            return null;
         }
         return this.entity.userPassword.id;
     }
@@ -174,17 +162,21 @@ export class UserModel extends GenericModel<User> implements GenericModelActions
             this.throwEntityNotSet();
         }
         if (!this.entity.sessions) {
-            this.throwObjectNotSet('sessions');
+            return [];
         }
         return this.entity.sessions.map(v => v.id);
     }
 
+    /**
+     * Deletes a the session from the user. Throws an error if the session does not exist
+     * @param sessionId 
+     */
     deleteSession(sessionId: number) {
         if (!this.entity) {
             this.throwEntityNotSet();
         }
         if (!this.entity.sessions) {
-            this.throwObjectNotSet('sessions');
+            throw 'this session does not exist on the user';
         }
         let target = this.entity.sessions.find(s => s.id === sessionId);
         if (!target) {
