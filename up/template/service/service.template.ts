@@ -1,9 +1,16 @@
 
 import { Injectable } from '@nestjs/common';
 
-@Injectable()
-export class ${upper}Service {
-    constructor() {
+export namespace ${upper}Service {
+
+    export interface Create${upper} {
+  
+    }
+    
+    @Injectable()
+    export class Service {
+      constructor() {}
 
     }
-}
+  }
+  

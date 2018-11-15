@@ -79,6 +79,15 @@ export namespace UserService {
     }
 
     async getUsersFiltered(params:GetUsersFilteredInput) : Promise<GetUsersFilteredOutput> {
+      //Input validation
+      if(typeof params.page !== 'number') {
+        throw 'you must supply a page number';
+      }
+
+      if(!params.pageSize || params.pageSize > 100) {
+        throw 'you must supply a page size lower than 100 and greater than 0';
+      }
+
       let usersJustIds = await this.userRepository.createQueryBuilder('user').select('id').skip(params.page * params.pageSize).take(params.pageSize).getMany();
       let userIds = usersJustIds.map(v => v.id);
       let users = await this.getUsersByIds(userIds);

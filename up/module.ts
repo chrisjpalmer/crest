@@ -8,7 +8,7 @@ export async function AddControllerToModule(
   let project = new Project();
   let moduleFile = project.addExistingSourceFile(`src/app/app.module.ts`);
   moduleFile.addImportDeclaration({
-    namedImports: [`${name.upper()}Controller`, `${name.upper()}SyncController`],
+    namedImports: [`${name.upper()}Controller`],
     moduleSpecifier: `./routes/${route.long()}/${name.dot()}.controller`,
   });
 
@@ -41,7 +41,6 @@ export function addToControllersArray(
 `${topArrayExpression}
 \t\t// /${route.long()}
 \t\t${name.upper()}Controller,
-\t\t${name.upper()}SyncController,
 ${bottomArrayExpression}`;
   controllersConfig.replaceWithText(newStatement);
 }
@@ -68,7 +67,7 @@ export async function AddServiceToModule(
 
 export function addToProvidersArray(
   moduleConfig: ObjectLiteralExpression,
-  name: Name,
+  name: Name
 ) {
   let providersConfig = moduleConfig.getPropertyOrThrow('providers');
   let originalStatement = providersConfig.getText();
@@ -87,7 +86,7 @@ export function addToProvidersArray(
   let newStatement =
     topArrayExpression +
     comma +
-    `${name.upper()}Service` +
+    `${name.upper()}Service.Service` +
     bottomArrayExpression;
   providersConfig.replaceWithText(newStatement);
 }

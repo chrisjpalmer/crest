@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-@Injectable()
-export class PrivilegeService {
-  constructor() {}
+export namespace PrivilegeService {
+
+  @Injectable()
+  export class Service {
+    constructor() { }
+  }
 }

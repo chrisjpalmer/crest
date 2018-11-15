@@ -13,9 +13,7 @@ import * as passport from 'passport';
 import { InitController } from './routes/init/init.controller';
 import { LoginController } from './routes/login/login.controller';
 import { LogoutController } from './routes/logout/logout.controller';
-import { UserController, UserSyncController } from './routes/authenticated/user/user.controller';
-import { PrivilegeController, PrivilegeSyncController } from './routes/authenticated/privilege/privilege.controller';
-import { RoleController, RoleSyncController } from './routes/authenticated/role/role.controller';
+import { UserController } from './routes/authenticated/user/user.controller';
 
 @Module({
   imports: [
@@ -33,17 +31,8 @@ import { RoleController, RoleSyncController } from './routes/authenticated/role/
 
     // /autheticated/user
     UserController,
-    UserSyncController,
-
-    // /autheticated/privilege
-    PrivilegeController,
-    PrivilegeSyncController,
-
-    // /autheticated/role
-    RoleController,
-    RoleSyncController,
-  ],
-  providers: [RoleService,PrivilegeService,UserService],
+],
+  providers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {

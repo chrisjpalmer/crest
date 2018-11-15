@@ -16,7 +16,6 @@ import { PostInput, PostOutput } from './login.class';
 export class LoginController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
     @InjectRepo(RoleToken) private readonly roleRepository: Repository<Role>,
   ) {}
 

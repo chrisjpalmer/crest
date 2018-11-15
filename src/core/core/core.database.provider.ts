@@ -1,7 +1,7 @@
 /** BOILERPLATE - don't touch unless you are brave */
 import { Inject } from '@nestjs/common';
 import { Connection, createConnection } from 'typeorm';
-import { ConfigService } from '../service/config.service';
+import { ConfigService } from '../services';
 import { FactoryProvider } from '@nestjs/common/interfaces';
 
 function repoToken(token: string) {

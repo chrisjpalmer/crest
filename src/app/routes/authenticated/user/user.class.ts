@@ -10,10 +10,11 @@ import {
   IsBoolean,
   IsString,
   IsOptional,
-  IsDate
+  IsDate,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
 
 //------------------------------------------------
 //--------------------- CLASS --------------------
@@ -24,47 +25,49 @@ import { Type } from 'class-transformer';
 
 //Input
 export class GetInput {
-  
+  @IsNumber()
+  @Min(0)
+  page:number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  pageSize:number;
 }
 
 //Output
 export interface GetOutput {
+  totalEntries:number;
+  totalPages:number;
+  users:GetEntryOutput[];
+}
 
+export interface GetEntryOutput {
+  username:string;
+  firstName:string;
+  lastName:string;
 }
 
 //-----------Post----------\\
 
 //Input
-export class PostInput {
-  
-}
-
+export class PostInput {}
 
 //Output
-export interface PostOutput {
-  
-}
+export class PostOutput {}
 
 //-----------Patch----------\\
 
 //Input
-export class PatchInput {
-  
-}
+export class PatchInput {}
 
 //Output
-export interface PatchOutput {
-  
-}
+export class PatchOutput {}
 
 //-----------Delete----------\\
 
 //Input
-export class DeleteInput {
-  
-}
+export class DeleteInput {}
 
 //Output
-export interface DeleteOutput {
-  
-}
+export class DeleteOutput {}

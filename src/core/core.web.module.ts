@@ -2,7 +2,7 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigService } from './services/config.service';
 import { PrivilegeGuard } from './controller/privilege.guard';
-import { User } from './services/user.service';
+import { UserService } from './services/user.service';
 import { RoleService } from './services/role.service';
 import { PrivilegeService } from './services/privilege.service';
 import { AuthService } from './auth/auth.service';
@@ -23,9 +23,9 @@ import { APP_FILTER } from '@nestjs/core';
     //Services
     ConfigService,
     AuthService,
-    User.Service,
-    RoleService,
-    PrivilegeService,
+    UserService.Service,
+    RoleService.Service,
+    PrivilegeService.Service,
 
     //Auth Middleware
     AuthStrategy,
@@ -48,9 +48,9 @@ import { APP_FILTER } from '@nestjs/core';
     //Services
     ConfigService,
     AuthService,
-    User.Service,
-    RoleService,
-    PrivilegeService,
+    UserService.Service,
+    RoleService.Service,
+    PrivilegeService.Service,
 
     //Guards
     PrivilegeGuard,

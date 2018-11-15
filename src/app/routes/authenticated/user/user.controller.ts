@@ -3,8 +3,21 @@
  * ALWAYS import like this - import { MyAwesomeClass } from '../my.awesome.class'; import { MyAwesomeFunction } from '../my.awesome.function';
  * AVOID ".." OR "." import destinations as this confuses typescript. Search and replace "." OR ".." for absolute destinations. Note double quotes were used here to make your search easier
  */
-import { AuthController, PrivilegeHas, CoreRequest } from 'core';
-import { Get, Body, Post, Patch, Request, Delete, Controller, Query } from '@nestjs/common';
+import {
+  AuthController,
+  PrivilegeHas,
+  CoreRequest,
+} from 'core';
+import {
+  Get,
+  Body,
+  Post,
+  Patch,
+  Request,
+  Delete,
+  Controller,
+  Query,
+} from '@nestjs/common';
 import {
   GetInput,
   GetOutput,
@@ -14,41 +27,66 @@ import {
   PatchOutput,
   DeleteInput,
   DeleteOutput,
-} from './${dot}.class';
-import { transformAndValidate } from "class-transformer-validator";
+} from './user.class';
+import { transformAndValidate } from 'class-transformer-validator';
+import { UserService } from 'core/services/user.service';
+
 
 //------------------------------------------------
 //------------------- CONTROLLER -----------------
 //------------------------------------------------
-///ref:{"mode":"controller.decorator", "params" : { "suffix":"" } }
-export class ${upper}Controller {
-  constructor(
-  
-  ) {}
+/* http://localhost:3000/authenticated/user */
+@AuthController('user')
+export class UserController {
+  constructor(private userService:UserService.Service) {}
 
   /**
-   * Get() - ${upper}
+   * Get() - User
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Get()
-  ///ref:{"mode":"controller.privilege", "params" : { "suffix":".get" } }
+  @PrivilegeHas('user.get')
   async Get(
     @Query('input') _input: string,
     @Request() req: CoreRequest,
   ): Promise<GetOutput> {
-    let input:GetInput = JSON.parse(_input);
-    input = await transformAndValidate(GetInput, input);
-    return null;
+    //Transform the only query parameter 'input' from JSON string to an object
+    let input: GetInput = JSON.parse(_input);
+    // Metdata set on GetInput ensures that the input is validated correctly
+    input = await transformAndValidate(GetInput, input); 
+
+    //Get the users using the User Service
+    let filteredResult = await this.userService.getUsersFiltered({
+      page: input.page,
+      pageSize: input.pageSize,
+    });
+
+    //Transform the output
+    let output:GetOutput = {
+      totalEntries: filteredResult.totalEntries,
+      totalPages: filteredResult.totalPages,
+      users: filteredResult.users.map(u => {
+        return {
+          username: u.username,
+          firstName: u.firstName,
+          lastName: u.lastName
+        }
+      })
+
+    };
+
+
+    return output;
   }
 
   /**
-   * Post() - ${upper}
+   * Post() - User
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Post()
-  ///ref:{"mode":"controller.privilege", "params" : { "suffix":".post" }}
+  @PrivilegeHas('user.post')
   async Post(
     @Body() input: PostInput,
     @Request() req: CoreRequest,
@@ -57,12 +95,12 @@ export class ${upper}Controller {
   }
 
   /**
-   * Patch() - ${upper}
+   * Patch() - User
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Patch()
-  ///ref:{"mode":"controller.privilege", "params" : { "suffix":".patch" }}
+  @PrivilegeHas('user.patch')
   async Patch(
     @Body() input: PatchInput,
     @Request() req: CoreRequest,
@@ -71,12 +109,12 @@ export class ${upper}Controller {
   }
 
   /**
-   * Delete() - ${upper}
+   * Delete() - User
    * @param input parameters for the request
    * @param req the expressjs request object
    */
   @Delete()
-  ///ref:{"mode":"controller.privilege", "params" : { "suffix":".delete" }}
+  @PrivilegeHas('user.delete')
   async Delete(
     @Body() input: DeleteInput,
     @Request() req: CoreRequest,

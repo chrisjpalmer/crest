@@ -6,10 +6,9 @@ import {
   UnauthorizedException,
   ForbiddenException,
 } from '@nestjs/common';
-import { Repository, Timestamp } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Session, SessionToken, User, UserToken, SessionModel, UserModel, UserPassword, UserPasswordModel, UserPasswordToken } from 'database';
-import { ConfigService } from '../service/config.service';
-import { UserService } from '../entity.service/user.service';
+import { ConfigService } from '../services';
 import { InjectRepo } from '../core/core.database.provider';
 
 
@@ -26,7 +25,6 @@ export class SessionJwtOptions {
 export class AuthService {
   constructor(
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
     @InjectRepo(SessionToken)
     private readonly sessionRepository: Repository<Session>,
     @InjectRepo(UserToken) private readonly userRepository: Repository<User>,
